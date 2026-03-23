@@ -20,7 +20,7 @@ Use AMERICAN ENGLISH pronunciation (General American accent) for all IPA transcr
 Return ONLY a valid JSON object for this sentence: "${sampleSentence}"
 
 {
-  "type": "sentence type (Asking/Responding/Greeting/Expressing/etc.)",
+  "type": "comma-separated sentence types if multiple apply, e.g. 'Greeting' or 'Greeting,Inviting'. Choose from: Asking, Responding, Greeting, Expressing, Inviting, Instructing, Requesting, Directing, Introducing",
   "structure": "grammatical structure with FIXED parts in plain text and VARIABLE/CHANGEABLE parts in (parentheses). Example: 'What is (your name / the problem)?' or 'I (really / so much) like (topic noun).'",
   "function": "brief Vietnamese description of usage",
   "translation": "Vietnamese translation",

@@ -168,22 +168,38 @@ export default function HomePage() {
 
       <main className="flex flex-col flex-1 overflow-hidden">
         {/* ── Header ── */}
-        <div className="shrink-0 border-b border-gray-200 bg-white px-8 py-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Quản lý chủ đề</h1>
-              <p className="mt-0.5 text-sm text-gray-500">
-                Tạo và quản lý các chủ đề học tiếng Anh
-              </p>
-            </div>
-          </div>
+        <div className="shrink-0 border-b border-gray-200 bg-white pl-16 pr-4 py-3 md:px-8 md:py-5">
+          <h1 className="text-lg md:text-xl font-bold text-gray-900">Quản lý chủ đề</h1>
+          <p className="mt-0.5 text-xs md:text-sm text-gray-500 hidden sm:block">
+            Tạo và quản lý các chủ đề học tiếng Anh
+          </p>
         </div>
 
         {/* ── Content ── */}
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+
+          {/* Mobile: search + add in gray area */}
+          <div className="flex md:hidden items-center gap-2 mb-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+              <Input
+                placeholder="Tìm chủ đề..."
+                value={search}
+                onChange={e => handleSearchChange(e.target.value)}
+                className="pl-8 h-9 w-full border-gray-200 bg-white text-sm placeholder:text-gray-400 focus:border-orange-400 shadow-sm"
+              />
+            </div>
+            <button
+              onClick={() => { setCreating(true); setEditingId(null) }}
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-600 text-white hover:bg-orange-700 shrink-0 shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+
           <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
-            {/* Toolbar */}
-            <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-100">
+            {/* Toolbar – desktop only */}
+            <div className="hidden md:flex items-center justify-between gap-3 px-6 py-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-semibold text-gray-800">Danh sách chủ đề</h2>
                 {!isLoading && (
@@ -192,13 +208,13 @@ export default function HomePage() {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <div className="relative w-72">
                   <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
                   <Input
                     placeholder="Tìm chủ đề..."
                     value={search}
-                    onChange={(e) => handleSearchChange(e.target.value)}
+                    onChange={e => handleSearchChange(e.target.value)}
                     className="pl-9 h-8 border-gray-200 bg-white text-sm text-gray-700 placeholder:text-gray-400 focus:border-orange-400"
                   />
                 </div>
@@ -245,12 +261,61 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* ── Table ── */}
-            <div className="overflow-x-auto">
+            {/* ── Mobile: card list only ── */}
+            <div className="md:hidden">
+              <div className="divide-y divide-gray-100">
+                {isLoading ? (
+                  [...Array(4)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 px-4 py-3">
+                      <div className="h-11 w-11 animate-pulse rounded-xl bg-gray-100 shrink-0" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-4 w-2/3 animate-pulse rounded bg-gray-100" />
+                        <div className="h-3 w-1/2 animate-pulse rounded bg-gray-100" />
+                      </div>
+                    </div>
+                  ))
+                ) : paginated.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="mb-3 rounded-full bg-gray-100 p-4">
+                      <BookOpen className="h-7 w-7 text-gray-300" />
+                    </div>
+                    <p className="text-sm text-gray-400">{search ? `Không tìm thấy "${search}"` : 'Chưa có chủ đề nào'}</p>
+                  </div>
+                ) : (
+                  paginated.map(topic => (
+                    <div
+                      key={topic.id}
+                      onClick={() => router.push(`/topics/${topic.id}`)}
+                      className="group flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-orange-50 cursor-pointer transition-colors"
+                    >
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 text-xl shadow-sm">
+                        {topic.icon ?? '📚'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{topic.name}</p>
+                        <p className="text-xs text-gray-400">{topic.phrase_count ?? 0} câu</p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+                        <button onClick={() => { setEditingId(topic.id); setEditName(topic.name) }}
+                          className="rounded-lg p-1.5 text-gray-300 hover:bg-gray-100 hover:text-gray-600">
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button onClick={() => handleDelete(topic.id)}
+                          className="rounded-lg p-1.5 text-gray-300 hover:bg-red-50 hover:text-red-400">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* ── Desktop: Table ── */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50/60">
-                    <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400 w-12">#</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400 w-12">Icon</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Tên chủ đề</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Mô tả</th>
@@ -262,7 +327,7 @@ export default function HomePage() {
                   {isLoading ? (
                     [...Array(5)].map((_, i) => (
                       <tr key={i} className="border-b border-gray-100">
-                        {[...Array(6)].map((_, j) => (
+                        {[...Array(5)].map((_, j) => (
                           <td key={j} className="px-4 py-3.5">
                             <div className="h-4 w-full animate-pulse rounded bg-gray-100" />
                           </td>
@@ -271,7 +336,7 @@ export default function HomePage() {
                     ))
                   ) : paginated.length === 0 ? (
                     <tr>
-                      <td colSpan={6}>
+                      <td colSpan={5}>
                         <div className="flex flex-col items-center justify-center py-20 text-center">
                           <div className="mb-4 rounded-full bg-gray-100 p-5">
                             <BookOpen className="h-8 w-8 text-gray-300" />
@@ -280,11 +345,7 @@ export default function HomePage() {
                             {search ? `Không tìm thấy "${search}"` : 'Chưa có chủ đề nào'}
                           </p>
                           {!search && (
-                            <Button
-                              onClick={() => setCreating(true)}
-                              size="sm"
-                              className="mt-4 bg-orange-600 hover:bg-orange-700 text-white"
-                            >
+                            <Button onClick={() => setCreating(true)} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white">
                               <Plus className="mr-1.5 h-3.5 w-3.5" /> Thêm chủ đề đầu tiên
                             </Button>
                           )}
@@ -294,119 +355,68 @@ export default function HomePage() {
                   ) : (
                     paginated.map((topic, idx) => {
                       const isEditing = editingId === topic.id
-                      const rowNumber = (currentPage - 1) * PAGE_SIZE + idx + 1
-
                       return (
                         <tr
                           key={topic.id}
                           className="group border-b border-gray-100 transition-colors hover:bg-gray-50 cursor-pointer"
-                          onClick={() => {
-                            if (!isEditing) router.push(`/topics/${topic.id}`)
-                          }}
+                          onClick={() => { if (!isEditing) router.push(`/topics/${topic.id}`) }}
                         >
-                          {/* # */}
-                          <td className="px-6 py-3.5 text-xs text-gray-300">{rowNumber}</td>
-                          {/* Icon */}
                           <td className="px-4 py-3.5 text-xl">{topic.icon ?? '📚'}</td>
-                          {/* Name */}
                           <td className="px-4 py-3.5">
                             {isEditing ? (
-                              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                <input
-                                  autoFocus
-                                  value={editName}
-                                  onChange={(e) => setEditName(e.target.value)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') handleUpdate()
-                                    if (e.key === 'Escape') { setEditingId(null); setEditName('') }
-                                  }}
+                              <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                <input autoFocus value={editName} onChange={e => setEditName(e.target.value)}
+                                  onKeyDown={e => { if (e.key === 'Enter') handleUpdate(); if (e.key === 'Escape') { setEditingId(null); setEditName('') } }}
                                   className="flex-1 rounded-lg border border-orange-300 bg-white px-2.5 py-1 text-sm text-gray-700 outline-none focus:ring-1 focus:ring-orange-400"
                                 />
-                                <button
-                                  onClick={handleUpdate}
-                                  disabled={updateMutation.isPending}
-                                  className="rounded p-1 text-green-600 hover:bg-green-50"
-                                >
-                                  {updateMutation.isPending
-                                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    : <Check className="h-3.5 w-3.5" />}
+                                <button onClick={handleUpdate} disabled={updateMutation.isPending} className="rounded p-1 text-green-600 hover:bg-green-50">
+                                  {updateMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                                 </button>
-                                <button
-                                  onClick={() => { setEditingId(null); setEditName('') }}
-                                  className="rounded p-1 text-gray-400 hover:bg-gray-100"
-                                >
+                                <button onClick={() => { setEditingId(null); setEditName('') }} className="rounded p-1 text-gray-400 hover:bg-gray-100">
                                   <X className="h-3.5 w-3.5" />
                                 </button>
                               </div>
                             ) : (
-                              <p className="font-semibold text-gray-900 group-hover:text-orange-700 transition-colors">
-                                {topic.name}
-                              </p>
+                              <p className="font-semibold text-gray-900 group-hover:text-orange-700 transition-colors">{topic.name}</p>
                             )}
                           </td>
-                          {/* Description */}
-                          <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                          <td className="px-4 py-3.5" onClick={e => e.stopPropagation()}>
                             {editingDescId === topic.id ? (
                               <div className="flex items-center gap-1.5">
-                                <input
-                                  autoFocus
-                                  value={editDesc}
-                                  onChange={(e) => setEditDesc(e.target.value)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') handleUpdateDesc(topic.id)
-                                    if (e.key === 'Escape') { setEditingDescId(null); setEditDesc('') }
-                                  }}
+                                <input autoFocus value={editDesc} onChange={e => setEditDesc(e.target.value)}
+                                  onKeyDown={e => { if (e.key === 'Enter') handleUpdateDesc(topic.id); if (e.key === 'Escape') { setEditingDescId(null); setEditDesc('') } }}
                                   placeholder="Nhập mô tả..."
                                   className="flex-1 w-full rounded-lg border border-orange-300 bg-white px-2.5 py-1 text-sm text-gray-700 outline-none focus:ring-1 focus:ring-orange-400"
                                 />
-                                <button
-                                  onClick={() => handleUpdateDesc(topic.id)}
-                                  disabled={updateMutation.isPending}
-                                  className="rounded p-1 text-green-600 hover:bg-green-50 shrink-0"
-                                >
-                                  {updateMutation.isPending
-                                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    : <Check className="h-3.5 w-3.5" />
-                                  }
+                                <button onClick={() => handleUpdateDesc(topic.id)} disabled={updateMutation.isPending} className="rounded p-1 text-green-600 hover:bg-green-50 shrink-0">
+                                  {updateMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                                 </button>
-                                <button
-                                  onClick={() => { setEditingDescId(null); setEditDesc('') }}
-                                  className="rounded p-1 text-gray-400 hover:bg-gray-100 shrink-0"
-                                >
+                                <button onClick={() => { setEditingDescId(null); setEditDesc('') }} className="rounded p-1 text-gray-400 hover:bg-gray-100 shrink-0">
                                   <X className="h-3.5 w-3.5" />
                                 </button>
                               </div>
                             ) : (
-                              <p
-                                className="text-gray-500 truncate max-w-[250px] cursor-text hover:text-orange-600 transition-colors"
+                              <p className="text-gray-500 truncate max-w-[300px] cursor-text hover:text-orange-600 transition-colors"
                                 title="Click để sửa mô tả"
                                 onClick={() => { setEditingDescId(topic.id); setEditDesc(topic.description ?? '') }}
                               >
-                                {topic.description ?? <span className="italic text-gray-300">Chưa có mô tả — click để thêm</span>}
+                                {topic.description ?? <span className="italic text-gray-300">Chưa có mô tả</span>}
                               </p>
                             )}
                           </td>
-                          {/* Phrase count */}
                           <td className="px-4 py-3.5 text-center">
                             <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
                               {topic.phrase_count ?? 0}
                             </span>
                           </td>
-                          {/* Actions */}
-                          <td className="px-6 py-3.5" onClick={(e) => e.stopPropagation()}>
+                          <td className="px-6 py-3.5" onClick={e => e.stopPropagation()}>
                             <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button
-                                onClick={() => { setEditingId(topic.id); setEditName(topic.name) }}
-                                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
-                                title="Sửa tên"
-                              >
+                              <button onClick={() => { setEditingId(topic.id); setEditName(topic.name) }}
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors" title="Sửa tên">
                                 <Pencil className="h-3.5 w-3.5" />
                               </button>
-                              <button
-                                onClick={() => handleDelete(topic.id)}
-                                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-                                title="Xóa"
-                              >
+                              <button onClick={() => handleDelete(topic.id)}
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors" title="Xóa">
                                 <Trash2 className="h-3.5 w-3.5" />
                               </button>
                             </div>
