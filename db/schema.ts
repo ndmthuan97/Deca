@@ -27,6 +27,7 @@ export const phrases = pgTable('phrases', {
   example2_translation: text('example2_translation'),
   example2_pronunciation: text('example2_pronunciation'),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  deleted_at: timestamp('deleted_at', { withTimezone: true }),
 })
 
 export type Topic = typeof topics.$inferSelect

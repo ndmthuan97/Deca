@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Sidebar } from '@/components/layout/Sidebar'
@@ -33,8 +33,12 @@ export default function HomePage() {
   // ── Inline create / edit state ──
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('')
+  const [previewIcon, setPreviewIcon] = useState('📚')
+  const [iconLoading, setIconLoading] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editName, setEditName] = useState('')
+  const [editingDescId, setEditingDescId] = useState<number | null>(null)
+  const [editDesc, setEditDesc] = useState('')
 
   const { data: topics, isLoading } = useQuery({
     queryKey: ['topics'],
@@ -56,6 +60,25 @@ export default function HomePage() {
 
   // Reset page when search changes
   const handleSearchChange = (v: string) => { setSearch(v); setPage(1) }
+
+  const debouncedNewName = useDebounce(newName, 600)
+
+  // Fetch AI icon preview when name changes
+  useEffect(() => {
+    if (!debouncedNewName || debouncedNewName.length < 2) {
+      setPreviewIcon('📚')
+      return
+    }
+    let cancelled = false
+    setIconLoading(true)
+    fetch(`/api/topics/suggest-icon?name=${encodeURIComponent(debouncedNewName)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setPreviewIcon(data.icon ?? '📚')
+      })
+      .finally(() => { if (!cancelled) setIconLoading(false) })
+    return () => { cancelled = true }
+  }, [debouncedNewName])
 
   // ── Mutations ──
   const createMutation = useMutation({
@@ -79,12 +102,17 @@ export default function HomePage() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, name }: { id: number; name: string }) => {
-      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    mutationFn: async ({ id, name, description }: { id: number; name?: string; description?: string }) => {
+      const body: any = {}
+      if (name !== undefined) {
+        body.slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+        body.name = name
+      }
+      if (description !== undefined) body.description = description
       const res = await fetch(`/api/topics/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, slug }),
+        body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error('Failed')
       return res.json()
@@ -94,6 +122,8 @@ export default function HomePage() {
       toast.success(`Đã cập nhật "${topic.name}"`)
       setEditingId(null)
       setEditName('')
+      setEditingDescId(null)
+      setEditDesc('')
     },
     onError: () => toast.error('Cập nhật thất bại'),
   })
@@ -120,6 +150,10 @@ export default function HomePage() {
     const name = editName.trim()
     if (!name || editingId === null) return
     updateMutation.mutate({ id: editingId, name })
+  }
+
+  const handleUpdateDesc = (id: number) => {
+    updateMutation.mutate({ id, description: editDesc.trim() })
   }
 
   const handleDelete = (id: number) => {
@@ -181,7 +215,9 @@ export default function HomePage() {
             {/* ── Inline Create Row ── */}
             {creating && (
               <div className="flex items-center gap-3 border-b border-orange-100 bg-orange-50/50 px-6 py-3">
-                <span className="text-base">📚</span>
+                <span className={`text-base min-w-[1.5rem] text-center transition-all ${iconLoading ? 'animate-pulse opacity-50' : ''}`}>
+                  {previewIcon}
+                </span>
                 <input
                   autoFocus
                   value={newName}
@@ -309,8 +345,46 @@ export default function HomePage() {
                             )}
                           </td>
                           {/* Description */}
-                          <td className="px-4 py-3.5">
-                            <p className="text-gray-500 truncate max-w-[250px]">{topic.description ?? '—'}</p>
+                          <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                            {editingDescId === topic.id ? (
+                              <div className="flex items-center gap-1.5">
+                                <input
+                                  autoFocus
+                                  value={editDesc}
+                                  onChange={(e) => setEditDesc(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleUpdateDesc(topic.id)
+                                    if (e.key === 'Escape') { setEditingDescId(null); setEditDesc('') }
+                                  }}
+                                  placeholder="Nhập mô tả..."
+                                  className="flex-1 w-full rounded-lg border border-orange-300 bg-white px-2.5 py-1 text-sm text-gray-700 outline-none focus:ring-1 focus:ring-orange-400"
+                                />
+                                <button
+                                  onClick={() => handleUpdateDesc(topic.id)}
+                                  disabled={updateMutation.isPending}
+                                  className="rounded p-1 text-green-600 hover:bg-green-50 shrink-0"
+                                >
+                                  {updateMutation.isPending
+                                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    : <Check className="h-3.5 w-3.5" />
+                                  }
+                                </button>
+                                <button
+                                  onClick={() => { setEditingDescId(null); setEditDesc('') }}
+                                  className="rounded p-1 text-gray-400 hover:bg-gray-100 shrink-0"
+                                >
+                                  <X className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            ) : (
+                              <p
+                                className="text-gray-500 truncate max-w-[250px] cursor-text hover:text-orange-600 transition-colors"
+                                title="Click để sửa mô tả"
+                                onClick={() => { setEditingDescId(topic.id); setEditDesc(topic.description ?? '') }}
+                              >
+                                {topic.description ?? <span className="italic text-gray-300">Chưa có mô tả — click để thêm</span>}
+                              </p>
+                            )}
                           </td>
                           {/* Phrase count */}
                           <td className="px-4 py-3.5 text-center">

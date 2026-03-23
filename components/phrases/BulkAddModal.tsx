@@ -1,0 +1,479 @@
+'use client'
+
+import React, { useState, useRef, useCallback } from 'react'
+import {
+  Dialog, DialogContent, DialogHeader,
+  DialogTitle, DialogDescription
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
+import {
+  UploadCloud, Sparkles, ChevronLeft, ChevronRight,
+  Trash2, CheckCircle2, Loader2, FileType, X
+} from 'lucide-react'
+import { toast } from 'sonner'
+import * as XLSX from 'xlsx'
+import Papa from 'papaparse'
+import { cn } from '@/lib/utils'
+
+/* ─── Types ─────────────────────────────────────────────────── */
+type PhraseCard = {
+  id: string
+  sample_sentence: string
+  translation: string
+  pronunciation: string
+  structure: string
+  type: string
+  function: string
+  example1: string
+  example1_translation: string
+  example1_pronunciation: string
+  example2: string
+  example2_translation: string
+  example2_pronunciation: string
+  selected: boolean
+  status: 'pending' | 'loading' | 'done' | 'error'
+}
+
+type Step = 'input' | 'filling' | 'review'
+
+/* ─── Props ──────────────────────────────────────────────────── */
+interface BulkAddModalProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  topicId: number
+  topicName: string
+  onSuccess: () => void
+}
+
+/* ─── Utils ──────────────────────────────────────────────────── */
+function makeCard(sentence: string, overrides: Partial<PhraseCard> = {}): PhraseCard {
+  return {
+    id: Math.random().toString(36).slice(2),
+    sample_sentence: sentence.trim(),
+    translation: '', pronunciation: '', structure: '',
+    type: '', function: '',
+    example1: '', example1_translation: '', example1_pronunciation: '',
+    example2: '', example2_translation: '', example2_pronunciation: '',
+    selected: true, status: 'pending',
+    ...overrides,
+  }
+}
+
+async function generateFields(sampleSentence: string, topicName: string) {
+  const res = await fetch('/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sampleSentence, topicName }),
+  })
+  if (!res.ok) throw new Error('AI error')
+  return res.json()
+}
+
+/* ─── Sub-components ─────────────────────────────────────────── */
+function StatusDot({ status }: { status: PhraseCard['status'] }) {
+  if (status === 'loading') return <Loader2 className="h-3.5 w-3.5 animate-spin text-orange-400" />
+  if (status === 'done')    return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+  if (status === 'error')   return <span className="h-3.5 w-3.5 text-red-400 text-xs font-bold">!</span>
+  return <span className="h-3.5 w-3.5 rounded-full bg-gray-300 block" />
+}
+
+function ReviewCard({
+  card,
+  onToggleSelect,
+  onChange,
+}: {
+  card: PhraseCard
+  onToggleSelect: () => void
+  onChange: (field: keyof PhraseCard, value: string) => void
+}) {
+  return (
+    <div className={cn(
+      'rounded-2xl border bg-slate-900 text-white transition-all overflow-hidden',
+      card.selected ? 'border-orange-500/40' : 'border-gray-700 opacity-60'
+    )}>
+      {/* Card Header */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
+        <div className="flex items-center gap-2">
+          <StatusDot status={card.status} />
+          {card.status === 'loading'
+            ? <span className="text-sm text-slate-400 italic">Đang phân tích...</span>
+            : <span className="text-sm font-semibold text-white">{card.sample_sentence}</span>
+          }
+        </div>
+        <button
+          onClick={onToggleSelect}
+          className={cn(
+            'flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors',
+            card.selected
+              ? 'bg-orange-500/20 text-orange-300 hover:bg-red-500/20 hover:text-red-400'
+              : 'bg-gray-700 text-gray-400 hover:bg-orange-500/20 hover:text-orange-300'
+          )}
+        >
+          {card.selected ? (
+            <><CheckCircle2 className="h-3 w-3" /> Đã chọn</>
+          ) : (
+            <><X className="h-3 w-3" /> Bỏ qua</>
+          )}
+        </button>
+      </div>
+
+      {/* Card Body — editable fields */}
+      {card.status === 'done' && (
+        <div className="grid grid-cols-2 gap-5 p-5">
+          {/* Left column */}
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-slate-500">Loại câu</label>
+                <Input value={card.type} onChange={e => onChange('type', e.target.value)}
+                  className="h-7 border-0 border-b border-white/10 bg-transparent px-0 text-sm text-white shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+              </div>
+              <div>
+                <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-slate-500">IPA</label>
+                <Input value={card.pronunciation} onChange={e => onChange('pronunciation', e.target.value)}
+                  className="h-7 border-0 border-b border-white/10 bg-transparent px-0 font-mono text-sm text-orange-300 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+              </div>
+            </div>
+            <div>
+              <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-slate-500">Cấu trúc</label>
+              <Input value={card.structure} onChange={e => onChange('structure', e.target.value)}
+                className="h-7 border-0 border-b border-white/10 bg-transparent px-0 text-sm text-white shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+            </div>
+            <div>
+              <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-slate-500">Dịch nghĩa</label>
+              <Input value={card.translation} onChange={e => onChange('translation', e.target.value)}
+                className="h-7 border-0 border-b border-white/10 bg-transparent px-0 text-sm text-slate-300 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+            </div>
+          </div>
+          {/* Right column — examples */}
+          <div className="space-y-2 border-l border-white/5 pl-5">
+            <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-2">Ví dụ</p>
+            {[1, 2].map((n) => {
+              const pre = n === 1 ? 'example1' : 'example2'
+              return (
+                <div key={n} className="rounded-lg bg-slate-800/60 p-3 space-y-1.5">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500/20 text-[9px] font-bold text-orange-300">{n}</span>
+                    <span className="text-[10px] text-slate-500">Ví dụ {n}</span>
+                  </div>
+                  <Input value={(card as any)[pre]} onChange={e => onChange(pre as any, e.target.value)} placeholder="Câu ví dụ"
+                    className="h-6 border-0 border-b border-white/10 bg-transparent px-0 text-xs text-white shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                  <Input value={(card as any)[`${pre}_translation`]} onChange={e => onChange(`${pre}_translation` as any, e.target.value)} placeholder="Bản dịch"
+                    className="h-6 border-0 border-b border-white/10 bg-transparent px-0 text-xs text-slate-400 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                  <Input value={(card as any)[`${pre}_pronunciation`]} onChange={e => onChange(`${pre}_pronunciation` as any, e.target.value)} placeholder="IPA"
+                    className="h-6 border-0 border-b border-white/10 bg-transparent px-0 font-mono text-xs text-orange-300 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ─── Main Component ─────────────────────────────────────────── */
+export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess }: BulkAddModalProps) {
+  const [step, setStep]       = useState<Step>('input')
+  const [rawText, setRawText] = useState('')
+  const [cards, setCards]     = useState<PhraseCard[]>([])
+  const [cursor, setCursor]   = useState(0)
+  const [saving, setSaving]   = useState(false)
+  const fileInputRef          = useRef<HTMLInputElement>(null)
+
+  /* ── Reset ── */
+  const reset = () => {
+    setStep('input'); setRawText(''); setCards([]); setCursor(0); setSaving(false)
+  }
+
+  /* ── Parse file ── */
+  const parseFile = (file: File) => {
+    const name = file.name.toLowerCase()
+    if (name.endsWith('.csv')) {
+      Papa.parse(file, {
+        header: true, skipEmptyLines: true,
+        complete: ({ data }: any) => {
+          const parsed = (data as any[])
+            .map((row) => makeCard(row.sample_sentence || '', {
+              translation: row.translation || '',
+              pronunciation: row.pronunciation || '',
+              structure: row.structure || '',
+              type: row.type || '',
+              function: row.function || '',
+              example1: row.example1 || '',
+              example1_translation: row.example1_translation || '',
+              example1_pronunciation: row.example1_pronunciation || '',
+              example2: row.example2 || '',
+              example2_translation: row.example2_translation || '',
+              example2_pronunciation: row.example2_pronunciation || '',
+              status: 'pending' as const,
+            }))
+            .filter((c) => c.sample_sentence)
+          if (!parsed.length) { toast.error('Không tìm thấy cột sample_sentence'); return }
+          setCards(parsed)
+          setRawText(parsed.map((c) => c.sample_sentence).join('\n'))
+        },
+        error: () => toast.error('Lỗi đọc CSV'),
+      })
+    } else if (name.endsWith('.xlsx')) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const wb = XLSX.read(e.target?.result, { type: 'array' })
+        const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]) as any[]
+        const parsed = json
+          .map((row) => makeCard(row.sample_sentence || '', {
+            translation: row.translation || '',
+            pronunciation: row.pronunciation || '',
+            structure: row.structure || '',
+            type: row.type || '',
+            function: row.function || '',
+            example1: row.example1 || '',
+            example1_translation: row.example1_translation || '',
+            example1_pronunciation: row.example1_pronunciation || '',
+            example2: row.example2 || '',
+            example2_translation: row.example2_translation || '',
+            example2_pronunciation: row.example2_pronunciation || '',
+            status: 'pending' as const,
+          }))
+          .filter((c) => c.sample_sentence)
+        if (!parsed.length) { toast.error('Không tìm thấy cột sample_sentence'); return }
+        setCards(parsed)
+        setRawText(parsed.map((c) => c.sample_sentence).join('\n'))
+      }
+      reader.readAsArrayBuffer(file)
+    } else {
+      toast.error('Chỉ hỗ trợ .csv và .xlsx')
+    }
+  }
+
+  /* ── Start AI Fill ── */
+  const startFill = useCallback(async () => {
+    const sentences = rawText.split('\n').map(s => s.trim()).filter(Boolean)
+    if (!sentences.length) { toast.error('Nhập ít nhất 1 câu'); return }
+
+    const initial = sentences.map((s) => makeCard(s, { status: 'loading' }))
+    setCards(initial); setCursor(0); setStep('filling')
+
+    // fire all AI calls concurrently (but update state per card)
+    await Promise.all(initial.map(async (card, i) => {
+      try {
+        const fields = await generateFields(card.sample_sentence, topicName)
+        setCards(prev => prev.map((c, idx) => idx === i ? { ...c, ...fields, status: 'done' } : c))
+      } catch {
+        setCards(prev => prev.map((c, idx) => idx === i ? { ...c, status: 'error' } : c))
+      }
+    }))
+    setStep('review')
+  }, [rawText, topicName])
+
+  /* ── Update a card field ── */
+  const updateCard = (id: string, field: keyof PhraseCard, value: string) => {
+    setCards(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c))
+  }
+
+  const toggleSelect = (id: string) => {
+    setCards(prev => prev.map(c => c.id === id ? { ...c, selected: !c.selected } : c))
+  }
+
+  /* ── Save selected ── */
+  const handleSave = async () => {
+    const selected = cards.filter(c => c.selected && c.status !== 'error')
+    if (!selected.length) { toast.error('Chưa có câu nào được chọn'); return }
+    setSaving(true)
+    try {
+      const res = await fetch('/api/phrases/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic_id: topicId, data: selected }),
+      })
+      if (!res.ok) throw new Error((await res.json()).error)
+      const { count } = await res.json()
+      toast.success(`Đã thêm ${count} câu thành công!`)
+      onSuccess()
+      reset()
+      onOpenChange(false)
+    } catch (e: any) {
+      toast.error(e.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const selectedCount = cards.filter(c => c.selected).length
+  const isAllDone     = cards.length > 0 && cards.every(c => c.status !== 'loading')
+  const current       = cards[cursor]
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v) }}>
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border-white/10 text-white">
+        <DialogHeader>
+          <DialogTitle className="text-white flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-orange-400" />
+            Thêm nhiều câu với AI
+          </DialogTitle>
+          <DialogDescription className="text-slate-400">
+            {step === 'input'  && 'Nhập danh sách câu (mỗi dòng 1 câu) hoặc tải file lên, rồi bấm AI Fill.'}
+            {step === 'filling'&& 'AI đang phân tích các câu, vui lòng đợi...'}
+            {step === 'review' && `Xem lại ${cards.length} câu — đã chọn ${selectedCount}. Bấm nút mũi tên để duyệt từng câu.`}
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* ════════════ STEP: INPUT ════════════ */}
+        {(step === 'input' || step === 'filling') && (
+          <div className="space-y-4 mt-2">
+            <Textarea
+              placeholder={"Who are you?\nWhat do you do?\nNice to meet you."}
+              value={rawText}
+              onChange={e => setRawText(e.target.value)}
+              rows={8}
+              disabled={step === 'filling'}
+              className="border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-orange-500 font-mono resize-none text-sm"
+            />
+
+            {/* File upload strip */}
+            <div
+              className="flex items-center gap-3 rounded-lg border border-dashed border-white/10 px-4 py-3 cursor-pointer hover:border-orange-400/40 transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <UploadCloud className="h-5 w-5 text-slate-500 shrink-0" />
+              <p className="text-xs text-slate-500">Hoặc tải file <span className="text-orange-400">.csv / .xlsx</span> lên (cột <code className="bg-white/5 px-1 rounded">sample_sentence</code> bắt buộc)</p>
+              <input
+                ref={fileInputRef} type="file"
+                accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) parseFile(f) }}
+              />
+            </div>
+
+            {/* Show sentence count preview */}
+            {rawText.trim() && (
+              <p className="text-xs text-slate-500">
+                {rawText.split('\n').filter(s => s.trim()).length} câu được phát hiện
+              </p>
+            )}
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-slate-400 hover:text-white">Hủy</Button>
+              <Button
+                onClick={startFill}
+                disabled={!rawText.trim() || step === 'filling'}
+                className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white"
+              >
+                {step === 'filling'
+                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang phân tích...</>
+                  : <><Sparkles className="mr-2 h-4 w-4" /> AI Fill</>
+                }
+              </Button>
+            </div>
+
+            {/* Live progress cards while filling */}
+            {step === 'filling' && cards.length > 0 && (
+              <div className="space-y-2 mt-2">
+                {cards.map((c) => (
+                  <div key={c.id} className="flex items-center gap-3 rounded-lg bg-white/5 px-4 py-2.5">
+                    <StatusDot status={c.status} />
+                    <span className="text-sm text-slate-300 truncate">{c.sample_sentence}</span>
+                    {c.status === 'error' && <span className="ml-auto text-xs text-red-400">Lỗi</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ════════════ STEP: REVIEW ════════════ */}
+        {step === 'review' && current && (
+          <div className="space-y-4 mt-2">
+            {/* Navigation bar */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {cards.map((c, i) => (
+                  <button
+                    key={c.id}
+                    onClick={() => setCursor(i)}
+                    className={cn(
+                      'h-2 rounded-full transition-all',
+                      i === cursor ? 'w-6 bg-orange-500' : c.selected ? 'w-2 bg-slate-500' : 'w-2 bg-red-800/50'
+                    )}
+                  />
+                ))}
+              </div>
+              <span className="text-sm text-slate-400">
+                {cursor + 1} / {cards.length} • <span className="text-orange-400">{selectedCount} đã chọn</span>
+              </span>
+            </div>
+
+            {/* Card */}
+            <ReviewCard
+              card={current}
+              onToggleSelect={() => toggleSelect(current.id)}
+              onChange={(field, value) => updateCard(current.id, field, value)}
+            />
+
+            {/* Prev / Next */}
+            <div className="flex items-center justify-between">
+              <Button
+                variant="outline"
+                disabled={cursor === 0}
+                onClick={() => setCursor(c => c - 1)}
+                className="border-white/10 text-slate-300 hover:text-white hover:bg-white/5"
+              >
+                <ChevronLeft className="mr-1 h-4 w-4" /> Câu trước
+              </Button>
+
+              <Button
+                variant="ghost"
+                onClick={() => { toggleSelect(current.id); if (cursor < cards.length - 1) setCursor(c => c + 1) }}
+                className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+              >
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                {current.selected ? 'Bỏ câu này' : 'Chọn lại'}
+              </Button>
+
+              {cursor < cards.length - 1 ? (
+                <Button
+                  variant="outline"
+                  onClick={() => setCursor(c => c + 1)}
+                  className="border-white/10 text-slate-300 hover:text-white hover:bg-white/5"
+                >
+                  Câu tiếp <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSave}
+                  disabled={saving || selectedCount === 0}
+                  className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg"
+                >
+                  {saving
+                    ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang lưu...</>
+                    : <><CheckCircle2 className="mr-2 h-4 w-4" /> Thêm {selectedCount} câu</>
+                  }
+                </Button>
+              )}
+            </div>
+
+            {/* Quick save button always visible if on any card */}
+            {cursor < cards.length - 1 && (
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleSave}
+                  disabled={saving || selectedCount === 0}
+                  size="sm"
+                  className="bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 text-white"
+                >
+                  {saving
+                    ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    : <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                  }
+                  Thêm {selectedCount} câu ngay
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}

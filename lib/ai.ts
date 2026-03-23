@@ -21,7 +21,7 @@ Return ONLY a valid JSON object for this sentence: "${sampleSentence}"
 
 {
   "type": "sentence type (Asking/Responding/Greeting/Expressing/etc.)",
-  "structure": "grammatical pattern, e.g. Who + are + (you)?",
+  "structure": "grammatical structure with FIXED parts in plain text and VARIABLE/CHANGEABLE parts in (parentheses). Example: 'What is (your name / the problem)?' or 'I (really / so much) like (topic noun).'",
   "function": "brief Vietnamese description of usage",
   "translation": "Vietnamese translation",
   "pronunciation": "American English IPA transcription e.g. /huː ɑːr juː/",
@@ -75,4 +75,19 @@ export async function generateTopicIcon(topicName: string): Promise<string> {
   // Try to extract just the first emoji if the model returned extra text
   const match = text.match(/\p{Emoji_Presentation}|\p{Emoji}\uFE0F/u)
   return match ? match[0] : '📚' // Default to book if no emoji found
+}
+
+const DESCRIPTION_PROMPT = (topicName: string) =>
+  `You are an assistant for an English learning app (target users: Vietnamese learners).
+Write ONE short Vietnamese sentence (max 10 words) describing what the topic "${topicName}" covers.
+Return ONLY that sentence, nothing else. Example: "Cách chào hỏi và giới thiệu bản thân."`
+
+export async function generateTopicDescription(topicName: string): Promise<string> {
+  const client = getClient()
+  const completion = await client.chat.completions.create({
+    model: 'llama-3.3-70b-versatile',
+    messages: [{ role: 'user', content: DESCRIPTION_PROMPT(topicName) }],
+    temperature: 0.4,
+  })
+  return completion.choices[0]?.message?.content?.trim() ?? ''
 }

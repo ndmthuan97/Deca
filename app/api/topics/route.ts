@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/db'
 import { topics, phrases } from '@/db/schema'
 import { eq, sql } from 'drizzle-orm'
-import { generateTopicIcon } from '@/lib/ai'
+import { generateTopicIcon, generateTopicDescription } from '@/lib/ai'
 
 export async function GET() {
   try {
@@ -49,9 +49,19 @@ export async function POST(request: Request) {
       }
     }
 
+    // Auto-generate a short description if not provided
+    let resolvedDescription = description
+    if (!resolvedDescription) {
+      try {
+        resolvedDescription = await generateTopicDescription(name)
+      } catch (err) {
+        console.warn('Failed to generate description:', err)
+      }
+    }
+
     const [created] = await db
       .insert(topics)
-      .values({ name, slug, description, icon, order_index })
+      .values({ name, slug, description: resolvedDescription, icon, order_index })
       .returning()
 
     return NextResponse.json(created, { status: 201 })

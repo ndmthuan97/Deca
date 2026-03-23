@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/db'
 import { phrases } from '@/db/schema'
-import { eq, asc } from 'drizzle-orm'
+import { eq, asc, isNull, and } from 'drizzle-orm'
 
 export async function GET(request: Request) {
   try {
@@ -12,9 +12,13 @@ export async function GET(request: Request) {
       ? await db
           .select()
           .from(phrases)
-          .where(eq(phrases.topic_id, parseInt(topicId)))
+          .where(and(eq(phrases.topic_id, parseInt(topicId)), isNull(phrases.deleted_at)))
           .orderBy(asc(phrases.created_at))
-      : await db.select().from(phrases).orderBy(asc(phrases.created_at))
+      : await db
+          .select()
+          .from(phrases)
+          .where(isNull(phrases.deleted_at))
+          .orderBy(asc(phrases.created_at))
 
     return NextResponse.json(result)
   } catch (error) {
