@@ -42,13 +42,13 @@ export function PhraseCard({ phrase, topicName, onEdit }: PhraseCardProps) {
   })
 
   return (
-    <div className="group rounded-xl border border-white/10 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm transition-all duration-300 hover:border-violet-500/30 hover:shadow-lg hover:shadow-violet-500/10">
+    <div className="group rounded-xl border border-white/10 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm transition-all duration-300 hover:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/10">
       {/* Header */}
       <div className="flex items-start justify-between gap-3 p-4">
         <div className="min-w-0 flex-1">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             {phrase.type && (
-              <Badge className="bg-violet-500/20 text-xs text-violet-300 border-violet-500/30">
+              <Badge className="bg-orange-500/20 text-xs text-orange-300 border-orange-500/30">
                 {phrase.type}
               </Badge>
             )}
@@ -62,7 +62,7 @@ export function PhraseCard({ phrase, topicName, onEdit }: PhraseCardProps) {
             <h3 className="text-base font-semibold text-white">{phrase.sample_sentence}</h3>
             <button
               onClick={() => speak(phrase.sample_sentence)}
-              className="rounded-full p-1 text-slate-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-white/10 hover:text-violet-400"
+              className="rounded-full p-1 text-slate-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-white/10 hover:text-orange-400"
               title="Nghe phát âm"
             >
               <Volume2 className="h-3.5 w-3.5" />
@@ -85,7 +85,7 @@ export function PhraseCard({ phrase, topicName, onEdit }: PhraseCardProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-slate-500 hover:text-violet-400"
+            className="h-7 w-7 text-slate-500 hover:text-orange-400"
             onClick={() => onEdit(phrase)}
           >
             <Edit2 className="h-3.5 w-3.5" />
@@ -145,7 +145,7 @@ export function PhraseCard({ phrase, topicName, onEdit }: PhraseCardProps) {
                       <span className="font-medium text-slate-200">{ex.sentence}</span>
                       <button
                         onClick={() => speak(ex.sentence!)}
-                        className="ml-auto text-slate-600 hover:text-violet-400"
+                        className="ml-auto text-slate-600 hover:text-orange-400"
                       >
                         <Volume2 className="h-3 w-3" />
                       </button>

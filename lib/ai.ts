@@ -55,3 +55,24 @@ export async function generatePhraseFields(
   const text = completion.choices[0]?.message?.content ?? ''
   return JSON.parse(text) as GeneratedPhraseFields
 }
+
+const ICON_PROMPT = (topicName: string) =>
+  `You are a helpful assistant. I am creating a topic for an English learning app.
+The topic name is: "${topicName}".
+Please return a single relevant Unicode emoji that represents this topic.
+Return ONLY the emoji character, nothing else. For example, if the topic is "Food", return 🍔. If the topic is "Travel", return ✈️.`
+
+export async function generateTopicIcon(topicName: string): Promise<string> {
+  const client = getClient()
+
+  const completion = await client.chat.completions.create({
+    model: 'llama-3.3-70b-versatile',
+    messages: [{ role: 'user', content: ICON_PROMPT(topicName) }],
+    temperature: 0.2,
+  })
+
+  const text = completion.choices[0]?.message?.content?.trim() ?? ''
+  // Try to extract just the first emoji if the model returned extra text
+  const match = text.match(/\p{Emoji_Presentation}|\p{Emoji}\uFE0F/u)
+  return match ? match[0] : '📚' // Default to book if no emoji found
+}

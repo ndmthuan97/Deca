@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { PhraseForm } from '@/components/phrases/PhraseForm'
-import { TopicSelector } from '@/components/layout/TopicSelector'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
@@ -17,7 +16,7 @@ import {
   ChevronLeft, ChevronRight, ChevronDown, ChevronRight as ChevronRightIcon
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { TopicSelector as _TS } from '@/components/layout/TopicSelector'
+
 import type { Topic, Phrase } from '@/db/schema'
 
 const PAGE_SIZE = 10
@@ -115,7 +114,7 @@ export default function TopicPage() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
-      <Sidebar onAddTopic={() => {}} />
+      <Sidebar />
 
       <main className="flex flex-col flex-1 overflow-hidden">
         {/* ── Header ── */}
@@ -137,18 +136,6 @@ export default function TopicPage() {
               )}
             </div>
             <div className="flex items-center gap-3">
-              <TopicSelector
-                currentTopicId={topic?.id ?? 0}
-                currentTopicName={topic?.name ?? '...'}
-                currentTopicIcon={topic?.icon}
-              />
-              <Button
-                onClick={openAdd}
-                className="bg-violet-600 text-white hover:bg-violet-700 shadow-sm"
-              >
-                <Plus className="mr-1.5 h-4 w-4" />
-                Thêm câu mới
-              </Button>
             </div>
           </div>
         </div>
@@ -161,19 +148,28 @@ export default function TopicPage() {
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-semibold text-gray-800">Danh sách câu</h2>
                 {!phrasesLoading && (
-                  <span className="rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-600">
+                  <span className="rounded-full bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-600">
                     {filtered.length}
                   </span>
                 )}
               </div>
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
-                <Input
-                  placeholder="Tìm câu, dịch nghĩa, loại..."
-                  value={search}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className="pl-9 h-8 border-gray-200 bg-white text-sm text-gray-700 placeholder:text-gray-400 focus:border-violet-400"
-                />
+              <div className="flex items-center gap-3">
+                <div className="relative w-64">
+                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                  <Input
+                    placeholder="Tìm câu, dịch nghĩa, loại..."
+                    value={search}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="pl-9 h-8 border-gray-200 bg-white text-sm text-gray-700 placeholder:text-gray-400 focus:border-orange-400"
+                  />
+                </div>
+                <Button
+                  onClick={openAdd}
+                  className="bg-orange-600 text-white hover:bg-orange-700 h-8 shadow-sm"
+                >
+                  <Plus className="mr-1.5 h-4 w-4" />
+                  Thêm câu mới
+                </Button>
               </div>
             </div>
 
@@ -214,7 +210,7 @@ export default function TopicPage() {
                             {search ? `Không tìm thấy kết quả cho "${search}"` : 'Chưa có câu nào — thêm câu đầu tiên!'}
                           </p>
                           {!search && (
-                            <Button onClick={openAdd} size="sm" className="mt-4 bg-violet-600 hover:bg-violet-700 text-white">
+                            <Button onClick={openAdd} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white">
                               <Plus className="mr-1.5 h-3.5 w-3.5" /> Thêm câu
                             </Button>
                           )}
@@ -226,11 +222,10 @@ export default function TopicPage() {
                       const isOpen = expanded.has(phrase.id)
                       const hasExamples = phrase.example1 || phrase.example2
                       return (
-                        <>
+                        <React.Fragment key={phrase.id}>
                         <tr
-                          key={phrase.id}
                           onClick={() => hasExamples && toggleExpand(phrase.id)}
-                          className={`group border-b border-gray-100 transition-colors hover:bg-gray-50 ${hasExamples ? 'cursor-pointer' : ''} ${isOpen ? 'bg-violet-50/30' : ''}`}
+                          className={`group border-b border-gray-100 transition-colors hover:bg-gray-50 ${hasExamples ? 'cursor-pointer' : ''} ${isOpen ? 'bg-orange-50/30' : ''}`}
                         >
                           {/* Expand */}
                           <td className="pl-4 w-8">
@@ -260,7 +255,7 @@ export default function TopicPage() {
                           </td>
                           {/* IPA */}
                           <td className="px-4 py-3.5 w-40">
-                            <span className="font-mono text-xs text-violet-500 block truncate">{phrase.pronunciation ?? '—'}</span>
+                            <span className="font-mono text-xs text-orange-500 block truncate">{phrase.pronunciation ?? '—'}</span>
                           </td>
                           {/* Structure */}
                           <td className="px-4 py-3.5">
@@ -292,7 +287,7 @@ export default function TopicPage() {
                               { ex: phrase.example1, tr: phrase.example1_translation, ipa: phrase.example1_pronunciation, n: 1 },
                               { ex: phrase.example2, tr: phrase.example2_translation, ipa: phrase.example2_pronunciation, n: 2 }
                             ].filter(e => e.ex).map((e) => (
-                              <tr key={`ex-${phrase.id}-${e.n}`} className="border-b border-gray-50 bg-violet-50/20">
+                              <tr key={`ex-${phrase.id}-${e.n}`} className="border-b border-gray-50 bg-orange-50/20">
                                 {/* Col1: tree line */}
                                 <td className="w-8 pl-6">
                                   <div className="flex items-center gap-1">
@@ -317,7 +312,7 @@ export default function TopicPage() {
                                 </td>
                                 {/* IPA */}
                                 <td className="px-4 py-2 w-40">
-                                  <span className="font-mono text-[11px] text-violet-400 block truncate max-w-[150px]">{e.ipa}</span>
+                                  <span className="font-mono text-[11px] text-orange-400 block truncate max-w-[150px]">{e.ipa}</span>
                                 </td>
                                 {/* Cấu trúc — empty */}
                                 <td className="px-4 py-2" />
@@ -328,7 +323,7 @@ export default function TopicPage() {
                             ))}
                           </>
                         )}
-                        </>
+                        </React.Fragment>
                       )
                     })
                   )}
@@ -350,7 +345,7 @@ export default function TopicPage() {
                   {[...Array(totalPages)].map((_, i) => (
                     <button key={i} onClick={() => setPage(i + 1)}
                       className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs font-medium transition-colors ${
-                        currentPage === i + 1 ? 'bg-violet-600 text-white' : 'text-gray-500 hover:bg-gray-100'
+                        currentPage === i + 1 ? 'bg-orange-600 text-white' : 'text-gray-500 hover:bg-gray-100'
                       }`}>
                       {i + 1}
                     </button>

@@ -47,17 +47,17 @@ function PinForm() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-violet-950/20 to-slate-950 px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-orange-950/20 to-slate-950 px-4">
       {/* Background decoration */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-40 -top-40 h-96 w-96 rounded-full bg-violet-600/10 blur-3xl" />
-        <div className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-indigo-600/10 blur-3xl" />
+        <div className="absolute -left-40 -top-40 h-96 w-96 rounded-full bg-orange-600/10 blur-3xl" />
+        <div className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-amber-600/10 blur-3xl" />
       </div>
 
       <div className="relative w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-2xl shadow-violet-500/30">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 shadow-2xl shadow-orange-500/30">
             <BookOpen className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">DACE</h1>
@@ -83,7 +83,7 @@ function PinForm() {
               onChange={(e) => setPin(e.target.value)}
               autoFocus
               autoComplete="current-password"
-              className="h-12 border-white/10 bg-white/5 text-center text-xl tracking-widest text-white placeholder:tracking-normal focus:border-violet-500 focus:ring-violet-500/20"
+              className="h-12 border-white/10 bg-white/5 text-center text-xl tracking-widest text-white placeholder:tracking-normal focus:border-orange-500 focus:ring-orange-500/20"
             />
 
             {error && (
@@ -95,7 +95,7 @@ function PinForm() {
             <Button
               type="submit"
               disabled={loading || !pin.trim()}
-              className="h-12 w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-base font-semibold text-white hover:from-violet-500 hover:to-indigo-500 disabled:opacity-50"
+              className="h-12 w-full bg-gradient-to-r from-orange-600 to-amber-600 text-base font-semibold text-white hover:from-orange-500 hover:to-amber-500 disabled:opacity-50"
             >
               {loading ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />

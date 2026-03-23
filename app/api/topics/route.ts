@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/db'
 import { topics, phrases } from '@/db/schema'
 import { eq, sql } from 'drizzle-orm'
+import { generateTopicIcon } from '@/lib/ai'
 
 export async function GET() {
   try {
@@ -32,10 +33,20 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { name, slug, description, icon, order_index } = body
+    const { name, slug, description, order_index } = body
+    let { icon } = body
 
     if (!name || !slug) {
       return NextResponse.json({ error: 'name and slug are required' }, { status: 400 })
+    }
+
+    if (!icon) {
+      try {
+        icon = await generateTopicIcon(name)
+      } catch (err) {
+        console.warn('Failed to generate icon, using default:', err)
+        icon = '📚'
+      }
     }
 
     const [created] = await db
