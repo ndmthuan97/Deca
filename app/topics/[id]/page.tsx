@@ -413,7 +413,7 @@ export default function TopicPage() {
           <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hidden md:block">
 
             {/* ── Toolbar – desktop only ── */}
-            <div className="hidden md:flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-100 relative z-10">
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-semibold text-gray-800">Danh sách câu</h2>
                 {!phrasesLoading && (
@@ -456,7 +456,7 @@ export default function TopicPage() {
                     </button>
 
                     {filterOpen && (
-                      <div className="absolute left-0 top-10 z-50 min-w-[190px] rounded-xl border border-gray-200 bg-white p-2 shadow-xl">
+                      <div className="absolute left-0 bottom-10 z-50 min-w-[190px] rounded-xl border border-gray-200 bg-white p-2 shadow-xl">
                         <div className="flex items-center justify-between px-2 pb-1.5 mb-1 border-b border-gray-100">
                           <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Loại câu</span>
                           {typeFilter.size > 0 && (
@@ -665,12 +665,12 @@ export default function TopicPage() {
 
             {/* ── Desktop: Table + Pagination ── */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-sm table-fixed">
+              <table className="w-full text-sm">
                 <colgroup><col className="w-[4%]" /><col className="w-[3%]" /><col className="w-[28%]" /><col className="w-[22%]" /><col className="w-[17%]" /><col className="w-[18%]" /><col className="w-[8%]" /></colgroup>
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50/60">
-                    <th className="pl-5"><input type="checkbox" checked={allPageSel} onChange={toggleAllPage} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" /></th>
-                    <th />
+                  <tr className="border-b border-gray-100 bg-white">
+                    <th className="pl-5 py-3 w-10 align-middle"><input type="checkbox" checked={allPageSel} onChange={toggleAllPage} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" /></th>
+                    <th className="py-3 w-8" />
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Câu mẫu</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Dịch nghĩa</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Phiên âm</th>
@@ -704,7 +704,10 @@ export default function TopicPage() {
                       const hasExamples = phrase.example1 || phrase.example2
                       return (
                         <React.Fragment key={phrase.id}>
-                          <tr className={cn('group border-b border-gray-100 transition-colors', isSel ? 'bg-orange-50/60' : 'hover:bg-gray-50', isOpen && !isSel && 'bg-orange-50/30')}>
+                          <tr className={cn(
+                            'group border-b border-gray-100 transition-colors even:bg-gray-50/70',
+                            isSel ? 'bg-orange-50/60 even:bg-orange-50/60' : isOpen ? 'bg-orange-50/30 even:bg-orange-50/30' : 'hover:bg-gray-100/60'
+                          )}>
                             <td className="pl-5 w-10" onClick={e => e.stopPropagation()}>
                               <input type="checkbox" checked={isSel} onChange={() => toggleOne(phrase.id)} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" />
                             </td>
