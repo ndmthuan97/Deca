@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { PhraseForm } from '@/components/phrases/PhraseForm'
 import {
@@ -16,7 +16,7 @@ import { FlashcardView } from '@/components/phrases/FlashcardView'
 import {
   BookOpen, Search, Pencil, Trash2, Volume2, Sparkles, Eye, Filter, MoreVertical,
   ChevronLeft, ChevronRight, ChevronDown, ChevronRight as ChevronRightIcon,
-  List, GalleryHorizontal,
+  List, GalleryHorizontal, Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -189,6 +189,7 @@ function PhraseViewDialog({ phrase, open, onClose }: { phrase: Phrase | null; op
 /* ════════════════════════════════════════════════════════════ */
 export default function TopicPage() {
   const params = useParams<{ id: string }>()
+  const router = useRouter()
   const queryClient = useQueryClient()
 
   /* ── UI state ── */
@@ -335,17 +336,27 @@ export default function TopicPage() {
       <main className="flex flex-col flex-1 overflow-hidden">
         {/* ── Header ── */}
         <div className="shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 pl-16 pr-4 py-3 md:px-8 md:py-4">
-          {topicLoading ? (
-            <Skeleton className="h-6 w-40 bg-gray-100" />
-          ) : (
-            <div className="flex items-center gap-2.5">
-              <span className="text-2xl">{topic?.icon}</span>
-              <div>
-                <h1 className="text-base md:text-lg font-bold text-gray-900">{topic?.name}</h1>
-                {topic?.description && <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">{topic.description}</p>}
+          <div className="flex items-center justify-between">
+            {topicLoading ? (
+              <Skeleton className="h-6 w-40 bg-gray-100" />
+            ) : (
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">{topic?.icon}</span>
+                <div>
+                  <h1 className="text-base md:text-lg font-bold text-gray-900">{topic?.name}</h1>
+                  {topic?.description && <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">{topic.description}</p>}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+            <button
+              onClick={() => router.push('/')}
+              className="flex items-center gap-1.5 h-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 transition-colors shadow-sm px-2.5 text-xs font-medium shrink-0"
+              title="Quay lại danh sách chủ đề"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Quay lại</span>
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
@@ -616,9 +627,12 @@ export default function TopicPage() {
                             </button>
                             <button
                               onClick={() => { if (confirm('Xóa câu này?')) { deleteMutation.mutate(phrase.id); setActiveCardMenu(null) } }}
-                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50"
+                              disabled={deleteMutation.isPending}
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 disabled:opacity-50"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              {deleteMutation.isPending
+                                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                : <Trash2 className="h-3.5 w-3.5" />}
                               Xóa
                             </button>
                           </div>
@@ -769,7 +783,16 @@ export default function TopicPage() {
                             <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button onClick={() => setViewPhrase(phrase)} className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors" title="Xem chi tiết"><Eye className="h-3.5 w-3.5" /></button>
                               <button onClick={() => openEdit(phrase)} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors" title="Chỉnh sửa"><Pencil className="h-3.5 w-3.5" /></button>
-                              <button onClick={() => { if (confirm('Xóa câu này?')) deleteMutation.mutate(phrase.id) }} className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors" title="Xóa"><Trash2 className="h-3.5 w-3.5" /></button>
+                              <button
+                                onClick={() => { if (confirm('Xóa câu này?')) deleteMutation.mutate(phrase.id) }}
+                                disabled={deleteMutation.isPending}
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-40"
+                                title="Xóa"
+                              >
+                                {deleteMutation.isPending
+                                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  : <Trash2 className="h-3.5 w-3.5" />}
+                              </button>
                             </div>
                           </td>
                         </tr>

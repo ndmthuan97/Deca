@@ -10,6 +10,9 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { useDebounce } from '@/lib/hooks/useDebounce'
 import type { TopicWithCount } from '@/db/schema'
@@ -28,6 +31,8 @@ export default function HomePage() {
 
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 400)
+  const [mobileCreateOpen, setMobileCreateOpen] = useState(false)
+  const [mobileNewName, setMobileNewName] = useState('')
   const [page, setPage] = useState(1)
 
   // ── Inline create / edit state ──
@@ -162,6 +167,17 @@ export default function HomePage() {
     }
   }
 
+  const handleMobileCreate = () => {
+    const name = mobileNewName.trim()
+    if (!name) return
+    createMutation.mutate(name, {
+      onSuccess: () => {
+        setMobileCreateOpen(false)
+        setMobileNewName('')
+      },
+    })
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
       <Sidebar />
@@ -190,14 +206,14 @@ export default function HomePage() {
               />
             </div>
             <button
-              onClick={() => { setCreating(true); setEditingId(null) }}
+              onClick={() => setMobileCreateOpen(true)}
               className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-600 text-white hover:bg-orange-700 shrink-0 shadow-sm"
             >
               <Plus className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="md:rounded-2xl md:border md:border-gray-200 md:bg-white md:dark:bg-gray-900 md:overflow-hidden md:shadow-sm">
+          <div>
             {/* Toolbar – desktop only */}
             <div className="hidden md:flex items-center justify-between gap-3 px-6 py-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
@@ -469,6 +485,51 @@ export default function HomePage() {
           </div>
         </div>
       </main>
+
+      {/* ── Dialog tạo chủ đề (mobile) ── */}
+      <Dialog open={mobileCreateOpen} onOpenChange={open => { setMobileCreateOpen(open); if (!open) setMobileNewName('') }}>
+        <DialogContent className="sm:max-w-sm bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <Plus className="h-4 w-4 text-orange-500" />
+              Tạo chủ đề mới
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-1">
+            <div>
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">
+                Tên chủ đề
+              </label>
+              <Input
+                autoFocus
+                value={mobileNewName}
+                onChange={e => setMobileNewName(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleMobileCreate() }}
+                placeholder="VD: Greetings, Meeting..."
+                className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:border-orange-400"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => { setMobileCreateOpen(false); setMobileNewName('') }}
+                className="border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300"
+              >
+                Hủy
+              </Button>
+              <Button
+                onClick={handleMobileCreate}
+                disabled={!mobileNewName.trim() || createMutation.isPending}
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                {createMutation.isPending
+                  ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Đang tạo...</>
+                  : <><Plus className="mr-1.5 h-3.5 w-3.5" /> Tạo chủ đề</>}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
