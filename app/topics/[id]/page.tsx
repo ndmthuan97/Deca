@@ -400,6 +400,13 @@ export default function TopicPage() {
                 )}
               </div>
             )}
+            <button
+              onClick={() => setBulkAddOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-600 text-white hover:bg-orange-700 shrink-0 shadow-sm"
+              title="Thêm nhiều câu"
+            >
+              <Sparkles className="h-4 w-4" />
+            </button>
           </div>
 
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm hidden md:block">
