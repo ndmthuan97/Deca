@@ -12,9 +12,11 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { BulkAddModal } from '@/components/phrases/BulkAddModal'
+import { FlashcardView } from '@/components/phrases/FlashcardView'
 import {
   BookOpen, Search, Pencil, Trash2, Volume2, Sparkles, Eye, Filter, MoreVertical,
   ChevronLeft, ChevronRight, ChevronDown, ChevronRight as ChevronRightIcon,
+  List, GalleryHorizontal,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -202,6 +204,7 @@ export default function TopicPage() {
   const [filterOpen, setFilterOpen] = useState(false)
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
   const [showAllMobile, setShowAllMobile] = useState(false)
+  const [layoutMode, setLayoutMode] = useState<'list' | 'flashcard'>('list')
   const MOBILE_INITIAL = 10
   const [activeCardMenu, setActiveCardMenu] = useState<number | null>(null)
   const filterRef = useRef<HTMLDivElement>(null)
@@ -407,6 +410,19 @@ export default function TopicPage() {
             >
               <Sparkles className="h-4 w-4" />
             </button>
+            {/* Layout toggle - mobile */}
+            <button
+              onClick={() => setLayoutMode(m => m === 'list' ? 'flashcard' : 'list')}
+              className={cn(
+                'flex h-9 w-9 items-center justify-center rounded-lg border shadow-sm transition-colors shrink-0',
+                layoutMode === 'flashcard'
+                  ? 'border-orange-500 bg-orange-50 text-orange-600'
+                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
+              )}
+              title={layoutMode === 'flashcard' ? 'Xem danh sách' : 'Xem flashcard'}
+            >
+              {layoutMode === 'flashcard' ? <List className="h-4 w-4" /> : <GalleryHorizontal className="h-4 w-4" />}
+            </button>
           </div>
 
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm hidden md:block">
@@ -494,6 +510,29 @@ export default function TopicPage() {
                   <Sparkles className="mr-1.5 h-3.5 w-3.5 text-orange-500" />
                   Nhiều câu
                 </Button>
+                {/* Layout toggle - desktop */}
+                <div className="flex items-center rounded-lg border border-gray-200 bg-gray-50 p-0.5 gap-0.5">
+                  <button
+                    onClick={() => setLayoutMode('list')}
+                    className={cn(
+                      'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+                      layoutMode === 'list' ? 'bg-white text-gray-700 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                    )}
+                    title="Danh sách"
+                  >
+                    <List className="h-3.5 w-3.5" /> Danh sách
+                  </button>
+                  <button
+                    onClick={() => setLayoutMode('flashcard')}
+                    className={cn(
+                      'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+                      layoutMode === 'flashcard' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                    )}
+                    title="Flashcard"
+                  >
+                    <GalleryHorizontal className="h-3.5 w-3.5" /> Flashcard
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -521,8 +560,11 @@ export default function TopicPage() {
             )}
           </div>{/* end desktop toolbar container */}
 
+          {/* ── Flashcard mode ── */}
+          {layoutMode === 'flashcard' && <FlashcardView phrases={filtered} />}
+
           {/* ── Mobile: card list ── */}
-          <div className="md:hidden space-y-2">
+          {layoutMode === 'list' && <div className="md:hidden space-y-2">
             {phrasesLoading ? (
               [...Array(5)].map((_, i) => (
                 <div key={i} className="rounded-xl border border-gray-200 bg-white p-4">
@@ -655,9 +697,10 @@ export default function TopicPage() {
                 )}
               </>
             )}
-          </div>
+          </div>}
 
           {/* ── Desktop: Table + Pagination ── */}
+          <div className={layoutMode === 'list' ? '' : 'hidden'}>
           <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hidden md:block">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -767,6 +810,7 @@ export default function TopicPage() {
             )}
           </div>{/* end overflow-x-auto */}
           </div>{/* end desktop table container */}
+          </div>{/* end list mode wrapper */}
         </div>{/* end flex-1 scroll area */}
       </main>
 
