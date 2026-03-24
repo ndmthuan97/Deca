@@ -128,3 +128,46 @@
     @apply font-sans;
   }
 }
+
+/* ── Dark mode overrides cho toàn bộ app ── */
+
+/* Page backgrounds */
+.dark .bg-gray-50  { background-color: oklch(0.13 0 0) !important; }
+.dark .bg-white    { background-color: oklch(0.17 0 0) !important; }
+.dark .bg-gray-100 { background-color: oklch(0.22 0 0) !important; }
+
+/* Borders */
+.dark .border-gray-100 { border-color: oklch(0.25 0 0) !important; }
+.dark .border-gray-200 { border-color: oklch(0.28 0 0) !important; }
+.dark .border-gray-300 { border-color: oklch(0.35 0 0) !important; }
+
+/* Text */
+.dark .text-gray-900 { color: oklch(0.96 0 0) !important; }
+.dark .text-gray-800 { color: oklch(0.91 0 0) !important; }
+.dark .text-gray-700 { color: oklch(0.85 0 0) !important; }
+.dark .text-gray-600 { color: oklch(0.75 0 0) !important; }
+.dark .text-gray-500 { color: oklch(0.62 0 0) !important; }
+.dark .text-gray-400 { color: oklch(0.52 0 0) !important; }
+.dark .text-gray-300 { color: oklch(0.42 0 0) !important; }
+
+/* Hover backgrounds */
+.dark .hover\:bg-gray-50:hover  { background-color: oklch(0.22 0 0) !important; }
+.dark .hover\:bg-gray-100:hover { background-color: oklch(0.25 0 0) !important; }
+.dark .hover\:bg-gray-50\/60:hover { background-color: oklch(0.22 0 0 / 60%) !important; }
+.dark .hover\:bg-gray-100\/60:hover { background-color: oklch(0.25 0 0 / 60%) !important; }
+
+/* Subtle accent backgrounds */
+.dark .bg-orange-50 { background-color: oklch(0.22 0.04 60) !important; }
+.dark .bg-blue-50   { background-color: oklch(0.19 0.04 250) !important; }
+.dark .bg-red-50    { background-color: oklch(0.20 0.04 20) !important; }
+
+/* Table striping */
+.dark .even\:bg-gray-50\/70:nth-child(even) { background-color: oklch(0.19 0 0 / 70%) !important; }
+
+/* Orange accent borders */
+.dark .border-orange-100 { border-color: oklch(0.35 0.08 50) !important; }
+.dark .border-orange-200 { border-color: oklch(0.38 0.1 50) !important; }
+
+/* Input / shadow overrides */
+.dark .shadow-sm { box-shadow: 0 1px 2px oklch(0 0 0 / 40%) !important; }
+.dark .shadow-md { box-shadow: 0 4px 6px oklch(0 0 0 / 50%) !important; }

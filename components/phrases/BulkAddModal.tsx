@@ -90,16 +90,16 @@ function ReviewCard({
 }) {
   return (
     <div className={cn(
-      'rounded-2xl border bg-slate-900 text-white transition-all overflow-hidden',
-      card.selected ? 'border-orange-500/40' : 'border-gray-700 opacity-60'
+      'rounded-2xl border bg-white transition-all overflow-hidden',
+      card.selected ? 'border-orange-300' : 'border-gray-200 opacity-60'
     )}>
       {/* Card Header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
         <div className="flex items-center gap-2">
           <StatusDot status={card.status} />
           {card.status === 'loading'
-            ? <span className="text-sm text-slate-400 italic">Đang phân tích...</span>
-            : <span className="text-sm font-semibold text-white">{card.sample_sentence}</span>
+            ? <span className="text-sm text-gray-400 italic">Đang phân tích...</span>
+            : <span className="text-sm font-semibold text-gray-900">{card.sample_sentence}</span>
           }
         </div>
         <button
@@ -107,8 +107,8 @@ function ReviewCard({
           className={cn(
             'flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors',
             card.selected
-              ? 'bg-orange-500/20 text-orange-300 hover:bg-red-500/20 hover:text-red-400'
-              : 'bg-gray-700 text-gray-400 hover:bg-orange-500/20 hover:text-orange-300'
+              ? 'bg-orange-100 text-orange-700 hover:bg-red-100 hover:text-red-600'
+              : 'bg-gray-100 text-gray-500 hover:bg-orange-100 hover:text-orange-600'
           )}
         >
           {card.selected ? (
@@ -126,44 +126,44 @@ function ReviewCard({
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-slate-500">Loại câu</label>
+                <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-gray-400">Loại câu</label>
                 <Input value={card.type} onChange={e => onChange('type', e.target.value)}
-                  className="h-7 border-0 border-b border-white/10 bg-transparent px-0 text-sm text-white shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                  className="h-7 border-0 border-b border-gray-200 bg-transparent px-0 text-sm text-gray-800 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
               </div>
               <div>
-                <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-slate-500">IPA</label>
+                <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-gray-400">IPA</label>
                 <Input value={card.pronunciation} onChange={e => onChange('pronunciation', e.target.value)}
-                  className="h-7 border-0 border-b border-white/10 bg-transparent px-0 font-mono text-sm text-orange-300 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                  className="h-7 border-0 border-b border-gray-200 bg-transparent px-0 font-mono text-sm text-orange-600 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
               </div>
             </div>
             <div>
-              <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-slate-500">Cấu trúc</label>
+              <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-gray-400">Cấu trúc</label>
               <Input value={card.structure} onChange={e => onChange('structure', e.target.value)}
-                className="h-7 border-0 border-b border-white/10 bg-transparent px-0 text-sm text-white shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                className="h-7 border-0 border-b border-gray-200 bg-transparent px-0 text-sm text-gray-800 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
             </div>
             <div>
-              <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-slate-500">Dịch nghĩa</label>
+              <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-gray-400">Dịch nghĩa</label>
               <Input value={card.translation} onChange={e => onChange('translation', e.target.value)}
-                className="h-7 border-0 border-b border-white/10 bg-transparent px-0 text-sm text-slate-300 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                className="h-7 border-0 border-b border-gray-200 bg-transparent px-0 text-sm text-gray-600 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
             </div>
           </div>
           {/* Right column — examples */}
-          <div className="space-y-2 border-l border-white/5 pl-5">
-            <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-2">Ví dụ</p>
+          <div className="space-y-2 border-l border-gray-100 pl-5">
+            <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-2">Ví dụ</p>
             {[1, 2].map((n) => {
               const pre = n === 1 ? 'example1' : 'example2'
               return (
-                <div key={n} className="rounded-lg bg-slate-800/60 p-3 space-y-1.5">
+                <div key={n} className="rounded-lg bg-gray-50 border border-gray-100 p-3 space-y-1.5">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500/20 text-[9px] font-bold text-orange-300">{n}</span>
-                    <span className="text-[10px] text-slate-500">Ví dụ {n}</span>
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-100 text-[9px] font-bold text-orange-600">{n}</span>
+                    <span className="text-[10px] text-gray-400">Ví dụ {n}</span>
                   </div>
                   <Input value={(card as any)[pre]} onChange={e => onChange(pre as any, e.target.value)} placeholder="Câu ví dụ"
-                    className="h-6 border-0 border-b border-white/10 bg-transparent px-0 text-xs text-white shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                    className="h-6 border-0 border-b border-gray-200 bg-transparent px-0 text-xs text-gray-700 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
                   <Input value={(card as any)[`${pre}_translation`]} onChange={e => onChange(`${pre}_translation` as any, e.target.value)} placeholder="Bản dịch"
-                    className="h-6 border-0 border-b border-white/10 bg-transparent px-0 text-xs text-slate-400 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                    className="h-6 border-0 border-b border-gray-200 bg-transparent px-0 text-xs text-gray-500 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
                   <Input value={(card as any)[`${pre}_pronunciation`]} onChange={e => onChange(`${pre}_pronunciation` as any, e.target.value)} placeholder="IPA"
-                    className="h-6 border-0 border-b border-white/10 bg-transparent px-0 font-mono text-xs text-orange-300 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                    className="h-6 border-0 border-b border-gray-200 bg-transparent px-0 font-mono text-xs text-orange-600 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
                 </div>
               )
             })}
@@ -307,13 +307,13 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v) }}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border-white/10 text-white">
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto bg-white border-gray-200 text-gray-900">
         <DialogHeader>
-          <DialogTitle className="text-white flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-orange-400" />
+          <DialogTitle className="text-gray-900 flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-orange-500" />
             Thêm nhiều câu với AI
           </DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogDescription className="text-gray-500">
             {step === 'input'  && 'Nhập danh sách câu (mỗi dòng 1 câu) hoặc tải file lên, rồi bấm AI Fill.'}
             {step === 'filling'&& 'AI đang phân tích các câu, vui lòng đợi...'}
             {step === 'review' && `Xem lại ${cards.length} câu — đã chọn ${selectedCount}. Bấm nút mũi tên để duyệt từng câu.`}
@@ -329,16 +329,16 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
               onChange={e => setRawText(e.target.value)}
               rows={8}
               disabled={step === 'filling'}
-              className="border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-orange-500 font-mono resize-none text-sm"
+              className="border-gray-200 bg-gray-50 text-gray-800 placeholder:text-gray-400 focus:border-orange-500 font-mono resize-none text-sm"
             />
 
             {/* File upload strip */}
             <div
-              className="flex items-center gap-3 rounded-lg border border-dashed border-white/10 px-4 py-3 cursor-pointer hover:border-orange-400/40 transition-colors"
+              className="flex items-center gap-3 rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:border-orange-400 transition-colors"
               onClick={() => fileInputRef.current?.click()}
             >
-              <UploadCloud className="h-5 w-5 text-slate-500 shrink-0" />
-              <p className="text-xs text-slate-500">Hoặc tải file <span className="text-orange-400">.csv / .xlsx</span> lên (cột <code className="bg-white/5 px-1 rounded">sample_sentence</code> bắt buộc)</p>
+              <UploadCloud className="h-5 w-5 text-gray-400 shrink-0" />
+              <p className="text-xs text-gray-500">Hoặc tải file <span className="text-orange-500">.csv / .xlsx</span> lên (cột <code className="bg-gray-100 px-1 rounded">sample_sentence</code> bắt buộc)</p>
               <input
                 ref={fileInputRef} type="file"
                 accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -349,13 +349,13 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
 
             {/* Show sentence count preview */}
             {rawText.trim() && (
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-gray-500">
                 {rawText.split('\n').filter(s => s.trim()).length} câu được phát hiện
               </p>
             )}
 
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-slate-400 hover:text-white">Hủy</Button>
+              <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-gray-500 hover:text-gray-900">Hủy</Button>
               <Button
                 onClick={startFill}
                 disabled={!rawText.trim() || step === 'filling'}
@@ -372,10 +372,10 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
             {step === 'filling' && cards.length > 0 && (
               <div className="space-y-2 mt-2">
                 {cards.map((c) => (
-                  <div key={c.id} className="flex items-center gap-3 rounded-lg bg-white/5 px-4 py-2.5">
+                  <div key={c.id} className="flex items-center gap-3 rounded-lg bg-gray-50 border border-gray-100 px-4 py-2.5">
                     <StatusDot status={c.status} />
-                    <span className="text-sm text-slate-300 truncate">{c.sample_sentence}</span>
-                    {c.status === 'error' && <span className="ml-auto text-xs text-red-400">Lỗi</span>}
+                    <span className="text-sm text-gray-600 truncate">{c.sample_sentence}</span>
+                    {c.status === 'error' && <span className="ml-auto text-xs text-red-500">Lỗi</span>}
                   </div>
                 ))}
               </div>
@@ -400,8 +400,8 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
                   />
                 ))}
               </div>
-              <span className="text-sm text-slate-400">
-                {cursor + 1} / {cards.length} • <span className="text-orange-400">{selectedCount} đã chọn</span>
+              <span className="text-sm text-gray-500">
+                {cursor + 1} / {cards.length} • <span className="text-orange-600">{selectedCount} đã chọn</span>
               </span>
             </div>
 
@@ -418,7 +418,7 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
                 variant="outline"
                 disabled={cursor === 0}
                 onClick={() => setCursor(c => c - 1)}
-                className="border-white/10 text-slate-300 hover:text-white hover:bg-white/5"
+                className="border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               >
                 <ChevronLeft className="mr-1 h-4 w-4" /> Câu trước
               </Button>
@@ -436,7 +436,7 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
                 <Button
                   variant="outline"
                   onClick={() => setCursor(c => c + 1)}
-                  className="border-white/10 text-slate-300 hover:text-white hover:bg-white/5"
+                  className="border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                 >
                   Câu tiếp <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>

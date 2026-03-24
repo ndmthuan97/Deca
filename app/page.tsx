@@ -163,12 +163,12 @@ export default function HomePage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
       <Sidebar />
 
       <main className="flex flex-col flex-1 overflow-hidden">
         {/* ── Header ── */}
-        <div className="shrink-0 border-b border-gray-200 bg-white pl-16 pr-4 py-3 md:px-8 md:py-5">
+        <div className="shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 pl-16 pr-4 py-3 md:px-8 md:py-5">
           <h1 className="text-lg md:text-xl font-bold text-gray-900">Quản lý chủ đề</h1>
           <p className="mt-0.5 text-xs md:text-sm text-gray-500 hidden sm:block">
             Tạo và quản lý các chủ đề học tiếng Anh
@@ -315,7 +315,7 @@ export default function HomePage() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50/60">
+                  <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-900">
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400 w-12">Icon</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Tên chủ đề</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Mô tả</th>

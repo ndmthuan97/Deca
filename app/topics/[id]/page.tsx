@@ -51,19 +51,19 @@ function parseTypes(type: string | null): string[] {
 }
 
 const TYPE_STYLE: Record<string, string> = {
-  Asking: 'bg-blue-50 text-blue-600 border-blue-100',
-  Responding: 'bg-green-50 text-green-600 border-green-100',
-  Greeting: 'bg-purple-50 text-purple-600 border-purple-100',
-  Expressing: 'bg-amber-50 text-amber-600 border-amber-100',
-  Inviting: 'bg-rose-50 text-rose-600 border-rose-100',
-  Instructing: 'bg-teal-50 text-teal-600 border-teal-100',
-  Requesting: 'bg-sky-50 text-sky-600 border-sky-100',
-  Directing: 'bg-indigo-50 text-indigo-600 border-indigo-100',
-  Introducing: 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100',
+  Asking:      'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+  Responding:  'bg-green-50 text-green-600 border-green-100 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800',
+  Greeting:    'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
+  Expressing:  'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800',
+  Inviting:    'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800',
+  Instructing: 'bg-teal-50 text-teal-600 border-teal-100 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-800',
+  Requesting:  'bg-sky-50 text-sky-600 border-sky-100 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-800',
+  Directing:   'bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800',
+  Introducing: 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100 dark:bg-fuchsia-900/30 dark:text-fuchsia-300 dark:border-fuchsia-800',
 }
 
 function TypeBadge({ type }: { type: string }) {
-  const cls = TYPE_STYLE[type] ?? 'bg-gray-50 text-gray-500 border-gray-200'
+  const cls = TYPE_STYLE[type] ?? 'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
   return (
     <span className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[11px] font-medium whitespace-nowrap ${cls}`}>
       {type}
@@ -329,12 +329,12 @@ export default function TopicPage() {
 
   /* ════════════════════════════════ */
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
       <Sidebar />
 
       <main className="flex flex-col flex-1 overflow-hidden">
         {/* ── Header ── */}
-        <div className="shrink-0 border-b border-gray-200 bg-white pl-16 pr-4 py-3 md:px-8 md:py-4">
+        <div className="shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 pl-16 pr-4 py-3 md:px-8 md:py-4">
           {topicLoading ? (
             <Skeleton className="h-6 w-40 bg-gray-100" />
           ) : (
@@ -706,7 +706,7 @@ export default function TopicPage() {
             <table className="w-full text-sm">
               <colgroup><col className="w-[4%]" /><col className="w-[3%]" /><col className="w-[28%]" /><col className="w-[22%]" /><col className="w-[17%]" /><col className="w-[18%]" /><col className="w-[8%]" /></colgroup>
               <thead>
-                <tr className="border-b border-gray-100 bg-white">
+                <tr className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
                   <th className="py-3 w-10 text-center align-middle"><input type="checkbox" checked={allPageSel} onChange={toggleAllPage} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" /></th>
                   <th className="py-3 w-8" />
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Câu mẫu</th>

@@ -7,6 +7,10 @@
 
 ## 📝 Lịch sử cập nhật (Changelog)
 
+- **[24/03/2026 - 14:20] - DACE [FE] Thêm Light/Dark Theme Toggle**
+  - ✅ Đã làm: Cài `next-themes`, thêm `ThemeProvider` vào `providers.tsx`, tạo `ThemeToggle.tsx` (3 mode: Light/System/Dark), thêm toggle vào Sidebar (desktop hover panel + mobile drawer), thêm dark mode CSS overrides vào `globals.css`.
+  - 🚧 Bước tiếp theo: Kiểm tra UI trên dev server, tinh chỉnh nếu cần.
+
 - **[23/03/2026 - 21:15] - DACE [FE/BE] BulkAddModal: thêm nhiều câu với AI review**
   - ✅ Đã làm: Tạo `BulkAddModal.tsx` — 3 bước (input dạng text/file, AI fill concurrent, review từng thẻ có prev/next + deselect). Nút "Nhiều câu" thêm vào toolbar trang topic detail.
   - 🚧 Bước tiếp theo: Test thử tính năng trên dev server.
