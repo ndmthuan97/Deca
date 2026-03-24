@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Sidebar } from '@/components/layout/Sidebar'
 import {
-  Plus, Search, Loader2, Pencil, Trash2, ChevronLeft, ChevronRight,
-  BookOpen, Check, X
+  Plus, Search, Loader2, Pencil, Trash2, Eye, Check, X,
+  BookOpen, ChevronLeft, ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,15 +35,16 @@ export default function HomePage() {
   const [mobileNewName, setMobileNewName] = useState('')
   const [page, setPage] = useState(1)
 
-  // ── Inline create / edit state ──
+  // ── Inline create state ──
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('')
   const [previewIcon, setPreviewIcon] = useState('📚')
   const [iconLoading, setIconLoading] = useState(false)
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [editName, setEditName] = useState('')
-  const [editingDescId, setEditingDescId] = useState<number | null>(null)
-  const [editDesc, setEditDesc] = useState('')
+
+  // ── Update dialog state ──
+  const [updateDialogTopic, setUpdateDialogTopic] = useState<{ id: number; name: string; description: string } | null>(null)
+  const [updateName, setUpdateName] = useState('')
+  const [updateDesc, setUpdateDesc] = useState('')
 
   const { data: topics, isLoading } = useQuery({
     queryKey: ['topics'],
@@ -125,10 +126,7 @@ export default function HomePage() {
     onSuccess: (topic) => {
       queryClient.invalidateQueries({ queryKey: ['topics'] })
       toast.success(`Đã cập nhật "${topic.name}"`)
-      setEditingId(null)
-      setEditName('')
-      setEditingDescId(null)
-      setEditDesc('')
+      setUpdateDialogTopic(null)
     },
     onError: () => toast.error('Cập nhật thất bại'),
   })
@@ -151,14 +149,15 @@ export default function HomePage() {
     createMutation.mutate(name)
   }
 
-  const handleUpdate = () => {
-    const name = editName.trim()
-    if (!name || editingId === null) return
-    updateMutation.mutate({ id: editingId, name })
+  const handleOpenUpdate = (topic: { id: number; name: string; description?: string | null }) => {
+    setUpdateDialogTopic({ id: topic.id, name: topic.name, description: topic.description ?? '' })
+    setUpdateName(topic.name)
+    setUpdateDesc(topic.description ?? '')
   }
 
-  const handleUpdateDesc = (id: number) => {
-    updateMutation.mutate({ id, description: editDesc.trim() })
+  const handleUpdate = () => {
+    if (!updateDialogTopic || !updateName.trim()) return
+    updateMutation.mutate({ id: updateDialogTopic.id, name: updateName.trim(), description: updateDesc.trim() })
   }
 
   const handleDelete = (id: number) => {
@@ -235,7 +234,7 @@ export default function HomePage() {
                   />
                 </div>
                 <Button
-                  onClick={() => { setCreating(true); setEditingId(null) }}
+                  onClick={() => setCreating(true)}
                   className="bg-orange-600 text-white hover:bg-orange-700 h-8 shadow-sm"
                 >
                   <Plus className="mr-1.5 h-4 w-4" />
@@ -311,7 +310,7 @@ export default function HomePage() {
                         <p className="text-xs text-gray-400 dark:text-gray-500">{topic.phrase_count ?? 0} câu</p>
                       </div>
                       <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
-                        <button onClick={() => { setEditingId(topic.id); setEditName(topic.name) }}
+                        <button onClick={() => handleOpenUpdate(topic)}
                           className="rounded-lg p-1.5 text-gray-300 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300">
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
@@ -368,80 +367,58 @@ export default function HomePage() {
                       </td>
                     </tr>
                   ) : (
-                    paginated.map((topic, idx) => {
-                      const isEditing = editingId === topic.id
-                      return (
+                    paginated.map((topic) => (
                         <tr
                           key={topic.id}
-                          className="group border-b border-gray-100 transition-colors hover:bg-gray-50 cursor-pointer"
-                          onClick={() => { if (!isEditing) router.push(`/topics/${topic.id}`) }}
+                          className="group border-b border-gray-100 dark:border-gray-800 transition-colors hover:bg-gray-50 dark:hover:bg-gray-900/50 cursor-pointer"
+                          onClick={() => router.push(`/topics/${topic.id}`)}
                         >
-                          <td className="px-4 py-3.5 text-xl" onClick={e => { e.stopPropagation(); setEditingId(topic.id); setEditName(topic.name) }}>
-                            <span className="cursor-pointer hover:scale-110 inline-block transition-transform" title="Bấm để sửa">{topic.icon ?? '📚'}</span>
+                          <td className="px-4 py-3.5 text-xl">
+                            <span>{topic.icon ?? '📚'}</span>
                           </td>
                           <td className="px-4 py-3.5">
-                            {isEditing ? (
-                              <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                                <input autoFocus value={editName} onChange={e => setEditName(e.target.value)}
-                                  onKeyDown={e => { if (e.key === 'Enter') handleUpdate(); if (e.key === 'Escape') { setEditingId(null); setEditName('') } }}
-                                  className="flex-1 rounded-lg border border-orange-300 bg-white px-2.5 py-1 text-sm text-gray-700 outline-none focus:ring-1 focus:ring-orange-400"
-                                />
-                                <button onClick={handleUpdate} disabled={updateMutation.isPending} className="rounded p-1 text-green-600 hover:bg-green-50">
-                                  {updateMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-                                </button>
-                                <button onClick={() => { setEditingId(null); setEditName('') }} className="rounded p-1 text-gray-400 hover:bg-gray-100">
-                                  <X className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
-                            ) : (
-                              <p className="font-semibold text-gray-900 group-hover:text-orange-700 transition-colors">{topic.name}</p>
-                            )}
+                            <p className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-orange-600 transition-colors">{topic.name}</p>
                           </td>
-                          <td className="px-4 py-3.5" onClick={e => e.stopPropagation()}>
-                            {editingDescId === topic.id ? (
-                              <div className="flex items-center gap-1.5">
-                                <input autoFocus value={editDesc} onChange={e => setEditDesc(e.target.value)}
-                                  onKeyDown={e => { if (e.key === 'Enter') handleUpdateDesc(topic.id); if (e.key === 'Escape') { setEditingDescId(null); setEditDesc('') } }}
-                                  placeholder="Nhập mô tả..."
-                                  className="flex-1 w-full rounded-lg border border-orange-300 bg-white px-2.5 py-1 text-sm text-gray-700 outline-none focus:ring-1 focus:ring-orange-400"
-                                />
-                                <button onClick={() => handleUpdateDesc(topic.id)} disabled={updateMutation.isPending} className="rounded p-1 text-green-600 hover:bg-green-50 shrink-0">
-                                  {updateMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-                                </button>
-                                <button onClick={() => { setEditingDescId(null); setEditDesc('') }} className="rounded p-1 text-gray-400 hover:bg-gray-100 shrink-0">
-                                  <X className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
-                            ) : (
-                              <p className="text-gray-500 truncate max-w-[300px]">
-                                {topic.description ?? <span className="italic text-gray-300">Chưa có mô tả</span>}
-                              </p>
-                            )}
+                          <td className="px-4 py-3.5">
+                            <p className="text-gray-500 dark:text-gray-400 text-sm truncate max-w-[300px]">
+                              {topic.description ?? <span className="italic text-gray-300 dark:text-gray-600">Chưa có mô tả</span>}
+                            </p>
                           </td>
                           <td className="px-4 py-3.5 text-center">
-                            <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                            <span className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
                               {topic.phrase_count ?? 0}
                             </span>
                           </td>
                           <td className="px-6 py-3.5" onClick={e => e.stopPropagation()}>
                             <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button onClick={() => { setEditingId(topic.id); setEditName(topic.name) }}
-                                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors" title="Sửa tên">
+                              <button
+                                onClick={() => router.push(`/topics/${topic.id}`)}
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 transition-colors"
+                                title="Xem chi tiết"
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleOpenUpdate(topic)}
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300 transition-colors"
+                                title="Chỉnh sửa"
+                              >
                                 <Pencil className="h-3.5 w-3.5" />
                               </button>
-                              <button onClick={() => { setEditingDescId(topic.id); setEditDesc(topic.description ?? '') }}
-                                className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors" title="Sửa mô tả">
-                                <BookOpen className="h-3.5 w-3.5" />
-                              </button>
-                              <button onClick={() => handleDelete(topic.id)}
-                                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors" title="Xóa">
-                                <Trash2 className="h-3.5 w-3.5" />
+                              <button
+                                onClick={() => handleDelete(topic.id)}
+                                disabled={deleteMutation.isPending}
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950 dark:hover:text-red-400 transition-colors disabled:opacity-40"
+                                title="Xóa"
+                              >
+                                {deleteMutation.isPending
+                                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  : <Trash2 className="h-3.5 w-3.5" />}
                               </button>
                             </div>
                           </td>
                         </tr>
-                      )
-                    })
+                    ))
                   )}
                 </tbody>
               </table>
@@ -485,6 +462,55 @@ export default function HomePage() {
           </div>
         </div>
       </main>
+
+      {/* ── Dialog cập nhật chủ đề ── */}
+      <Dialog open={!!updateDialogTopic} onOpenChange={open => { if (!open) setUpdateDialogTopic(null) }}>
+        <DialogContent className="sm:max-w-sm bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <Pencil className="h-4 w-4 text-orange-500" />
+              Chỉnh sửa chủ đề
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-1">
+            <div>
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">Tên chủ đề</label>
+              <Input
+                autoFocus
+                value={updateName}
+                onChange={e => setUpdateName(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleUpdate() }}
+                className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-orange-400"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">Mô tả (tuỳ chọn)</label>
+              <Input
+                value={updateDesc}
+                onChange={e => setUpdateDesc(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleUpdate() }}
+                placeholder="Mô tả ngắn về chủ đề..."
+                className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:border-orange-400"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setUpdateDialogTopic(null)}
+                className="border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300">
+                Hủy
+              </Button>
+              <Button
+                onClick={handleUpdate}
+                disabled={!updateName.trim() || updateMutation.isPending}
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                {updateMutation.isPending
+                  ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Đang lưu...</>
+                  : <><Check className="mr-1.5 h-3.5 w-3.5" /> Lưu thay đổi</>}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Dialog tạo chủ đề (mobile) ── */}
       <Dialog open={mobileCreateOpen} onOpenChange={open => { setMobileCreateOpen(open); if (!open) setMobileNewName('') }}>

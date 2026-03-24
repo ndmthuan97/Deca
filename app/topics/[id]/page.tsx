@@ -51,14 +51,14 @@ function parseTypes(type: string | null): string[] {
 }
 
 const TYPE_STYLE: Record<string, string> = {
-  Asking:      'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
-  Responding:  'bg-green-50 text-green-600 border-green-100 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800',
-  Greeting:    'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
-  Expressing:  'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800',
-  Inviting:    'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800',
+  Asking: 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+  Responding: 'bg-green-50 text-green-600 border-green-100 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800',
+  Greeting: 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
+  Expressing: 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800',
+  Inviting: 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800',
   Instructing: 'bg-teal-50 text-teal-600 border-teal-100 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-800',
-  Requesting:  'bg-sky-50 text-sky-600 border-sky-100 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-800',
-  Directing:   'bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800',
+  Requesting: 'bg-sky-50 text-sky-600 border-sky-100 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-800',
+  Directing: 'bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800',
   Introducing: 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100 dark:bg-fuchsia-900/30 dark:text-fuchsia-300 dark:border-fuchsia-800',
 }
 
@@ -715,124 +715,124 @@ export default function TopicPage() {
 
           {/* ── Desktop: Table + Pagination ── */}
           <div className={layoutMode === 'list' ? '' : 'hidden'}>
-          <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hidden md:block">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <colgroup><col className="w-[4%]" /><col className="w-[3%]" /><col className="w-[28%]" /><col className="w-[22%]" /><col className="w-[17%]" /><col className="w-[18%]" /><col className="w-[8%]" /></colgroup>
-              <thead>
-                <tr className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
-                  <th className="py-3 w-10 text-center align-middle"><input type="checkbox" checked={allPageSel} onChange={toggleAllPage} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" /></th>
-                  <th className="py-3 w-8" />
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Câu mẫu</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Dịch nghĩa</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Phiên âm</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Loại</th>
-                  <th className="px-6 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-gray-400">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {phrasesLoading ? (
-                  [...Array(5)].map((_, i) => (
-                    <tr key={i} className="border-b border-gray-100">
-                      {[...Array(6)].map((_, j) => (
-                        <td key={j} className="px-4 py-3"><Skeleton className="h-4 w-full bg-gray-100" /></td>
-                      ))}
+            <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hidden md:block">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <colgroup><col className="w-[4%]" /><col className="w-[3%]" /><col className="w-[28%]" /><col className="w-[22%]" /><col className="w-[17%]" /><col className="w-[18%]" /><col className="w-[8%]" /></colgroup>
+                  <thead>
+                    <tr className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+                      <th className="py-3 w-10 text-center align-middle"><input type="checkbox" checked={allPageSel} onChange={toggleAllPage} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" /></th>
+                      <th className="py-3 w-8" />
+                      <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Câu mẫu</th>
+                      <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Dịch nghĩa</th>
+                      <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Phiên âm</th>
+                      <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Loại</th>
+                      <th className="px-6 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-gray-400">Thao tác</th>
                     </tr>
-                  ))
-                ) : paginated.length === 0 ? (
-                  <tr><td colSpan={6}>
-                    <div className="flex flex-col items-center justify-center py-20 text-center">
-                      <div className="mb-4 rounded-full bg-gray-100 p-5"><BookOpen className="h-8 w-8 text-gray-300" /></div>
-                      <p className="text-sm font-medium text-gray-400">
-                        {search ? `Không tìm thấy kết quả cho "${search}"` : 'Chưa có câu nào — thêm câu đầu tiên!'}
-                      </p>
-                      {!search && (<Button onClick={() => setBulkAddOpen(true)} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white"><Sparkles className="mr-1.5 h-3.5 w-3.5" /> Thêm câu</Button>)}
-                    </div>
-                  </td></tr>
-                ) : (
-                  paginated.map(phrase => {
-                    const isOpen = expanded.has(phrase.id)
-                    const isSel = selected.has(phrase.id)
-                    const hasExamples = phrase.example1 || phrase.example2
-                    return (
-                      <React.Fragment key={phrase.id}>
-                        <tr className={cn(
-                          'group border-b border-gray-100 transition-colors even:bg-gray-50/70',
-                          isSel ? 'bg-orange-50/60 even:bg-orange-50/60' : isOpen ? 'bg-orange-50/30 even:bg-orange-50/30' : 'hover:bg-gray-100/60'
-                        )}>
-                          <td className="w-10 text-center" onClick={e => e.stopPropagation()}>
-                            <input type="checkbox" checked={isSel} onChange={() => toggleOne(phrase.id)} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" />
-                          </td>
-                          <td className="w-8 pl-1 cursor-pointer" onClick={() => hasExamples && toggleExpand(phrase.id)}>
-                            {hasExamples && (
-                              <span className="text-gray-300 group-hover:text-gray-500 transition-colors">
-                                {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRightIcon className="h-3.5 w-3.5" />}
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <button onClick={e => { e.stopPropagation(); speak(phrase.sample_sentence) }} className="shrink-0 text-gray-300 hover:text-blue-500 transition-colors"><Volume2 className="h-3.5 w-3.5" /></button>
-                              <p className="font-semibold text-gray-900 truncate">{phrase.sample_sentence}</p>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3"><p className="text-gray-500 text-sm truncate">{phrase.translation ?? '—'}</p></td>
-                          <td className="px-4 py-3"><span className="font-mono text-xs text-orange-500 block truncate">{phrase.pronunciation ?? '—'}</span></td>
-                          <td className="px-4 py-3"><TypeBadges type={phrase.type} /></td>
-                          <td className="px-6 py-3" onClick={e => e.stopPropagation()}>
-                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button onClick={() => setViewPhrase(phrase)} className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors" title="Xem chi tiết"><Eye className="h-3.5 w-3.5" /></button>
-                              <button onClick={() => openEdit(phrase)} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors" title="Chỉnh sửa"><Pencil className="h-3.5 w-3.5" /></button>
-                              <button
-                                onClick={() => { if (confirm('Xóa câu này?')) deleteMutation.mutate(phrase.id) }}
-                                disabled={deleteMutation.isPending}
-                                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-40"
-                                title="Xóa"
-                              >
-                                {deleteMutation.isPending
-                                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                  : <Trash2 className="h-3.5 w-3.5" />}
-                              </button>
-                            </div>
-                          </td>
+                  </thead>
+                  <tbody>
+                    {phrasesLoading ? (
+                      [...Array(5)].map((_, i) => (
+                        <tr key={i} className="border-b border-gray-100">
+                          {[...Array(6)].map((_, j) => (
+                            <td key={j} className="px-4 py-3"><Skeleton className="h-4 w-full bg-gray-100" /></td>
+                          ))}
                         </tr>
-                        {isOpen && (
-                          <>
-                            {[
-                              { ex: phrase.example1, tr: phrase.example1_translation, n: 1 },
-                              { ex: phrase.example2, tr: phrase.example2_translation, n: 2 },
-                            ].filter(e => e.ex).map(e => (
-                              <tr key={`ex-${phrase.id}-${e.n}`} className="border-b border-gray-50 bg-orange-50/20">
-                                <td className="w-10 pl-5" />
-                                <td className="w-8 pl-2"><div className="flex items-center gap-1"><div className="w-3 h-px bg-gray-200" /><span className="text-[10px] font-semibold text-gray-300">VD{e.n}</span></div></td>
-                                <td className="px-4 py-2"><div className="flex items-center gap-1.5 min-w-0"><button onClick={ev => { ev.stopPropagation(); speak(e.ex!) }} className="shrink-0 text-gray-300 hover:text-blue-500 transition-colors"><Volume2 className="h-3 w-3" /></button><p className="text-gray-600 text-xs italic truncate">{e.ex}</p></div></td>
-                                <td className="px-4 py-2"><p className="text-gray-400 text-xs truncate">{e.tr}</p></td>
-                                <td className="px-4 py-2" /><td className="px-4 py-2" />
-                              </tr>
-                            ))}
-                          </>
-                        )}
-                      </React.Fragment>
-                    )
-                  })
+                      ))
+                    ) : paginated.length === 0 ? (
+                      <tr><td colSpan={6}>
+                        <div className="flex flex-col items-center justify-center py-20 text-center">
+                          <div className="mb-4 rounded-full bg-gray-100 p-5"><BookOpen className="h-8 w-8 text-gray-300" /></div>
+                          <p className="text-sm font-medium text-gray-400">
+                            {search ? `Không tìm thấy kết quả cho "${search}"` : 'Chưa có câu nào — thêm câu đầu tiên!'}
+                          </p>
+                          {!search && (<Button onClick={() => setBulkAddOpen(true)} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white"><Sparkles className="mr-1.5 h-3.5 w-3.5" /> Thêm câu</Button>)}
+                        </div>
+                      </td></tr>
+                    ) : (
+                      paginated.map(phrase => {
+                        const isOpen = expanded.has(phrase.id)
+                        const isSel = selected.has(phrase.id)
+                        const hasExamples = phrase.example1 || phrase.example2
+                        return (
+                          <React.Fragment key={phrase.id}>
+                            <tr className={cn(
+                              'group border-b border-gray-100 transition-colors even:bg-gray-50/70',
+                              isSel ? 'bg-orange-50/60 even:bg-orange-50/60' : isOpen ? 'bg-orange-50/30 even:bg-orange-50/30' : 'hover:bg-gray-100/60'
+                            )}>
+                              <td className="w-10 text-center" onClick={e => e.stopPropagation()}>
+                                <input type="checkbox" checked={isSel} onChange={() => toggleOne(phrase.id)} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" />
+                              </td>
+                              <td className="w-8 pl-1 cursor-pointer" onClick={() => hasExamples && toggleExpand(phrase.id)}>
+                                {hasExamples && (
+                                  <span className="text-gray-300 group-hover:text-gray-500 transition-colors">
+                                    {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRightIcon className="h-3.5 w-3.5" />}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <button onClick={e => { e.stopPropagation(); speak(phrase.sample_sentence) }} className="shrink-0 text-gray-300 hover:text-blue-500 transition-colors"><Volume2 className="h-3.5 w-3.5" /></button>
+                                  <p className="font-semibold text-gray-900 truncate">{phrase.sample_sentence}</p>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3"><p className="text-gray-500 text-sm truncate">{phrase.translation ?? '—'}</p></td>
+                              <td className="px-4 py-3"><span className="font-mono text-xs text-orange-500 block truncate">{phrase.pronunciation ?? '—'}</span></td>
+                              <td className="px-4 py-3"><TypeBadges type={phrase.type} /></td>
+                              <td className="px-6 py-3" onClick={e => e.stopPropagation()}>
+                                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button onClick={() => setViewPhrase(phrase)} className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors" title="Xem chi tiết"><Eye className="h-3.5 w-3.5" /></button>
+                                  <button onClick={() => openEdit(phrase)} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors" title="Chỉnh sửa"><Pencil className="h-3.5 w-3.5" /></button>
+                                  <button
+                                    onClick={() => { if (confirm('Xóa câu này?')) deleteMutation.mutate(phrase.id) }}
+                                    disabled={deleteMutation.isPending}
+                                    className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-40"
+                                    title="Xóa"
+                                  >
+                                    {deleteMutation.isPending
+                                      ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                      : <Trash2 className="h-3.5 w-3.5" />}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                            {isOpen && (
+                              <>
+                                {[
+                                  { ex: phrase.example1, tr: phrase.example1_translation, n: 1 },
+                                  { ex: phrase.example2, tr: phrase.example2_translation, n: 2 },
+                                ].filter(e => e.ex).map(e => (
+                                  <tr key={`ex-${phrase.id}-${e.n}`} className="border-b border-gray-50 bg-orange-50/20">
+                                    <td className="w-10 pl-5" />
+                                    <td className="w-8 pl-2"><div className="flex items-center gap-1"><div className="w-3 h-px bg-gray-200" /><span className="text-[10px] font-semibold text-gray-300">VD{e.n}</span></div></td>
+                                    <td className="px-4 py-2"><div className="flex items-center gap-1.5 min-w-0"><button onClick={ev => { ev.stopPropagation(); speak(e.ex!) }} className="shrink-0 text-gray-300 hover:text-blue-500 transition-colors"><Volume2 className="h-3 w-3" /></button><p className="text-gray-600 text-xs italic truncate">{e.ex}</p></div></td>
+                                    <td className="px-4 py-2"><p className="text-gray-400 text-xs truncate">{e.tr}</p></td>
+                                    <td className="px-4 py-2" /><td className="px-4 py-2" />
+                                  </tr>
+                                ))}
+                              </>
+                            )}
+                          </React.Fragment>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
+                {/* Desktop pagination */}
+                {!phrasesLoading && totalPages > 1 && (
+                  <div className="flex items-center justify-between border-t border-gray-100 px-6 py-3">
+                    <p className="text-xs text-gray-400">Hiển thị {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} / {filtered.length} câu</p>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLeft className="h-4 w-4" /></button>
+                      {[...Array(totalPages)].map((_, i) => (
+                        <button key={i} onClick={() => setPage(i + 1)} className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs font-medium transition-colors ${currentPage === i + 1 ? 'bg-orange-600 text-white' : 'text-gray-500 hover:bg-gray-100'}`}>{i + 1}</button>
+                      ))}
+                      <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronRight className="h-4 w-4" /></button>
+                    </div>
+                  </div>
                 )}
-              </tbody>
-            </table>
-            {/* Desktop pagination */}
-            {!phrasesLoading && totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-gray-100 px-6 py-3">
-                <p className="text-xs text-gray-400">Hiển thị {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} / {filtered.length} câu</p>
-                <div className="flex items-center gap-1">
-                  <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLeft className="h-4 w-4" /></button>
-                  {[...Array(totalPages)].map((_, i) => (
-                    <button key={i} onClick={() => setPage(i + 1)} className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs font-medium transition-colors ${currentPage === i + 1 ? 'bg-orange-600 text-white' : 'text-gray-500 hover:bg-gray-100'}`}>{i + 1}</button>
-                  ))}
-                  <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronRight className="h-4 w-4" /></button>
-                </div>
-              </div>
-            )}
-          </div>{/* end overflow-x-auto */}
-          </div>{/* end desktop table container */}
+              </div>{/* end overflow-x-auto */}
+            </div>{/* end desktop table container */}
           </div>{/* end list mode wrapper */}
         </div>{/* end flex-1 scroll area */}
       </main>
