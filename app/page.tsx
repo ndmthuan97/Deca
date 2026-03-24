@@ -212,7 +212,7 @@ export default function HomePage() {
             </button>
           </div>
 
-          <div>
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden shadow-sm">
             {/* Toolbar – desktop only */}
             <div className="hidden md:flex items-center justify-between gap-3 px-6 py-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
