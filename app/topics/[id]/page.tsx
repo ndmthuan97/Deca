@@ -201,15 +201,18 @@ export default function TopicPage() {
   const [selected,    setSelected]    = useState<Set<number>>(new Set())
   const [typeFilter,  setTypeFilter]  = useState<Set<string>>(new Set())
   const [filterOpen,  setFilterOpen]  = useState(false)
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
   const [showAllMobile, setShowAllMobile] = useState(false)
   const MOBILE_INITIAL = 10
   const [activeCardMenu, setActiveCardMenu] = useState<number | null>(null)
   const filterRef = useRef<HTMLDivElement>(null)
+  const mobileFilterRef = useRef<HTMLDivElement>(null)
 
-  /* close dropdown on outside click */
+  /* close dropdowns on outside click */
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (filterRef.current && !filterRef.current.contains(e.target as Node)) setFilterOpen(false)
+      if (mobileFilterRef.current && !mobileFilterRef.current.contains(e.target as Node)) setMobileFilterOpen(false)
       setActiveCardMenu(null)
     }
     document.addEventListener('mousedown', handler)
@@ -359,9 +362,9 @@ export default function TopicPage() {
             </div>
             {/* Mobile filter button */}
             {availableTypes.length > 0 && (
-              <div ref={filterRef} className="relative">
+              <div ref={mobileFilterRef} className="relative">
                 <button
-                  onClick={() => setFilterOpen(o => !o)}
+                  onClick={() => setMobileFilterOpen(o => !o)}
                   className={cn(
                     'flex h-9 w-9 items-center justify-center rounded-lg border shadow-sm transition-colors',
                     typeFilter.size > 0
@@ -376,7 +379,7 @@ export default function TopicPage() {
                     </span>
                   )}
                 </button>
-                {filterOpen && (
+                {mobileFilterOpen && (
                   <div className="absolute right-0 top-11 z-50 min-w-[190px] rounded-xl border border-gray-200 bg-white p-2 shadow-xl">
                     <div className="flex items-center justify-between px-2 pb-1.5 mb-1 border-b border-gray-100">
                       <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Loại câu</span>
