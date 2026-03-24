@@ -717,7 +717,7 @@ export default function TopicPage() {
           <div className={layoutMode === 'list' ? '' : 'hidden'}>
             <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hidden md:block">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm table-fixed">
                   <colgroup><col className="w-[4%]" /><col className="w-[3%]" /><col className="w-[28%]" /><col className="w-[22%]" /><col className="w-[17%]" /><col className="w-[18%]" /><col className="w-[8%]" /></colgroup>
                   <thead>
                     <tr className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
@@ -770,14 +770,14 @@ export default function TopicPage() {
                                   </span>
                                 )}
                               </td>
-                              <td className="px-4 py-3">
+                              <td className="px-4 py-3 max-w-0 overflow-hidden">
                                 <div className="flex items-center gap-1.5 min-w-0">
                                   <button onClick={e => { e.stopPropagation(); speak(phrase.sample_sentence) }} className="shrink-0 text-gray-300 hover:text-blue-500 transition-colors"><Volume2 className="h-3.5 w-3.5" /></button>
                                   <p className="font-semibold text-gray-900 truncate">{phrase.sample_sentence}</p>
                                 </div>
                               </td>
-                              <td className="px-4 py-3"><p className="text-gray-500 text-sm truncate">{phrase.translation ?? '—'}</p></td>
-                              <td className="px-4 py-3"><span className="font-mono text-xs text-orange-500 block truncate">{phrase.pronunciation ?? '—'}</span></td>
+                              <td className="px-4 py-3 max-w-0 overflow-hidden"><p className="text-gray-500 text-sm truncate">{phrase.translation ?? '—'}</p></td>
+                              <td className="px-4 py-3 max-w-0 overflow-hidden"><span className="font-mono text-xs text-orange-500 block truncate">{phrase.pronunciation ?? '—'}</span></td>
                               <td className="px-4 py-3"><TypeBadges type={phrase.type} /></td>
                               <td className="px-6 py-3" onClick={e => e.stopPropagation()}>
                                 <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
