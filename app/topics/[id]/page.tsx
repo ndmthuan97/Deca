@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils'
 
 import type { Topic, Phrase } from '@/db/schema'
 
-const PAGE_SIZE        = 10  // desktop
+const PAGE_SIZE = 10  // desktop
 const PAGE_SIZE_MOBILE = 5   // mobile
 
 /* ── Utils ── */
@@ -50,15 +50,15 @@ function parseTypes(type: string | null): string[] {
 }
 
 const TYPE_STYLE: Record<string, string> = {
-  Asking:       'bg-blue-50 text-blue-600 border-blue-100',
-  Responding:   'bg-green-50 text-green-600 border-green-100',
-  Greeting:     'bg-purple-50 text-purple-600 border-purple-100',
-  Expressing:   'bg-amber-50 text-amber-600 border-amber-100',
-  Inviting:     'bg-rose-50 text-rose-600 border-rose-100',
-  Instructing:  'bg-teal-50 text-teal-600 border-teal-100',
-  Requesting:   'bg-sky-50 text-sky-600 border-sky-100',
-  Directing:    'bg-indigo-50 text-indigo-600 border-indigo-100',
-  Introducing:  'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100',
+  Asking: 'bg-blue-50 text-blue-600 border-blue-100',
+  Responding: 'bg-green-50 text-green-600 border-green-100',
+  Greeting: 'bg-purple-50 text-purple-600 border-purple-100',
+  Expressing: 'bg-amber-50 text-amber-600 border-amber-100',
+  Inviting: 'bg-rose-50 text-rose-600 border-rose-100',
+  Instructing: 'bg-teal-50 text-teal-600 border-teal-100',
+  Requesting: 'bg-sky-50 text-sky-600 border-sky-100',
+  Directing: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+  Introducing: 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100',
 }
 
 function TypeBadge({ type }: { type: string }) {
@@ -173,7 +173,7 @@ function PhraseViewDialog({ phrase, open, onClose }: { phrase: Phrase | null; op
                     </button>
                   </div>
                   <p className="text-sm text-gray-800 italic">{e.ex}</p>
-                  {e.tr  && <p className="text-xs text-gray-500">{e.tr}</p>}
+                  {e.tr && <p className="text-xs text-gray-500">{e.tr}</p>}
                   {e.ipa && <p className="font-mono text-xs text-orange-500">{e.ipa}</p>}
                 </div>
               ))}
@@ -187,20 +187,20 @@ function PhraseViewDialog({ phrase, open, onClose }: { phrase: Phrase | null; op
 
 /* ════════════════════════════════════════════════════════════ */
 export default function TopicPage() {
-  const params       = useParams<{ id: string }>()
-  const queryClient  = useQueryClient()
+  const params = useParams<{ id: string }>()
+  const queryClient = useQueryClient()
 
   /* ── UI state ── */
-  const [dialogOpen,  setDialogOpen]  = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
   const [bulkAddOpen, setBulkAddOpen] = useState(false)
-  const [editPhrase,  setEditPhrase]  = useState<Phrase | undefined>()
-  const [viewPhrase,  setViewPhrase]  = useState<Phrase | null>(null)
-  const [search,      setSearch]      = useState('')
-  const [page,        setPage]        = useState(1)
-  const [expanded,    setExpanded]    = useState<Set<number>>(new Set())
-  const [selected,    setSelected]    = useState<Set<number>>(new Set())
-  const [typeFilter,  setTypeFilter]  = useState<Set<string>>(new Set())
-  const [filterOpen,  setFilterOpen]  = useState(false)
+  const [editPhrase, setEditPhrase] = useState<Phrase | undefined>()
+  const [viewPhrase, setViewPhrase] = useState<Phrase | null>(null)
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [expanded, setExpanded] = useState<Set<number>>(new Set())
+  const [selected, setSelected] = useState<Set<number>>(new Set())
+  const [typeFilter, setTypeFilter] = useState<Set<string>>(new Set())
+  const [filterOpen, setFilterOpen] = useState(false)
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
   const [showAllMobile, setShowAllMobile] = useState(false)
   const MOBILE_INITIAL = 10
@@ -283,22 +283,22 @@ export default function TopicPage() {
         p.translation?.toLowerCase().includes(lo) ||
         p.type?.toLowerCase().includes(lo)
       const phraseTypes = parseTypes(p.type)
-      const matchType   = typeFilter.size === 0 || phraseTypes.some(t => typeFilter.has(t))
+      const matchType = typeFilter.size === 0 || phraseTypes.some(t => typeFilter.has(t))
       return matchSearch && matchType
     }) ?? [], [phrases, search, typeFilter])
 
-  const totalPages  = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
-  const paginated   = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   // Mobile: show first 10 or all
   const mobileVisible = showAllMobile ? filtered : filtered.slice(0, MOBILE_INITIAL)
   const hasMoreMobile = filtered.length > MOBILE_INITIAL && !showAllMobile
-  const pageIds     = paginated.map(p => p.id)
-  const allPageSel  = pageIds.length > 0 && pageIds.every(id => selected.has(id))
+  const pageIds = paginated.map(p => p.id)
+  const allPageSel = pageIds.length > 0 && pageIds.every(id => selected.has(id))
 
   /* ── Handlers ── */
-  const openAdd  = () => { setEditPhrase(undefined); setDialogOpen(true) }
+  const openAdd = () => { setEditPhrase(undefined); setDialogOpen(true) }
   const openEdit = (p: Phrase) => { setEditPhrase(p); setDialogOpen(true) }
 
   const handleSearchChange = (v: string) => { setSearch(v); setPage(1) }
@@ -456,7 +456,7 @@ export default function TopicPage() {
                     </button>
 
                     {filterOpen && (
-                      <div className="absolute left-0 bottom-10 z-50 min-w-[190px] rounded-xl border border-gray-200 bg-white p-2 shadow-xl">
+                      <div className="absolute left-0 top-full mt-1 z-50 min-w-[190px] rounded-xl border border-gray-200 bg-white p-2 shadow-xl">
                         <div className="flex items-center justify-between px-2 pb-1.5 mb-1 border-b border-gray-100">
                           <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Loại câu</span>
                           {typeFilter.size > 0 && (
@@ -466,7 +466,7 @@ export default function TopicPage() {
                           )}
                         </div>
                         {availableTypes.map(type => {
-                          const count   = phrases?.filter(p => parseTypes(p.type).includes(type)).length ?? 0
+                          const count = phrases?.filter(p => parseTypes(p.type).includes(type)).length ?? 0
                           const checked = typeFilter.has(type)
                           return (
                             <label key={type} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 cursor-pointer hover:bg-gray-50">
@@ -525,243 +525,240 @@ export default function TopicPage() {
                 </div>
               </div>
             )}
-          </div>
 
           {/* ── Mobile: card list ── */}
           <div className="md:hidden space-y-2">
-              {phrasesLoading ? (
-                [...Array(5)].map((_, i) => (
-                  <div key={i} className="rounded-xl border border-gray-200 bg-white p-4">
-                    <Skeleton className="h-5 w-3/4 bg-gray-100 mb-2" />
-                    <Skeleton className="h-4 w-1/2 bg-gray-100 mb-2" />
-                    <Skeleton className="h-3 w-1/3 bg-gray-100" />
-                  </div>
-                ))
-              ) : mobileVisible.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <div className="mb-4 rounded-full bg-gray-100 p-5">
-                    <BookOpen className="h-8 w-8 text-gray-300" />
-                  </div>
-                  <p className="text-sm font-medium text-gray-400">
-                    {search ? `Không tìm thấy kết quả cho "${search}"` : 'Chưa có câu nào — thêm câu đầu tiên!'}
-                  </p>
-                  {!search && (
-                    <Button onClick={openAdd} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white">
-                      <Plus className="mr-1.5 h-3.5 w-3.5" /> Thêm câu
-                    </Button>
-                  )}
+            {phrasesLoading ? (
+              [...Array(5)].map((_, i) => (
+                <div key={i} className="rounded-xl border border-gray-200 bg-white p-4">
+                  <Skeleton className="h-5 w-3/4 bg-gray-100 mb-2" />
+                  <Skeleton className="h-4 w-1/2 bg-gray-100 mb-2" />
+                  <Skeleton className="h-3 w-1/3 bg-gray-100" />
                 </div>
-              ) : (
-                <>
-                  {mobileVisible.map(phrase => {
-                    const hasExamples = phrase.example1 || phrase.example2
-                    const isOpen = expanded.has(phrase.id)
-                    return (
-                      <div key={phrase.id} className="group relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow transition-shadow">
-                        {/* Kebab – absolute top-right */}
-                        <div className="absolute top-3 right-3 shrink-0">
-                          <button
-                            onClick={e => { e.stopPropagation(); setActiveCardMenu(activeCardMenu === phrase.id ? null : phrase.id) }}
-                            className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
+              ))
+            ) : mobileVisible.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="mb-4 rounded-full bg-gray-100 p-5">
+                  <BookOpen className="h-8 w-8 text-gray-300" />
+                </div>
+                <p className="text-sm font-medium text-gray-400">
+                  {search ? `Không tìm thấy kết quả cho "${search}"` : 'Chưa có câu nào — thêm câu đầu tiên!'}
+                </p>
+                {!search && (
+                  <Button onClick={openAdd} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white">
+                    <Plus className="mr-1.5 h-3.5 w-3.5" /> Thêm câu
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <>
+                {mobileVisible.map(phrase => {
+                  const hasExamples = phrase.example1 || phrase.example2
+                  const isOpen = expanded.has(phrase.id)
+                  return (
+                    <div key={phrase.id} className="group relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow transition-shadow">
+                      {/* Kebab – absolute top-right */}
+                      <div className="absolute top-3 right-3 shrink-0">
+                        <button
+                          onClick={e => { e.stopPropagation(); setActiveCardMenu(activeCardMenu === phrase.id ? null : phrase.id) }}
+                          className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </button>
+                        {activeCardMenu === phrase.id && (
+                          <div
+                            className="absolute right-0 top-7 z-50 min-w-[130px] rounded-xl border border-gray-200 bg-white shadow-lg py-1"
+                            onClick={e => e.stopPropagation()}
                           >
-                            <MoreVertical className="h-4 w-4" />
-                          </button>
-                          {activeCardMenu === phrase.id && (
-                            <div
-                              className="absolute right-0 top-7 z-50 min-w-[130px] rounded-xl border border-gray-200 bg-white shadow-lg py-1"
-                              onClick={e => e.stopPropagation()}
+                            <button
+                              onClick={() => { openEdit(phrase); setActiveCardMenu(null) }}
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                             >
-                              <button
-                                onClick={() => { openEdit(phrase); setActiveCardMenu(null) }}
-                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                              >
-                                <Pencil className="h-3.5 w-3.5 text-gray-400" />
-                                Chỉnh sửa
-                              </button>
-                              <button
-                                onClick={() => { if (confirm('Xóa câu này?')) { deleteMutation.mutate(phrase.id); setActiveCardMenu(null) } }}
-                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                                Xóa
-                              </button>
-                            </div>
+                              <Pencil className="h-3.5 w-3.5 text-gray-400" />
+                              Chỉnh sửa
+                            </button>
+                            <button
+                              onClick={() => { if (confirm('Xóa câu này?')) { deleteMutation.mutate(phrase.id); setActiveCardMenu(null) } }}
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              Xóa
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex items-start gap-1.5 min-w-0 pr-8">
+                        <button
+                          onClick={() => speak(phrase.sample_sentence)}
+                          className="shrink-0 text-gray-300 hover:text-blue-500 transition-colors mt-0.5"
+                        >
+                          <Volume2 className="h-3.5 w-3.5" />
+                        </button>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 leading-snug">{phrase.sample_sentence}</p>
+                          <p className="text-sm text-gray-500 mt-0.5">{phrase.translation ?? '—'}</p>
+                          {phrase.pronunciation && (
+                            <p className="text-xs font-mono text-orange-500 mt-0.5">{phrase.pronunciation}</p>
                           )}
                         </div>
+                      </div>
 
-                        {/* Content */}
-                        <div className="flex items-start gap-1.5 min-w-0 pr-8">
+                      {/* Bottom row: Ví dụ (left) + TypeBadges (right) */}
+                      <div className="flex items-center justify-between mt-2">
+                        {hasExamples ? (
                           <button
-                            onClick={() => speak(phrase.sample_sentence)}
-                            className="shrink-0 text-gray-300 hover:text-blue-500 transition-colors mt-0.5"
+                            onClick={() => toggleExpand(phrase.id)}
+                            className="flex items-center gap-1 text-xs text-gray-400 hover:text-orange-500 transition-colors"
                           >
-                            <Volume2 className="h-3.5 w-3.5" />
+                            {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRightIcon className="h-3 w-3" />}
+                            Ví dụ
                           </button>
-                          <div className="min-w-0">
-                            <p className="font-semibold text-gray-900 leading-snug">{phrase.sample_sentence}</p>
-                            <p className="text-sm text-gray-500 mt-0.5">{phrase.translation ?? '—'}</p>
-                            {phrase.pronunciation && (
-                              <p className="text-xs font-mono text-orange-500 mt-0.5">{phrase.pronunciation}</p>
+                        ) : <div />}
+                        <TypeBadges type={phrase.type} />
+                      </div>
+
+                      {/* Examples expanded */}
+                      {isOpen && hasExamples && (
+                        <div className="mt-2 pt-2 border-t border-gray-100 space-y-1.5">
+                          {[
+                            { ex: phrase.example1, tr: phrase.example1_translation, n: 1 },
+                            { ex: phrase.example2, tr: phrase.example2_translation, n: 2 },
+                          ].filter(e => e.ex).map(e => (
+                            <div key={e.n} className="flex items-start gap-2 pl-2">
+                              <span className="text-[10px] font-bold text-gray-300 mt-0.5 shrink-0">VD{e.n}</span>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={() => speak(e.ex!)}
+                                    className="text-gray-300 hover:text-blue-500 transition-colors shrink-0"
+                                  >
+                                    <Volume2 className="h-3 w-3" />
+                                  </button>
+                                  <p className="text-xs text-gray-600 italic">{e.ex}</p>
+                                </div>
+                                {e.tr && <p className="text-xs text-gray-400 ml-4">{e.tr}</p>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+
+                {/* Load more */}
+                {hasMoreMobile && (
+                  <button
+                    onClick={() => setShowAllMobile(true)}
+                    className="w-full py-3 rounded-xl border border-dashed border-gray-200 text-sm font-medium text-orange-600 hover:bg-orange-50 hover:border-orange-200 transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                    Xem tất cả {filtered.length} câu
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* ── Desktop: Table + Pagination (inside same rounded container as toolbar) ── */}
+          <div className="overflow-x-auto hidden md:block">
+            <table className="w-full text-sm">
+              <colgroup><col className="w-[4%]" /><col className="w-[3%]" /><col className="w-[28%]" /><col className="w-[22%]" /><col className="w-[17%]" /><col className="w-[18%]" /><col className="w-[8%]" /></colgroup>
+              <thead>
+                <tr className="border-b border-gray-100 bg-white">
+                  <th className="py-3 w-10 text-center align-middle"><input type="checkbox" checked={allPageSel} onChange={toggleAllPage} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" /></th>
+                  <th className="py-3 w-8" />
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Câu mẫu</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Dịch nghĩa</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Phiên âm</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Loại</th>
+                  <th className="px-6 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-gray-400">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {phrasesLoading ? (
+                  [...Array(5)].map((_, i) => (
+                    <tr key={i} className="border-b border-gray-100">
+                      {[...Array(6)].map((_, j) => (
+                        <td key={j} className="px-4 py-3"><Skeleton className="h-4 w-full bg-gray-100" /></td>
+                      ))}
+                    </tr>
+                  ))
+                ) : paginated.length === 0 ? (
+                  <tr><td colSpan={6}>
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                      <div className="mb-4 rounded-full bg-gray-100 p-5"><BookOpen className="h-8 w-8 text-gray-300" /></div>
+                      <p className="text-sm font-medium text-gray-400">
+                        {search ? `Không tìm thấy kết quả cho "${search}"` : 'Chưa có câu nào — thêm câu đầu tiên!'}
+                      </p>
+                      {!search && (<Button onClick={openAdd} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white"><Plus className="mr-1.5 h-3.5 w-3.5" /> Thêm câu</Button>)}
+                    </div>
+                  </td></tr>
+                ) : (
+                  paginated.map(phrase => {
+                    const isOpen = expanded.has(phrase.id)
+                    const isSel = selected.has(phrase.id)
+                    const hasExamples = phrase.example1 || phrase.example2
+                    return (
+                      <React.Fragment key={phrase.id}>
+                        <tr className={cn(
+                          'group border-b border-gray-100 transition-colors even:bg-gray-50/70',
+                          isSel ? 'bg-orange-50/60 even:bg-orange-50/60' : isOpen ? 'bg-orange-50/30 even:bg-orange-50/30' : 'hover:bg-gray-100/60'
+                        )}>
+                          <td className="w-10 text-center" onClick={e => e.stopPropagation()}>
+                            <input type="checkbox" checked={isSel} onChange={() => toggleOne(phrase.id)} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" />
+                          </td>
+                          <td className="w-8 pl-1 cursor-pointer" onClick={() => hasExamples && toggleExpand(phrase.id)}>
+                            {hasExamples && (
+                              <span className="text-gray-300 group-hover:text-gray-500 transition-colors">
+                                {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRightIcon className="h-3.5 w-3.5" />}
+                              </span>
                             )}
-                          </div>
-                        </div>
-
-                        {/* Bottom row: Ví dụ (left) + TypeBadges (right) */}
-                        <div className="flex items-center justify-between mt-2">
-                          {hasExamples ? (
-                            <button
-                              onClick={() => toggleExpand(phrase.id)}
-                              className="flex items-center gap-1 text-xs text-gray-400 hover:text-orange-500 transition-colors"
-                            >
-                              {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRightIcon className="h-3 w-3" />}
-                              Ví dụ
-                            </button>
-                          ) : <div />}
-                          <TypeBadges type={phrase.type} />
-                        </div>
-
-                        {/* Examples expanded */}
-                        {isOpen && hasExamples && (
-                          <div className="mt-2 pt-2 border-t border-gray-100 space-y-1.5">
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <button onClick={e => { e.stopPropagation(); speak(phrase.sample_sentence) }} className="shrink-0 text-gray-300 hover:text-blue-500 transition-colors"><Volume2 className="h-3.5 w-3.5" /></button>
+                              <p className="font-semibold text-gray-900 truncate">{phrase.sample_sentence}</p>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3"><p className="text-gray-500 text-sm truncate">{phrase.translation ?? '—'}</p></td>
+                          <td className="px-4 py-3"><span className="font-mono text-xs text-orange-500 block truncate">{phrase.pronunciation ?? '—'}</span></td>
+                          <td className="px-4 py-3"><TypeBadges type={phrase.type} /></td>
+                          <td className="px-6 py-3" onClick={e => e.stopPropagation()}>
+                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button onClick={() => setViewPhrase(phrase)} className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors" title="Xem chi tiết"><Eye className="h-3.5 w-3.5" /></button>
+                              <button onClick={() => openEdit(phrase)} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors" title="Chỉnh sửa"><Pencil className="h-3.5 w-3.5" /></button>
+                              <button onClick={() => { if (confirm('Xóa câu này?')) deleteMutation.mutate(phrase.id) }} className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors" title="Xóa"><Trash2 className="h-3.5 w-3.5" /></button>
+                            </div>
+                          </td>
+                        </tr>
+                        {isOpen && (
+                          <>
                             {[
                               { ex: phrase.example1, tr: phrase.example1_translation, n: 1 },
                               { ex: phrase.example2, tr: phrase.example2_translation, n: 2 },
                             ].filter(e => e.ex).map(e => (
-                              <div key={e.n} className="flex items-start gap-2 pl-2">
-                                <span className="text-[10px] font-bold text-gray-300 mt-0.5 shrink-0">VD{e.n}</span>
-                                <div className="min-w-0">
-                                  <div className="flex items-center gap-1">
-                                    <button
-                                      onClick={() => speak(e.ex!)}
-                                      className="text-gray-300 hover:text-blue-500 transition-colors shrink-0"
-                                    >
-                                      <Volume2 className="h-3 w-3" />
-                                    </button>
-                                    <p className="text-xs text-gray-600 italic">{e.ex}</p>
-                                  </div>
-                                  {e.tr && <p className="text-xs text-gray-400 ml-4">{e.tr}</p>}
-                                </div>
-                              </div>
+                              <tr key={`ex-${phrase.id}-${e.n}`} className="border-b border-gray-50 bg-orange-50/20">
+                                <td className="w-10 pl-5" />
+                                <td className="w-8 pl-2"><div className="flex items-center gap-1"><div className="w-3 h-px bg-gray-200" /><span className="text-[10px] font-semibold text-gray-300">VD{e.n}</span></div></td>
+                                <td className="px-4 py-2"><div className="flex items-center gap-1.5 min-w-0"><button onClick={ev => { ev.stopPropagation(); speak(e.ex!) }} className="shrink-0 text-gray-300 hover:text-blue-500 transition-colors"><Volume2 className="h-3 w-3" /></button><p className="text-gray-600 text-xs italic truncate">{e.ex}</p></div></td>
+                                <td className="px-4 py-2"><p className="text-gray-400 text-xs truncate">{e.tr}</p></td>
+                                <td className="px-4 py-2" /><td className="px-4 py-2" />
+                              </tr>
                             ))}
-                          </div>
+                          </>
                         )}
-                      </div>
+                      </React.Fragment>
                     )
-                  })}
-
-                  {/* Load more */}
-                  {hasMoreMobile && (
-                    <button
-                      onClick={() => setShowAllMobile(true)}
-                      className="w-full py-3 rounded-xl border border-dashed border-gray-200 text-sm font-medium text-orange-600 hover:bg-orange-50 hover:border-orange-200 transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <ChevronDown className="h-4 w-4" />
-                      Xem tất cả {filtered.length} câu
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* ── Desktop: Table + Pagination ── */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-sm">
-                <colgroup><col className="w-[4%]" /><col className="w-[3%]" /><col className="w-[28%]" /><col className="w-[22%]" /><col className="w-[17%]" /><col className="w-[18%]" /><col className="w-[8%]" /></colgroup>
-                <thead>
-                  <tr className="border-b border-gray-100 bg-white">
-                    <th className="pl-5 py-3 w-10 align-middle"><input type="checkbox" checked={allPageSel} onChange={toggleAllPage} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" /></th>
-                    <th className="py-3 w-8" />
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Câu mẫu</th>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Dịch nghĩa</th>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Phiên âm</th>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Loại</th>
-                    <th className="px-6 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-gray-400">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {phrasesLoading ? (
-                    [...Array(5)].map((_, i) => (
-                      <tr key={i} className="border-b border-gray-100">
-                        {[...Array(6)].map((_, j) => (
-                          <td key={j} className="px-4 py-3"><Skeleton className="h-4 w-full bg-gray-100" /></td>
-                        ))}
-                      </tr>
-                    ))
-                  ) : paginated.length === 0 ? (
-                    <tr><td colSpan={6}>
-                      <div className="flex flex-col items-center justify-center py-20 text-center">
-                        <div className="mb-4 rounded-full bg-gray-100 p-5"><BookOpen className="h-8 w-8 text-gray-300" /></div>
-                        <p className="text-sm font-medium text-gray-400">
-                          {search ? `Không tìm thấy kết quả cho "${search}"` : 'Chưa có câu nào — thêm câu đầu tiên!'}
-                        </p>
-                        {!search && (<Button onClick={openAdd} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white"><Plus className="mr-1.5 h-3.5 w-3.5" /> Thêm câu</Button>)}
-                    </div>
-                    </td></tr>
-                  ) : (
-                    paginated.map(phrase => {
-                      const isOpen = expanded.has(phrase.id)
-                      const isSel  = selected.has(phrase.id)
-                      const hasExamples = phrase.example1 || phrase.example2
-                      return (
-                        <React.Fragment key={phrase.id}>
-                          <tr className={cn(
-                            'group border-b border-gray-100 transition-colors even:bg-gray-50/70',
-                            isSel ? 'bg-orange-50/60 even:bg-orange-50/60' : isOpen ? 'bg-orange-50/30 even:bg-orange-50/30' : 'hover:bg-gray-100/60'
-                          )}>
-                            <td className="pl-5 w-10" onClick={e => e.stopPropagation()}>
-                              <input type="checkbox" checked={isSel} onChange={() => toggleOne(phrase.id)} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" />
-                            </td>
-                            <td className="w-8 pl-1 cursor-pointer" onClick={() => hasExamples && toggleExpand(phrase.id)}>
-                              {hasExamples && (
-                                <span className="text-gray-300 group-hover:text-gray-500 transition-colors">
-                                  {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRightIcon className="h-3.5 w-3.5" />}
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-1.5 min-w-0">
-                                <button onClick={e => { e.stopPropagation(); speak(phrase.sample_sentence) }} className="shrink-0 text-gray-300 hover:text-blue-500 transition-colors"><Volume2 className="h-3.5 w-3.5" /></button>
-                                <p className="font-semibold text-gray-900 truncate">{phrase.sample_sentence}</p>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3"><p className="text-gray-500 text-sm truncate">{phrase.translation ?? '—'}</p></td>
-                            <td className="px-4 py-3"><span className="font-mono text-xs text-orange-500 block truncate">{phrase.pronunciation ?? '—'}</span></td>
-                            <td className="px-4 py-3"><TypeBadges type={phrase.type} /></td>
-                            <td className="px-6 py-3" onClick={e => e.stopPropagation()}>
-                              <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => setViewPhrase(phrase)} className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors" title="Xem chi tiết"><Eye className="h-3.5 w-3.5" /></button>
-                                <button onClick={() => openEdit(phrase)} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors" title="Chỉnh sửa"><Pencil className="h-3.5 w-3.5" /></button>
-                                <button onClick={() => { if (confirm('Xóa câu này?')) deleteMutation.mutate(phrase.id) }} className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors" title="Xóa"><Trash2 className="h-3.5 w-3.5" /></button>
-                              </div>
-                            </td>
-                          </tr>
-                          {isOpen && (
-                            <>
-                              {[
-                                { ex: phrase.example1, tr: phrase.example1_translation, n: 1 },
-                                { ex: phrase.example2, tr: phrase.example2_translation, n: 2 },
-                              ].filter(e => e.ex).map(e => (
-                                <tr key={`ex-${phrase.id}-${e.n}`} className="border-b border-gray-50 bg-orange-50/20">
-                                  <td className="w-10 pl-5" />
-                                  <td className="w-8 pl-2"><div className="flex items-center gap-1"><div className="w-3 h-px bg-gray-200" /><span className="text-[10px] font-semibold text-gray-300">VD{e.n}</span></div></td>
-                                  <td className="px-4 py-2"><div className="flex items-center gap-1.5 min-w-0"><button onClick={ev => { ev.stopPropagation(); speak(e.ex!) }} className="shrink-0 text-gray-300 hover:text-blue-500 transition-colors"><Volume2 className="h-3 w-3" /></button><p className="text-gray-600 text-xs italic truncate">{e.ex}</p></div></td>
-                                  <td className="px-4 py-2"><p className="text-gray-400 text-xs truncate">{e.tr}</p></td>
-                                  <td className="px-4 py-2" /><td className="px-4 py-2" />
-                                </tr>
-                              ))}
-                            </>
-                          )}
-                        </React.Fragment>
-                      )
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-
+                  })
+                )}
+              </tbody>
+            </table>
             {/* Desktop pagination */}
             {!phrasesLoading && totalPages > 1 && (
-              <div className="hidden md:flex items-center justify-between border-t border-gray-100 px-6 py-3">
+              <div className="flex items-center justify-between border-t border-gray-100 px-6 py-3">
                 <p className="text-xs text-gray-400">Hiển thị {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} / {filtered.length} câu</p>
                 <div className="flex items-center gap-1">
                   <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLeft className="h-4 w-4" /></button>
@@ -772,7 +769,9 @@ export default function TopicPage() {
                 </div>
               </div>
             )}
-        </div>
+          </div>{/* end table wrapper */}
+        </div>{/* end rounded-2xl container */}
+      </div>{/* end flex-1 scroll area */}
       </main>
 
       {/* Edit/Add Dialog */}

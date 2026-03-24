@@ -361,7 +361,9 @@ export default function HomePage() {
                           className="group border-b border-gray-100 transition-colors hover:bg-gray-50 cursor-pointer"
                           onClick={() => { if (!isEditing) router.push(`/topics/${topic.id}`) }}
                         >
-                          <td className="px-4 py-3.5 text-xl">{topic.icon ?? '📚'}</td>
+                          <td className="px-4 py-3.5 text-xl" onClick={e => { e.stopPropagation(); setEditingId(topic.id); setEditName(topic.name) }}>
+                            <span className="cursor-pointer hover:scale-110 inline-block transition-transform" title="Bấm để sửa">{topic.icon ?? '📚'}</span>
+                          </td>
                           <td className="px-4 py-3.5">
                             {isEditing ? (
                               <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
@@ -396,10 +398,7 @@ export default function HomePage() {
                                 </button>
                               </div>
                             ) : (
-                              <p className="text-gray-500 truncate max-w-[300px] cursor-text hover:text-orange-600 transition-colors"
-                                title="Click để sửa mô tả"
-                                onClick={() => { setEditingDescId(topic.id); setEditDesc(topic.description ?? '') }}
-                              >
+                              <p className="text-gray-500 truncate max-w-[300px]">
                                 {topic.description ?? <span className="italic text-gray-300">Chưa có mô tả</span>}
                               </p>
                             )}
@@ -414,6 +413,10 @@ export default function HomePage() {
                               <button onClick={() => { setEditingId(topic.id); setEditName(topic.name) }}
                                 className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors" title="Sửa tên">
                                 <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button onClick={() => { setEditingDescId(topic.id); setEditDesc(topic.description ?? '') }}
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors" title="Sửa mô tả">
+                                <BookOpen className="h-3.5 w-3.5" />
                               </button>
                               <button onClick={() => handleDelete(topic.id)}
                                 className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors" title="Xóa">
