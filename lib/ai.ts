@@ -33,7 +33,7 @@ Return ONLY a valid JSON object for this sentence: "${sampleSentence}"
   "example2_pronunciation": "American English IPA of example2"
 }`
 
-const MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct'
+const MODEL = 'llama-3.1-8b-instant'
 
 // Robust JSON extraction (handle markdown code blocks)
 function extractJson(text: string): string {

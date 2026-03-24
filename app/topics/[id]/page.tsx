@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { BulkAddModal } from '@/components/phrases/BulkAddModal'
 import { FlashcardView } from '@/components/phrases/FlashcardView'
 import {
-  BookOpen, Search, Pencil, Trash2, Volume2, Sparkles, Eye, Filter,
+  BookOpen, Search, Pencil, Trash2, Volume2, Sparkles, Eye, Filter, MoreVertical,
   ChevronLeft, ChevronRight, ChevronDown,
   List, GalleryHorizontal, Loader2,
 } from 'lucide-react'
@@ -663,7 +663,7 @@ export default function TopicPage() {
                             onClick={() => toggleExpand(phrase.id)}
                             className="flex items-center gap-1 text-xs text-gray-400 hover:text-orange-500 transition-colors"
                           >
-                            {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRightIcon className="h-3 w-3" />}
+                            {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                             Ví dụ
                           </button>
                         ) : <div />}
@@ -766,7 +766,7 @@ export default function TopicPage() {
                               <td className="w-8 pl-1 cursor-pointer" onClick={() => hasExamples && toggleExpand(phrase.id)}>
                                 {hasExamples && (
                                   <span className="text-gray-300 group-hover:text-gray-500 transition-colors">
-                                    {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRightIcon className="h-3.5 w-3.5" />}
+                                    {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                                   </span>
                                 )}
                               </td>
