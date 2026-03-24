@@ -1,4 +1,4 @@
-import Groq from 'groq-sdk'
+import OpenAI from 'openai'
 
 export interface GeneratedPhraseFields {
   type: string
@@ -33,10 +33,13 @@ Return ONLY a valid JSON object for this sentence: "${sampleSentence}"
   "example2_pronunciation": "American English IPA of example2"
 }`
 
-let groqClient: Groq | null = null
-function getClient(): Groq {
-  if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY chưa được cấu hình trong .env.local')
-  return (groqClient ??= new Groq({ apiKey: process.env.GROQ_API_KEY }))
+let xaiClient: OpenAI | null = null
+function getClient(): OpenAI {
+  if (!process.env.AI_API_KEY) throw new Error('AI_API_KEY chưa được cấu hình trong .env.local')
+  return (xaiClient ??= new OpenAI({
+    apiKey: process.env.AI_API_KEY,
+    baseURL: 'https://api.x.ai/v1',
+  }))
 }
 
 export async function generatePhraseFields(
@@ -46,7 +49,7 @@ export async function generatePhraseFields(
   const client = getClient()
 
   const completion = await client.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'grok-3-mini',
     messages: [{ role: 'user', content: PROMPT(sampleSentence, topicName) }],
     response_format: { type: 'json_object' },
     temperature: 0.3,
@@ -66,15 +69,14 @@ export async function generateTopicIcon(topicName: string): Promise<string> {
   const client = getClient()
 
   const completion = await client.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'grok-3-mini',
     messages: [{ role: 'user', content: ICON_PROMPT(topicName) }],
     temperature: 0.2,
   })
 
   const text = completion.choices[0]?.message?.content?.trim() ?? ''
-  // Try to extract just the first emoji if the model returned extra text
   const match = text.match(/\p{Emoji_Presentation}|\p{Emoji}\uFE0F/u)
-  return match ? match[0] : '📚' // Default to book if no emoji found
+  return match ? match[0] : '📚'
 }
 
 const DESCRIPTION_PROMPT = (topicName: string) =>
@@ -85,7 +87,7 @@ Return ONLY that sentence, nothing else. Example: "Cách chào hỏi và giới 
 export async function generateTopicDescription(topicName: string): Promise<string> {
   const client = getClient()
   const completion = await client.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'grok-3-mini',
     messages: [{ role: 'user', content: DESCRIPTION_PROMPT(topicName) }],
     temperature: 0.4,
   })
