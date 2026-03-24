@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { BulkAddModal } from '@/components/phrases/BulkAddModal'
 import {
-  Plus, BookOpen, Search, Pencil, Trash2, Volume2, Sparkles, Eye, Filter, MoreVertical,
+  BookOpen, Search, Pencil, Trash2, Volume2, Sparkles, Eye, Filter, MoreVertical,
   ChevronLeft, ChevronRight, ChevronDown, ChevronRight as ChevronRightIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -22,7 +22,6 @@ import { cn } from '@/lib/utils'
 import type { Topic, Phrase } from '@/db/schema'
 
 const PAGE_SIZE = 10  // desktop
-const PAGE_SIZE_MOBILE = 5   // mobile
 
 /* ── Utils ── */
 async function fetchTopic(id: string): Promise<Topic> {
@@ -298,7 +297,6 @@ export default function TopicPage() {
   const allPageSel = pageIds.length > 0 && pageIds.every(id => selected.has(id))
 
   /* ── Handlers ── */
-  const openAdd = () => { setEditPhrase(undefined); setDialogOpen(true) }
   const openEdit = (p: Phrase) => { setEditPhrase(p); setDialogOpen(true) }
 
   const handleSearchChange = (v: string) => { setSearch(v); setPage(1) }
@@ -402,15 +400,9 @@ export default function TopicPage() {
                 )}
               </div>
             )}
-            <button
-              onClick={openAdd}
-              className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-600 text-white hover:bg-orange-700 shrink-0 shadow-sm"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hidden md:block">
+          <div className="rounded-2xl border border-gray-200 bg-white shadow-sm hidden md:block">
 
             {/* ── Toolbar – desktop only ── */}
             <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-100 relative z-10">
@@ -495,11 +487,6 @@ export default function TopicPage() {
                   <Sparkles className="mr-1.5 h-3.5 w-3.5 text-orange-500" />
                   Nhiều câu
                 </Button>
-                {/* Thêm câu mới */}
-                <Button onClick={openAdd} className="bg-orange-600 text-white hover:bg-orange-700 h-8 text-xs">
-                  <Plus className="mr-1.5 h-3.5 w-3.5" />
-                  Thêm câu mới
-                </Button>
               </div>
             </div>
 
@@ -525,6 +512,7 @@ export default function TopicPage() {
                 </div>
               </div>
             )}
+          </div>{/* end desktop toolbar container */}
 
           {/* ── Mobile: card list ── */}
           <div className="md:hidden space-y-2">
@@ -545,8 +533,8 @@ export default function TopicPage() {
                   {search ? `Không tìm thấy kết quả cho "${search}"` : 'Chưa có câu nào — thêm câu đầu tiên!'}
                 </p>
                 {!search && (
-                  <Button onClick={openAdd} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white">
-                    <Plus className="mr-1.5 h-3.5 w-3.5" /> Thêm câu
+                  <Button onClick={() => setBulkAddOpen(true)} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white">
+                    <Sparkles className="mr-1.5 h-3.5 w-3.5" /> Thêm câu
                   </Button>
                 )}
               </div>
@@ -662,8 +650,9 @@ export default function TopicPage() {
             )}
           </div>
 
-          {/* ── Desktop: Table + Pagination (inside same rounded container as toolbar) ── */}
-          <div className="overflow-x-auto hidden md:block">
+          {/* ── Desktop: Table + Pagination ── */}
+          <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hidden md:block">
+          <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <colgroup><col className="w-[4%]" /><col className="w-[3%]" /><col className="w-[28%]" /><col className="w-[22%]" /><col className="w-[17%]" /><col className="w-[18%]" /><col className="w-[8%]" /></colgroup>
               <thead>
@@ -693,7 +682,7 @@ export default function TopicPage() {
                       <p className="text-sm font-medium text-gray-400">
                         {search ? `Không tìm thấy kết quả cho "${search}"` : 'Chưa có câu nào — thêm câu đầu tiên!'}
                       </p>
-                      {!search && (<Button onClick={openAdd} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white"><Plus className="mr-1.5 h-3.5 w-3.5" /> Thêm câu</Button>)}
+                      {!search && (<Button onClick={() => setBulkAddOpen(true)} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white"><Sparkles className="mr-1.5 h-3.5 w-3.5" /> Thêm câu</Button>)}
                     </div>
                   </td></tr>
                 ) : (
@@ -769,9 +758,9 @@ export default function TopicPage() {
                 </div>
               </div>
             )}
-          </div>{/* end table wrapper */}
-        </div>{/* end rounded-2xl container */}
-      </div>{/* end flex-1 scroll area */}
+          </div>{/* end overflow-x-auto */}
+          </div>{/* end desktop table container */}
+        </div>{/* end flex-1 scroll area */}
       </main>
 
       {/* Edit/Add Dialog */}
