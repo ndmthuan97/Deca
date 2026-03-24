@@ -14,8 +14,8 @@ import { Input } from '@/components/ui/input'
 import { BulkAddModal } from '@/components/phrases/BulkAddModal'
 import { FlashcardView } from '@/components/phrases/FlashcardView'
 import {
-  BookOpen, Search, Pencil, Trash2, Volume2, Sparkles, Eye, Filter, MoreVertical,
-  ChevronLeft, ChevronRight, ChevronDown, ChevronRight as ChevronRightIcon,
+  BookOpen, Search, Pencil, Trash2, Volume2, Sparkles, Eye, Filter,
+  ChevronLeft, ChevronRight, ChevronDown,
   List, GalleryHorizontal, Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'

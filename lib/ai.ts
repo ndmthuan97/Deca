@@ -1,4 +1,4 @@
-import OpenAI from 'openai'
+import Groq from 'groq-sdk'
 
 export interface GeneratedPhraseFields {
   type: string
@@ -33,13 +33,21 @@ Return ONLY a valid JSON object for this sentence: "${sampleSentence}"
   "example2_pronunciation": "American English IPA of example2"
 }`
 
-let xaiClient: OpenAI | null = null
-function getClient(): OpenAI {
+const MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct'
+
+// Robust JSON extraction (handle markdown code blocks)
+function extractJson(text: string): string {
+  const match = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+  if (match) return match[1].trim()
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  if (jsonMatch) return jsonMatch[0]
+  return text
+}
+
+let groqClient: Groq | null = null
+function getClient(): Groq {
   if (!process.env.AI_API_KEY) throw new Error('AI_API_KEY chưa được cấu hình trong .env.local')
-  return (xaiClient ??= new OpenAI({
-    apiKey: process.env.AI_API_KEY,
-    baseURL: 'https://api.x.ai/v1',
-  }))
+  return (groqClient ??= new Groq({ apiKey: process.env.AI_API_KEY }))
 }
 
 export async function generatePhraseFields(
@@ -49,14 +57,14 @@ export async function generatePhraseFields(
   const client = getClient()
 
   const completion = await client.chat.completions.create({
-    model: 'grok-3-mini',
+    model: MODEL,
     messages: [{ role: 'user', content: PROMPT(sampleSentence, topicName) }],
     response_format: { type: 'json_object' },
     temperature: 0.3,
   })
 
   const text = completion.choices[0]?.message?.content ?? ''
-  return JSON.parse(text) as GeneratedPhraseFields
+  return JSON.parse(extractJson(text)) as GeneratedPhraseFields
 }
 
 const ICON_PROMPT = (topicName: string) =>
@@ -69,7 +77,7 @@ export async function generateTopicIcon(topicName: string): Promise<string> {
   const client = getClient()
 
   const completion = await client.chat.completions.create({
-    model: 'grok-3-mini',
+    model: MODEL,
     messages: [{ role: 'user', content: ICON_PROMPT(topicName) }],
     temperature: 0.2,
   })
@@ -87,7 +95,7 @@ Return ONLY that sentence, nothing else. Example: "Cách chào hỏi và giới 
 export async function generateTopicDescription(topicName: string): Promise<string> {
   const client = getClient()
   const completion = await client.chat.completions.create({
-    model: 'grok-3-mini',
+    model: MODEL,
     messages: [{ role: 'user', content: DESCRIPTION_PROMPT(topicName) }],
     temperature: 0.4,
   })
