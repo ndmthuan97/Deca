@@ -197,7 +197,7 @@ export default function HomePage() {
             </button>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+          <div className="md:rounded-2xl md:border md:border-gray-200 md:bg-white md:dark:bg-gray-900 md:overflow-hidden md:shadow-sm">
             {/* Toolbar – desktop only */}
             <div className="hidden md:flex items-center justify-between gap-3 px-6 py-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
@@ -261,23 +261,22 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* ── Mobile: card list only ── */}
             <div className="md:hidden">
-              <div className="divide-y divide-gray-100">
+              <div className="space-y-2 p-3">
                 {isLoading ? (
                   [...Array(4)].map((_, i) => (
-                    <div key={i} className="flex items-center gap-3 px-4 py-3">
-                      <div className="h-11 w-11 animate-pulse rounded-xl bg-gray-100 shrink-0" />
+                    <div key={i} className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3">
+                      <div className="h-11 w-11 animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800 shrink-0" />
                       <div className="flex-1 space-y-1.5">
-                        <div className="h-4 w-2/3 animate-pulse rounded bg-gray-100" />
-                        <div className="h-3 w-1/2 animate-pulse rounded bg-gray-100" />
+                        <div className="h-4 w-2/3 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
+                        <div className="h-3 w-1/2 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
                       </div>
                     </div>
                   ))
                 ) : paginated.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="mb-3 rounded-full bg-gray-100 p-4">
-                      <BookOpen className="h-7 w-7 text-gray-300" />
+                    <div className="mb-3 rounded-full bg-gray-100 dark:bg-gray-800 p-4">
+                      <BookOpen className="h-7 w-7 text-gray-300 dark:text-gray-600" />
                     </div>
                     <p className="text-sm text-gray-400">{search ? `Không tìm thấy "${search}"` : 'Chưa có chủ đề nào'}</p>
                   </div>
@@ -286,22 +285,22 @@ export default function HomePage() {
                     <div
                       key={topic.id}
                       onClick={() => router.push(`/topics/${topic.id}`)}
-                      className="group flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-orange-50 cursor-pointer transition-colors"
+                      className="group flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 hover:border-orange-200 dark:hover:border-orange-900 hover:shadow-sm active:bg-orange-50 dark:active:bg-orange-950 cursor-pointer transition-all"
                     >
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 text-xl shadow-sm">
                         {topic.icon ?? '📚'}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">{topic.name}</p>
-                        <p className="text-xs text-gray-400">{topic.phrase_count ?? 0} câu</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{topic.name}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">{topic.phrase_count ?? 0} câu</p>
                       </div>
                       <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
                         <button onClick={() => { setEditingId(topic.id); setEditName(topic.name) }}
-                          className="rounded-lg p-1.5 text-gray-300 hover:bg-gray-100 hover:text-gray-600">
+                          className="rounded-lg p-1.5 text-gray-300 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300">
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
                         <button onClick={() => handleDelete(topic.id)}
-                          className="rounded-lg p-1.5 text-gray-300 hover:bg-red-50 hover:text-red-400">
+                          className="rounded-lg p-1.5 text-gray-300 dark:text-gray-600 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-400">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </div>
