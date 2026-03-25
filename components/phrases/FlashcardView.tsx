@@ -112,8 +112,8 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
   }
 
   const examples = [
-    { sentence: current.example1, translation: current.example1_translation, n: 1 },
-    { sentence: current.example2, translation: current.example2_translation, n: 2 },
+    { sentence: current.example1, translation: current.example1_translation, pronunciation: current.example1_pronunciation, n: 1 },
+    { sentence: current.example2, translation: current.example2_translation, pronunciation: current.example2_pronunciation, n: 2 },
   ].filter(e => e.sentence)
 
   const progress = ((index + 1) / total) * 100
@@ -139,78 +139,67 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
         <div
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
-          className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden select-none"
+          className="relative rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden select-none"
           style={{
             transform: swipeDir === 'left' ? 'translateX(-6px)' : swipeDir === 'right' ? 'translateX(6px)' : 'none',
             opacity: swipeDir ? 0.75 : 1,
             transition: 'transform 150ms ease, opacity 150ms ease',
           }}
         >
-          {/* ── Top: Câu + nghĩa ── */}
-          <div className="px-6 pt-8 pb-6 text-center">
-            {/* Type badges + function tooltip */}
-            {current.type && (
-              <FlashcardTypeBadges type={current.type} functionText={current.function} />
-            )}
-
-            {/* Câu mẫu */}
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-snug">
-              {current.sample_sentence}
-            </h2>
-
-            {/* Phiên âm */}
-            {current.pronunciation && (
-              <p className="mt-1.5 font-mono text-sm text-orange-400">{current.pronunciation}</p>
-            )}
-
-            {/* Cấu trúc câu */}
-            {current.structure && (
-              <p className="mt-2 text-xs text-blue-500 dark:text-blue-400 font-mono bg-blue-50 dark:bg-blue-900/20 rounded-lg px-3 py-1.5 inline-block">
-                {current.structure}
-              </p>
-            )}
-
-            {/* Nghĩa */}
-            {current.translation && (
-              <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">{current.translation}</p>
-            )}
-
-            {/* Nghe */}
-            <button
-              onClick={() => speak(current.sample_sentence)}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-xs text-gray-400 dark:text-gray-500 hover:text-blue-500 hover:border-blue-200 dark:hover:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-            >
-              <Volume2 className="h-3.5 w-3.5" />
-              Nghe
-            </button>
+          {/* Type badges — góc phải trên */}
+          <div className="absolute top-3 right-4 z-10">
+            <FlashcardTypeBadges type={current.type ?? ''} functionText={current.function} />
           </div>
 
-          {/* ── Bottom: Ví dụ ── */}
-          {examples.length > 0 && (
-            <>
-              <div className="border-t border-gray-100 dark:border-gray-800" />
-              <div className="px-6 py-4 space-y-3">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-300 dark:text-gray-600">Ví dụ</p>
-                {examples.map(ex => (
-                  <div key={ex.n} className="space-y-0.5">
-                    <div className="flex items-start gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-700 dark:text-gray-300 italic leading-relaxed">{ex.sentence}</p>
-                        {ex.translation && (
-                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{ex.translation}</p>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => speak(ex.sentence!)}
-                        className="shrink-0 mt-0.5 text-gray-300 dark:text-gray-600 hover:text-blue-400 transition-colors"
-                      >
-                        <Volume2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+          {/* ── Câu mẫu + phiên âm + nghĩa ── */}
+          <div className="rounded-xl bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800 p-4 mx-5 mt-10">
+            <div className="flex items-start gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{current.sample_sentence}</p>
+                {current.pronunciation && (
+                  <p className="font-mono text-sm text-orange-500 dark:text-orange-400 mt-0.5">{current.pronunciation}</p>
+                )}
+                {current.translation && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1.5">{current.translation}</p>
+                )}
               </div>
-            </>
+              <button onClick={() => speak(current.sample_sentence)} className="text-orange-400 hover:text-orange-600 shrink-0 mt-1">
+                <Volume2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* ── Cấu trúc ngữ pháp ── */}
+          {current.structure && (
+            <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 mx-5 mt-2">
+              <p className="text-sm leading-relaxed font-mono">
+                {current.structure.split(/(\([^)]+\))/g).map((part, i) =>
+                  part.startsWith('(') && part.endsWith(')') ? (
+                    <span key={i} className="mx-0.5 rounded bg-orange-100 dark:bg-orange-900/40 px-1 text-orange-600 dark:text-orange-300 font-semibold">{part}</span>
+                  ) : (
+                    <span key={i} className="text-gray-700 dark:text-gray-300">{part}</span>
+                  )
+                )}
+              </p>
+            </div>
+          )}
+
+          {/* ── Ví dụ ── */}
+          {examples.length > 0 && (
+            <div className="px-5 pt-2 pb-4 space-y-1.5">
+              {examples.map(ex => (
+                <div key={ex.n} className="rounded-lg bg-gray-50 dark:bg-gray-800/50 px-3 py-2 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/40 text-[9px] font-bold text-orange-500 dark:text-orange-300 shrink-0">{ex.n}</span>
+                    <p className="text-sm text-gray-800 dark:text-gray-200 italic flex-1 min-w-0">{ex.sentence}</p>
+                    <button onClick={() => speak(ex.sentence!)} className="text-gray-400 hover:text-orange-500 shrink-0">
+                      <Volume2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  {ex.translation && <p className="text-xs text-gray-500 dark:text-gray-400 pl-6">{ex.translation}</p>}
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>
