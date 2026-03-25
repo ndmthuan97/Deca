@@ -110,7 +110,7 @@ function StructureText({ text }: { text: string }) {
     <span className="text-xs font-mono">
       {parts.map((part, i) =>
         part.startsWith('(') && part.endsWith(')') ? (
-          <span key={i} className="mx-0.5 rounded bg-orange-100 px-1 text-orange-600 font-semibold">{part}</span>
+          <span key={i} className="text-orange-500 font-semibold">{part}</span>
         ) : (
           <span key={i} className="text-gray-700">{part}</span>
         )
@@ -134,13 +134,15 @@ function PhraseViewDialog({ phrase, open, onClose }: { phrase: Phrase | null; op
 
         <div className="space-y-5 pt-1">
           {/* Sample sentence */}
-          <div className="rounded-xl bg-orange-50 border border-orange-100 p-4">
-            <p className="text-[10px] uppercase tracking-wider text-orange-400 mb-1.5">Câu mẫu</p>
-            <div className="flex items-center gap-2">
-              <button onClick={() => speak(phrase.sample_sentence)} className="text-orange-400 hover:text-orange-600 shrink-0">
-                <Volume2 className="h-4 w-4" />
-              </button>
-              <p className="text-xl font-bold text-gray-900">{phrase.sample_sentence}</p>
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Câu mẫu</p>
+            <div className="rounded-xl bg-orange-50 border border-orange-100 p-4">
+              <div className="flex items-center gap-2">
+                <button onClick={() => speak(phrase.sample_sentence)} className="text-orange-400 hover:text-orange-600 shrink-0">
+                  <Volume2 className="h-4 w-4" />
+                </button>
+                <p className="text-xl font-bold text-gray-900">{phrase.sample_sentence}</p>
+              </div>
             </div>
           </div>
 
@@ -169,14 +171,16 @@ function PhraseViewDialog({ phrase, open, onClose }: { phrase: Phrase | null; op
 
           {/* Structure */}
           {phrase.structure && (
-            <div className="rounded-xl bg-gray-50 border border-gray-200 p-4">
-              <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-2">Cấu trúc ngữ pháp</p>
-              <p className="text-sm leading-relaxed">
-                <StructureText text={phrase.structure} />
-              </p>
-              <p className="mt-2 text-[10px] text-gray-400 italic">
-                Phần <span className="text-orange-500 font-semibold">cam</span> = có thể thay đổi linh hoạt
-              </p>
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Cấu trúc ngữ pháp</p>
+              <div className="rounded-xl bg-gray-50 border border-gray-200 p-4">
+                <p className="text-sm leading-relaxed">
+                  <StructureText text={phrase.structure} />
+                </p>
+                <p className="mt-2 text-[10px] text-gray-400 italic">
+                  Phần <span className="text-orange-500 font-semibold">cam</span> = có thể thay đổi linh hoạt
+                </p>
+              </div>
             </div>
           )}
 
@@ -188,16 +192,18 @@ function PhraseViewDialog({ phrase, open, onClose }: { phrase: Phrase | null; op
                 { ex: phrase.example1, tr: phrase.example1_translation, ipa: phrase.example1_pronunciation, n: 1 },
                 { ex: phrase.example2, tr: phrase.example2_translation, ipa: phrase.example2_pronunciation, n: 2 },
               ].filter(e => e.ex).map(e => (
-                <div key={e.n} className="rounded-lg bg-gray-50 p-3 space-y-1 border border-gray-200">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-100 text-[9px] font-bold text-orange-500">{e.n}</span>
-                    <button onClick={() => speak(e.ex!)} className="text-gray-400 hover:text-orange-500 ml-auto">
+                <div key={e.n} className="rounded-lg bg-gray-50 p-3 border border-gray-200">
+                  <div className="flex items-start gap-2.5">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-500 shrink-0 mt-0.5">{e.n}</span>
+                    <div className="flex-1 min-w-0 space-y-0.5">
+                      <p className="text-sm text-gray-800 italic">{e.ex}</p>
+                      {e.tr && <p className="text-xs text-gray-500">{e.tr}</p>}
+                      {e.ipa && <p className="font-mono text-xs text-orange-500">{e.ipa}</p>}
+                    </div>
+                    <button onClick={() => speak(e.ex!)} className="text-gray-400 hover:text-orange-500 shrink-0 mt-0.5">
                       <Volume2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
-                  <p className="text-sm text-gray-800 italic">{e.ex}</p>
-                  {e.tr && <p className="text-xs text-gray-500">{e.tr}</p>}
-                  {e.ipa && <p className="font-mono text-xs text-orange-500">{e.ipa}</p>}
                 </div>
               ))}
             </div>
@@ -778,10 +784,12 @@ export default function TopicPage() {
                         const hasExamples = phrase.example1 || phrase.example2
                         return (
                           <React.Fragment key={phrase.id}>
-                            <tr className={cn(
-                              'group border-b border-gray-100 transition-colors even:bg-gray-50/70',
-                              isSel ? 'bg-orange-50/60 even:bg-orange-50/60' : isOpen ? 'bg-orange-50/30 even:bg-orange-50/30' : 'hover:bg-gray-100/60'
-                            )}>
+                            <tr
+                              onClick={() => setViewPhrase(phrase)}
+                              className={cn(
+                                'group border-b border-gray-100 transition-colors even:bg-gray-50/70 cursor-pointer',
+                                isSel ? 'bg-orange-50/60 even:bg-orange-50/60' : isOpen ? 'bg-orange-50/30 even:bg-orange-50/30' : 'hover:bg-gray-100/60'
+                              )}>
                               <td className="w-10 text-center" onClick={e => e.stopPropagation()}>
                                 <input type="checkbox" checked={isSel} onChange={() => toggleOne(phrase.id)} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" />
                               </td>
