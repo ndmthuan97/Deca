@@ -17,20 +17,22 @@ export interface GeneratedPhraseFields {
 const PROMPT = (sampleSentence: string, topicName: string) =>
   `You are an American English language teaching assistant. Topic: "${topicName}".
 Use AMERICAN ENGLISH pronunciation (General American accent) for all IPA transcriptions.
-Return ONLY a valid JSON object for this sentence: "${sampleSentence}"
+Analyze this sentence: "${sampleSentence}"
+
+Return ONLY a valid JSON object with these fields — follow each field's purpose EXACTLY:
 
 {
-  "type": "comma-separated sentence types if multiple apply, e.g. 'Greeting' or 'Greeting,Inviting'. Choose from: Asking, Responding, Greeting, Expressing, Inviting, Instructing, Requesting, Directing, Introducing",
-  "structure": "grammatical structure with FIXED parts in plain text and VARIABLE/CHANGEABLE parts in (parentheses). Example: 'What is (your name / the problem)?' or 'I (really / so much) like (topic noun).'",
-  "function": "brief Vietnamese description of usage",
-  "translation": "Vietnamese translation",
-  "pronunciation": "American English IPA transcription e.g. /huː ɑːr juː/",
-  "example1": "natural American English example",
+  "type": "The communicative speech act type(s), comma-separated if multiple. Choose from: Asking, Responding, Greeting, Expressing, Inviting, Instructing, Requesting, Directing, Introducing",
+  "structure": "The grammatical pattern/template: write FIXED words as-is, wrap INTERCHANGEABLE parts in (parentheses with / options). Example: 'What is (your name / your issue)?' or 'I (really / totally) enjoy (activity).'",
+  "function": "A SHORT Vietnamese sentence (≤15 words) explaining WHEN and WHY a speaker uses this sentence in conversation. Do NOT translate — explain the communicative purpose.",
+  "translation": "The Vietnamese TRANSLATION of the sentence '${sampleSentence}' — translate the meaning, not explain it.",
+  "pronunciation": "Full IPA transcription of '${sampleSentence}' in American English, wrapped in slashes. Example: /haʊ ɑːr juː/",
+  "example1": "A NEW natural American English sentence using the same pattern — MUST be completely different from '${sampleSentence}'",
   "example1_translation": "Vietnamese translation of example1",
-  "example1_pronunciation": "American English IPA of example1",
-  "example2": "another American English example",
+  "example1_pronunciation": "IPA transcription of example1 in American English",
+  "example2": "Another NEW American English sentence with the same pattern — MUST differ from both '${sampleSentence}' and example1",
   "example2_translation": "Vietnamese translation of example2",
-  "example2_pronunciation": "American English IPA of example2"
+  "example2_pronunciation": "IPA transcription of example2 in American English"
 }`
 
 const MODEL = 'llama-3.1-8b-instant'

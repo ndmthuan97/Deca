@@ -71,12 +71,34 @@ function TypeBadge({ type }: { type: string }) {
   )
 }
 
-function TypeBadges({ type }: { type: string | null }) {
+function TypeBadges({ type, functionText }: { type: string | null; functionText?: string | null }) {
+  const [open, setOpen] = useState(false)
   const types = parseTypes(type)
   if (!types.length) return <span className="text-gray-300 text-xs">—</span>
   return (
-    <div className="flex flex-wrap gap-1">
+    <div
+      className="relative inline-flex flex-wrap gap-1 group"
+      onClick={e => { e.stopPropagation(); if (functionText) setOpen(v => !v) }}
+      onMouseLeave={() => setOpen(false)}
+    >
       {types.map(t => <TypeBadge key={t} type={t} />)}
+      {functionText && (
+        <>
+          {/* Desktop: CSS hover */}
+          <div className="pointer-events-none absolute bottom-full right-0 mb-2 z-30 w-56 rounded-xl bg-gray-900 px-3 py-2 text-xs text-white shadow-xl
+            hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+            {functionText}
+            <div className="absolute -bottom-1 right-4 h-2 w-2 rotate-45 bg-gray-900" />
+          </div>
+          {/* Mobile: click toggle */}
+          {open && (
+            <div className="pointer-events-none absolute bottom-full right-0 mb-2 z-30 w-56 rounded-xl bg-gray-900 px-3 py-2 text-xs text-white shadow-xl md:hidden">
+              {functionText}
+              <div className="absolute -bottom-1 right-4 h-2 w-2 rotate-45 bg-gray-900" />
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }
@@ -667,7 +689,7 @@ export default function TopicPage() {
                             Ví dụ
                           </button>
                         ) : <div />}
-                        <TypeBadges type={phrase.type} />
+                        <TypeBadges type={phrase.type} functionText={phrase.function} />
                       </div>
 
                       {/* Examples expanded */}
@@ -778,7 +800,7 @@ export default function TopicPage() {
                               </td>
                               <td className="px-4 py-3 max-w-0 overflow-hidden"><p className="text-gray-500 text-sm truncate">{phrase.translation ?? '—'}</p></td>
                               <td className="px-4 py-3 max-w-0 overflow-hidden"><span className="font-mono text-xs text-orange-500 block truncate">{phrase.pronunciation ?? '—'}</span></td>
-                              <td className="px-4 py-3"><TypeBadges type={phrase.type} /></td>
+                              <td className="px-4 py-3"><TypeBadges type={phrase.type} functionText={phrase.function} /></td>
                               <td className="px-6 py-3" onClick={e => e.stopPropagation()}>
                                 <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <button onClick={() => setViewPhrase(phrase)} className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors" title="Xem chi tiết"><Eye className="h-3.5 w-3.5" /></button>

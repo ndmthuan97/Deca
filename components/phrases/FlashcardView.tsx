@@ -14,6 +14,40 @@ function speak(text: string) {
   }
 }
 
+function FlashcardTypeBadges({ type, functionText }: { type: string; functionText?: string | null }) {
+  const [tipOpen, setTipOpen] = useState(false)
+  const types = type.split(',').map(t => t.trim()).filter(Boolean)
+  return (
+    <div
+      className="mb-3 flex flex-wrap justify-center gap-1 relative group"
+      onClick={e => { e.stopPropagation(); if (functionText) setTipOpen(v => !v) }}
+      onMouseLeave={() => setTipOpen(false)}
+    >
+      {types.map(t => (
+        <span key={t} className="rounded-full bg-orange-50 dark:bg-orange-900/30 px-2 py-0.5 text-[11px] font-medium text-orange-500 dark:text-orange-300 border border-orange-100 dark:border-orange-800 cursor-default">
+          {t}
+        </span>
+      ))}
+      {functionText && (
+        <>
+          {/* Desktop: hover */}
+          <div className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 z-30 w-64 rounded-xl bg-gray-900 px-3 py-2 text-xs text-white shadow-xl hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+            {functionText}
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 h-2 w-2 rotate-45 bg-gray-900" />
+          </div>
+          {/* Mobile: tap */}
+          {tipOpen && (
+            <div className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 z-30 w-64 rounded-xl bg-gray-900 px-3 py-2 text-xs text-white shadow-xl md:hidden">
+              {functionText}
+              <div className="absolute -top-1 left-1/2 -translate-x-1/2 h-2 w-2 rotate-45 bg-gray-900" />
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
 interface FlashcardViewProps {
   phrases: Phrase[]
 }
@@ -114,15 +148,9 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
         >
           {/* ── Top: Câu + nghĩa ── */}
           <div className="px-6 pt-8 pb-6 text-center">
-            {/* Type badges */}
+            {/* Type badges + function tooltip */}
             {current.type && (
-              <div className="mb-3 flex flex-wrap justify-center gap-1">
-                {current.type.split(',').map(t => t.trim()).filter(Boolean).map(t => (
-                  <span key={t} className="rounded-full bg-orange-50 dark:bg-orange-900/30 px-2 py-0.5 text-[11px] font-medium text-orange-500 dark:text-orange-300 border border-orange-100 dark:border-orange-800">
-                    {t}
-                  </span>
-                ))}
-              </div>
+              <FlashcardTypeBadges type={current.type} functionText={current.function} />
             )}
 
             {/* Câu mẫu */}
@@ -133,6 +161,13 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
             {/* Phiên âm */}
             {current.pronunciation && (
               <p className="mt-1.5 font-mono text-sm text-orange-400">{current.pronunciation}</p>
+            )}
+
+            {/* Cấu trúc câu */}
+            {current.structure && (
+              <p className="mt-2 text-xs text-blue-500 dark:text-blue-400 font-mono bg-blue-50 dark:bg-blue-900/20 rounded-lg px-3 py-1.5 inline-block">
+                {current.structure}
+              </p>
             )}
 
             {/* Nghĩa */}
