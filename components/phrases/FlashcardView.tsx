@@ -175,7 +175,7 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
               <p className="text-sm leading-relaxed font-mono">
                 {current.structure.split(/(\([^)]+\))/g).map((part, i) =>
                   part.startsWith('(') && part.endsWith(')') ? (
-                    <span key={i} className="mx-0.5 rounded bg-orange-100 dark:bg-orange-900/40 px-1 text-orange-600 dark:text-orange-300 font-semibold">{part}</span>
+                    <span key={i} className="text-cyan-500 dark:text-cyan-400 font-semibold">{part}</span>
                   ) : (
                     <span key={i} className="text-gray-700 dark:text-gray-300">{part}</span>
                   )
