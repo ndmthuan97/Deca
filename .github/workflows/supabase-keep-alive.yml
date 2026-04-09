@@ -1,0 +1,41 @@
+# ============================================================
+# Supabase Keep-Alive Workflow
+# Mục đích: Ping Supabase project mỗi 6 ngày để tránh bị pause
+# (Supabase free tier sẽ pause sau 7 ngày không có activity)
+# ============================================================
+name: 🟢 Supabase Keep-Alive
+
+on:
+  # Tự động chạy mỗi 6 ngày lúc 00:00 UTC
+  schedule:
+    - cron: "0 0 */6 * *"
+
+  # Cho phép chạy thủ công từ GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Supabase
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 🔔 Ping Supabase REST API
+        run: |
+          echo "📅 Thời điểm ping: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "🌐 Target: ${{ secrets.SUPABASE_URL }}"
+
+          HTTP_STATUS=$(curl --silent --output /dev/null --write-out "%{http_code}" \
+            --max-time 30 \
+            --header "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            --header "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/")
+
+          echo "📡 HTTP Status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "✅ Supabase project ALIVE! (HTTP $HTTP_STATUS)"
+          else
+            echo "❌ Ping FAILED với HTTP Status: $HTTP_STATUS"
+            exit 1
+          fi
