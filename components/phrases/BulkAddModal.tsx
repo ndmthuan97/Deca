@@ -603,12 +603,7 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
                         ? <Loader2 className="h-3.5 w-3.5 animate-spin text-orange-400 shrink-0" />
                         : <AlertCircle className="h-3.5 w-3.5 text-red-400 shrink-0" />
                       }
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate">{c.sample_sentence}</p>
-                        {c.errorMessage && (
-                          <p className="text-[10px] text-red-400 font-mono truncate mt-0.5">{c.errorMessage}</p>
-                        )}
-                      </div>
+                      <p className="text-sm font-medium text-gray-800 truncate flex-1 min-w-0">{c.sample_sentence}</p>
                       <button
                         disabled={retryingAll || c.status === 'loading'}
                         onClick={() => retryCard(c.id)}
