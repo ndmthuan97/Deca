@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Sparkles, Save, X, Loader2 } from 'lucide-react'
+import { Sparkles, Save, X, Loader2, BookOpen, MessageSquare } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -168,6 +168,9 @@ export function PhraseForm({ topicId, topicName, onSuccess, onCancel, editPhrase
   )
   const [isGenerating, setIsGenerating] = useState(false)
   const [hasGenerated, setHasGenerated] = useState(!!editPhrase)
+  const [inputMode, setInputMode] = useState<'sentence' | 'vocabulary' | null>(
+    editPhrase ? 'sentence' : null
+  )
 
   const update = (field: keyof PhraseFormData, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -191,10 +194,13 @@ export function PhraseForm({ topicId, topicName, onSuccess, onCancel, editPhrase
     }
     setIsGenerating(true)
     try {
-      const fields = await generateFields(form.sample_sentence, topicName)
+      const result = await generateFields(form.sample_sentence, topicName)
+      const { inputType, ...fields } = result as typeof result & { inputType?: string }
       setForm((prev) => ({ ...prev, ...fields }))
       setHasGenerated(true)
-      toast.success('AI đã phân tích xong!')
+      setInputMode((inputType as 'sentence' | 'vocabulary') ?? 'sentence')
+      const modeLabel = inputType === 'vocabulary' ? 'từ vựng 📖' : 'câu mẫu 💬'
+      toast.success(`AI đã phân tích xong ${modeLabel}!`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Lỗi AI')
     } finally {
@@ -243,10 +249,24 @@ export function PhraseForm({ topicId, topicName, onSuccess, onCancel, editPhrase
       {/* ── AI-filled fields ── */}
       {!isGenerating && hasGenerated && (
         <div className="rounded-2xl border border-orange-500/20 bg-slate-800/40 p-5">
-          {/* AI badge */}
-          <div className="mb-4 flex items-center gap-2 text-xs text-orange-400">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span className="font-medium">AI đã phân tích — click vào ô để chỉnh sửa</span>
+          {/* AI badge + Mode indicator */}
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs text-orange-400">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="font-medium">AI đã phân tích — click vào ô để chỉnh sửa</span>
+            </div>
+            {inputMode && (
+              <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
+                inputMode === 'vocabulary'
+                  ? 'bg-sky-500/15 text-sky-300'
+                  : 'bg-orange-500/15 text-orange-300'
+              }`}>
+                {inputMode === 'vocabulary'
+                  ? <><BookOpen className="h-3 w-3" /> Từ vựng</>
+                  : <><MessageSquare className="h-3 w-3" /> Câu mẫu</>
+                }
+              </div>
+            )}
           </div>
 
           {/* 2-column: main fields LEFT | examples RIGHT */}
@@ -254,12 +274,25 @@ export function PhraseForm({ topicId, topicName, onSuccess, onCancel, editPhrase
             {/* LEFT */}
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Loại câu (Type)" value={form.type} onChange={(v) => update('type', v)} />
+                <Field
+                  label={inputMode === 'vocabulary' ? 'Loại từ (Part of Speech)' : 'Loại câu (Type)'}
+                  value={form.type}
+                  onChange={(v) => update('type', v)}
+                />
                 <Field label="Phát âm IPA" value={form.pronunciation} onChange={(v) => update('pronunciation', v)} mono />
               </div>
-              <Field label="Cấu trúc câu" value={form.structure} onChange={(v) => update('structure', v)} />
+              <Field
+                label={inputMode === 'vocabulary' ? 'Dạng từ & Collocation' : 'Cấu trúc câu'}
+                value={form.structure}
+                onChange={(v) => update('structure', v)}
+              />
               <div className="border-t border-white/5 pt-4 space-y-4">
-                <Field label="Chức năng (Vietnamese)" value={form.function} onChange={(v) => update('function', v)} multiline />
+                <Field
+                  label={inputMode === 'vocabulary' ? 'Ý nghĩa & Cách dùng (Vietnamese)' : 'Chức năng (Vietnamese)'}
+                  value={form.function}
+                  onChange={(v) => update('function', v)}
+                  multiline
+                />
                 <Field label="Dịch nghĩa (Vietnamese)" value={form.translation} onChange={(v) => update('translation', v)} multiline />
               </div>
             </div>

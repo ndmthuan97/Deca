@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import {
   UploadCloud, Sparkles, ChevronLeft, ChevronRight,
-  Trash2, CheckCircle2, Loader2, FileType, X
+  Trash2, CheckCircle2, Loader2, FileType, X, BookOpen, MessageSquare
 } from 'lucide-react'
 import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
@@ -34,6 +34,7 @@ type PhraseCard = {
   example2_pronunciation: string
   selected: boolean
   status: 'pending' | 'loading' | 'done' | 'error'
+  inputType?: 'sentence' | 'vocabulary'
 }
 
 type Step = 'input' | 'filling' | 'review'
@@ -102,21 +103,36 @@ function ReviewCard({
             : <span className="text-sm font-semibold text-gray-900">{card.sample_sentence}</span>
           }
         </div>
-        <button
-          onClick={onToggleSelect}
-          className={cn(
-            'flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors',
-            card.selected
-              ? 'bg-orange-100 text-orange-700 hover:bg-red-100 hover:text-red-600'
-              : 'bg-gray-100 text-gray-500 hover:bg-orange-100 hover:text-orange-600'
+        <div className="flex items-center gap-2">
+          {/* Input mode badge */}
+          {card.inputType && card.status === 'done' && (
+            <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+              card.inputType === 'vocabulary'
+                ? 'bg-sky-100 text-sky-600'
+                : 'bg-orange-100 text-orange-600'
+            }`}>
+              {card.inputType === 'vocabulary'
+                ? <><BookOpen className="h-2.5 w-2.5" /> Từ vựng</>
+                : <><MessageSquare className="h-2.5 w-2.5" /> Câu mẫu</>
+              }
+            </div>
           )}
-        >
-          {card.selected ? (
-            <><CheckCircle2 className="h-3 w-3" /> Đã chọn</>
-          ) : (
-            <><X className="h-3 w-3" /> Bỏ qua</>
-          )}
-        </button>
+          <button
+            onClick={onToggleSelect}
+            className={cn(
+              'flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors',
+              card.selected
+                ? 'bg-orange-100 text-orange-700 hover:bg-red-100 hover:text-red-600'
+                : 'bg-gray-100 text-gray-500 hover:bg-orange-100 hover:text-orange-600'
+            )}
+          >
+            {card.selected ? (
+              <><CheckCircle2 className="h-3 w-3" /> Đã chọn</>
+            ) : (
+              <><X className="h-3 w-3" /> Bỏ qua</>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Card Body — editable fields */}
@@ -259,8 +275,9 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
     // fire all AI calls concurrently (but update state per card)
     await Promise.all(initial.map(async (card, i) => {
       try {
-        const fields = await generateFields(card.sample_sentence, topicName)
-        setCards(prev => prev.map((c, idx) => idx === i ? { ...c, ...fields, status: 'done' } : c))
+        const result = await generateFields(card.sample_sentence, topicName)
+        const { inputType, ...fields } = result as typeof result & { inputType?: string }
+        setCards(prev => prev.map((c, idx) => idx === i ? { ...c, ...fields, inputType: inputType as PhraseCard['inputType'], status: 'done' } : c))
       } catch {
         setCards(prev => prev.map((c, idx) => idx === i ? { ...c, status: 'error' } : c))
       }
