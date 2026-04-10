@@ -10,7 +10,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import {
   UploadCloud, Sparkles, ChevronLeft, ChevronRight,
-  Trash2, CheckCircle2, Loader2, FileType, X, BookOpen, MessageSquare
+  Trash2, CheckCircle2, Loader2, X, BookOpen, MessageSquare,
+  RefreshCw, AlertCircle
 } from 'lucide-react'
 import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
@@ -35,6 +36,8 @@ type PhraseCard = {
   selected: boolean
   status: 'pending' | 'loading' | 'done' | 'error'
   inputType?: 'sentence' | 'vocabulary'
+  retryCount: number       // số lần đã retry trong auto-retry
+  errorMessage?: string    // lý do lỗi cuối cùng
 }
 
 type Step = 'input' | 'filling' | 'review'
@@ -48,6 +51,10 @@ interface BulkAddModalProps {
   onSuccess: () => void
 }
 
+/* ─── Constants ──────────────────────────────────────────────── */
+const MAX_RETRIES = 3
+const RETRY_BASE_DELAY_MS = 2000  // delays: 2s → 4s → 8s (exponential)
+
 /* ─── Utils ──────────────────────────────────────────────────── */
 function makeCard(sentence: string, overrides: Partial<PhraseCard> = {}): PhraseCard {
   return {
@@ -58,25 +65,56 @@ function makeCard(sentence: string, overrides: Partial<PhraseCard> = {}): Phrase
     example1: '', example1_translation: '', example1_pronunciation: '',
     example2: '', example2_translation: '', example2_pronunciation: '',
     selected: true, status: 'pending',
+    retryCount: 0,
     ...overrides,
   }
 }
 
-async function generateFields(sampleSentence: string, topicName: string) {
+async function callGenerateApi(sampleSentence: string, topicName: string) {
   const res = await fetch('/api/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sampleSentence, topicName }),
   })
-  if (!res.ok) throw new Error('AI error')
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.error ?? `HTTP ${res.status}`)
+  }
   return res.json()
+}
+
+/**
+ * Gọi AI tối đa (1 + maxRetries) lần với exponential backoff.
+ * Trả về { result, retryCount } khi thành công, throw Error khi hết lần thử.
+ */
+async function generateWithRetry(
+  sampleSentence: string,
+  topicName: string,
+  maxRetries: number,
+  onAttempt: (attempt: number) => void
+): Promise<{ result: Awaited<ReturnType<typeof callGenerateApi>>; retryCount: number }> {
+  let lastError: Error = new Error('Unknown error')
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    if (attempt > 0) {
+      const delayMs = RETRY_BASE_DELAY_MS * Math.pow(2, attempt - 1) // 2s, 4s, 8s
+      await new Promise(r => setTimeout(r, delayMs))
+      onAttempt(attempt)
+    }
+    try {
+      const result = await callGenerateApi(sampleSentence, topicName)
+      return { result, retryCount: attempt }
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err))
+    }
+  }
+  throw lastError
 }
 
 /* ─── Sub-components ─────────────────────────────────────────── */
 function StatusDot({ status }: { status: PhraseCard['status'] }) {
   if (status === 'loading') return <Loader2 className="h-3.5 w-3.5 animate-spin text-orange-400" />
   if (status === 'done')    return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-  if (status === 'error')   return <span className="h-3.5 w-3.5 text-red-400 text-xs font-bold">!</span>
+  if (status === 'error')   return <AlertCircle className="h-3.5 w-3.5 text-red-500" />
   return <span className="h-3.5 w-3.5 rounded-full bg-gray-300 block" />
 }
 
@@ -84,32 +122,36 @@ function ReviewCard({
   card,
   onToggleSelect,
   onChange,
+  onRetry,
 }: {
   card: PhraseCard
   onToggleSelect: () => void
   onChange: (field: keyof PhraseCard, value: string) => void
+  onRetry: () => void
 }) {
   return (
     <div className={cn(
       'rounded-2xl border bg-white transition-all overflow-hidden',
-      card.selected ? 'border-orange-300' : 'border-gray-200 opacity-60'
+      card.status === 'error'
+        ? 'border-red-200 bg-red-50/30'
+        : card.selected ? 'border-orange-300' : 'border-gray-200 opacity-60'
     )}>
       {/* Card Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <StatusDot status={card.status} />
           {card.status === 'loading'
-            ? <span className="text-sm text-gray-400 italic">Đang phân tích...</span>
-            : <span className="text-sm font-semibold text-gray-900">{card.sample_sentence}</span>
+            ? <span className="text-sm text-gray-400 italic">
+                {card.retryCount > 0 ? `Đang thử lại (${card.retryCount}/${MAX_RETRIES})...` : 'Đang phân tích...'}
+              </span>
+            : <span className="text-sm font-semibold text-gray-900 truncate">{card.sample_sentence}</span>
           }
         </div>
-        <div className="flex items-center gap-2">
-          {/* Input mode badge */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Mode badge (only on done cards) */}
           {card.inputType && card.status === 'done' && (
             <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-              card.inputType === 'vocabulary'
-                ? 'bg-sky-100 text-sky-600'
-                : 'bg-orange-100 text-orange-600'
+              card.inputType === 'vocabulary' ? 'bg-sky-100 text-sky-600' : 'bg-orange-100 text-orange-600'
             }`}>
               {card.inputType === 'vocabulary'
                 ? <><BookOpen className="h-2.5 w-2.5" /> Từ vựng</>
@@ -117,32 +159,63 @@ function ReviewCard({
               }
             </div>
           )}
-          <button
-            onClick={onToggleSelect}
-            className={cn(
-              'flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors',
-              card.selected
-                ? 'bg-orange-100 text-orange-700 hover:bg-red-100 hover:text-red-600'
-                : 'bg-gray-100 text-gray-500 hover:bg-orange-100 hover:text-orange-600'
-            )}
-          >
-            {card.selected ? (
-              <><CheckCircle2 className="h-3 w-3" /> Đã chọn</>
-            ) : (
-              <><X className="h-3 w-3" /> Bỏ qua</>
-            )}
-          </button>
+          {/* Retry button (error cards only) */}
+          {card.status === 'error' && (
+            <button
+              onClick={onRetry}
+              className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium bg-red-100 text-red-600 hover:bg-orange-100 hover:text-orange-700 transition-colors"
+            >
+              <RefreshCw className="h-3 w-3" /> Thử lại
+            </button>
+          )}
+          {/* Select / Deselect toggle (non-error cards only) */}
+          {card.status !== 'error' && (
+            <button
+              onClick={onToggleSelect}
+              className={cn(
+                'flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors',
+                card.selected
+                  ? 'bg-orange-100 text-orange-700 hover:bg-red-100 hover:text-red-600'
+                  : 'bg-gray-100 text-gray-500 hover:bg-orange-100 hover:text-orange-600'
+              )}
+            >
+              {card.selected
+                ? <><CheckCircle2 className="h-3 w-3" /> Đã chọn</>
+                : <><X className="h-3 w-3" /> Bỏ qua</>
+              }
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Card Body — editable fields */}
+      {/* Error body */}
+      {card.status === 'error' && (
+        <div className="px-5 py-4 flex items-start gap-3">
+          <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-red-600">
+              AI không thể phân tích sau {MAX_RETRIES} lần thử tự động
+            </p>
+            {card.errorMessage && (
+              <p className="text-xs text-red-400 mt-0.5 font-mono">{card.errorMessage}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              Bấm "Thử lại" để thử lại thủ công, hoặc bỏ qua mục này.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Editable fields (done cards only) */}
       {card.status === 'done' && (
         <div className="grid grid-cols-2 gap-5 p-5">
           {/* Left column */}
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-gray-400">Loại câu</label>
+                <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-gray-400">
+                  {card.inputType === 'vocabulary' ? 'Loại từ' : 'Loại câu'}
+                </label>
                 <Input value={card.type} onChange={e => onChange('type', e.target.value)}
                   className="h-7 border-0 border-b border-gray-200 bg-transparent px-0 text-sm text-gray-800 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
               </div>
@@ -153,7 +226,9 @@ function ReviewCard({
               </div>
             </div>
             <div>
-              <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-gray-400">Cấu trúc</label>
+              <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-gray-400">
+                {card.inputType === 'vocabulary' ? 'Dạng từ & Collocation' : 'Cấu trúc'}
+              </label>
               <Input value={card.structure} onChange={e => onChange('structure', e.target.value)}
                 className="h-7 border-0 border-b border-gray-200 bg-transparent px-0 text-sm text-gray-800 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
             </div>
@@ -207,29 +282,29 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
   /* ── Parse file ── */
   const parseFile = (file: File) => {
     const name = file.name.toLowerCase()
+    const mapRow = (row: any): PhraseCard => makeCard(row.sample_sentence || '', {
+      translation: row.translation || '',
+      pronunciation: row.pronunciation || '',
+      structure: row.structure || '',
+      type: row.type || '',
+      function: row.function || '',
+      example1: row.example1 || '',
+      example1_translation: row.example1_translation || '',
+      example1_pronunciation: row.example1_pronunciation || '',
+      example2: row.example2 || '',
+      example2_translation: row.example2_translation || '',
+      example2_pronunciation: row.example2_pronunciation || '',
+      status: 'pending' as const,
+    })
+
     if (name.endsWith('.csv')) {
       Papa.parse(file, {
         header: true, skipEmptyLines: true,
         complete: ({ data }: any) => {
-          const parsed = (data as any[])
-            .map((row) => makeCard(row.sample_sentence || '', {
-              translation: row.translation || '',
-              pronunciation: row.pronunciation || '',
-              structure: row.structure || '',
-              type: row.type || '',
-              function: row.function || '',
-              example1: row.example1 || '',
-              example1_translation: row.example1_translation || '',
-              example1_pronunciation: row.example1_pronunciation || '',
-              example2: row.example2 || '',
-              example2_translation: row.example2_translation || '',
-              example2_pronunciation: row.example2_pronunciation || '',
-              status: 'pending' as const,
-            }))
-            .filter((c) => c.sample_sentence)
+          const parsed = (data as any[]).map(mapRow).filter(c => c.sample_sentence)
           if (!parsed.length) { toast.error('Không tìm thấy cột sample_sentence'); return }
           setCards(parsed)
-          setRawText(parsed.map((c) => c.sample_sentence).join('\n'))
+          setRawText(parsed.map(c => c.sample_sentence).join('\n'))
         },
         error: () => toast.error('Lỗi đọc CSV'),
       })
@@ -238,25 +313,10 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
       reader.onload = (e) => {
         const wb = XLSX.read(e.target?.result, { type: 'array' })
         const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]) as any[]
-        const parsed = json
-          .map((row) => makeCard(row.sample_sentence || '', {
-            translation: row.translation || '',
-            pronunciation: row.pronunciation || '',
-            structure: row.structure || '',
-            type: row.type || '',
-            function: row.function || '',
-            example1: row.example1 || '',
-            example1_translation: row.example1_translation || '',
-            example1_pronunciation: row.example1_pronunciation || '',
-            example2: row.example2 || '',
-            example2_translation: row.example2_translation || '',
-            example2_pronunciation: row.example2_pronunciation || '',
-            status: 'pending' as const,
-          }))
-          .filter((c) => c.sample_sentence)
+        const parsed = json.map(mapRow).filter(c => c.sample_sentence)
         if (!parsed.length) { toast.error('Không tìm thấy cột sample_sentence'); return }
         setCards(parsed)
-        setRawText(parsed.map((c) => c.sample_sentence).join('\n'))
+        setRawText(parsed.map(c => c.sample_sentence).join('\n'))
       }
       reader.readAsArrayBuffer(file)
     } else {
@@ -264,35 +324,95 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
     }
   }
 
-  /* ── Start AI Fill ── */
+  /* ── Core: fill 1 card by index with auto-retry ── */
+  const fillCardAtIndex = useCallback(async (cardSnapshot: PhraseCard, i: number) => {
+    try {
+      const { result, retryCount } = await generateWithRetry(
+        cardSnapshot.sample_sentence,
+        topicName,
+        MAX_RETRIES,
+        (attempt) => {
+          setCards(prev => prev.map((c, idx) =>
+            idx === i ? { ...c, retryCount: attempt } : c
+          ))
+        }
+      )
+      const { inputType, ...fields } = result as typeof result & { inputType?: string }
+      setCards(prev => prev.map((c, idx) =>
+        idx === i
+          ? { ...c, ...fields, inputType: inputType as PhraseCard['inputType'], status: 'done', retryCount, errorMessage: undefined }
+          : c
+      ))
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setCards(prev => prev.map((c, idx) =>
+        // auto-deselect failed cards
+        idx === i ? { ...c, status: 'error', selected: false, errorMessage: msg } : c
+      ))
+    }
+  }, [topicName])
+
+  /* ── Start AI Fill (batch with auto-retry) ── */
   const startFill = useCallback(async () => {
     const sentences = rawText.split('\n').map(s => s.trim()).filter(Boolean)
-    if (!sentences.length) { toast.error('Nhập ít nhất 1 câu'); return }
+    if (!sentences.length) { toast.error('Nhập ít nhất 1 mục'); return }
 
-    const initial = sentences.map((s) => makeCard(s, { status: 'loading' }))
+    const initial = sentences.map(s => makeCard(s, { status: 'loading' }))
     setCards(initial); setCursor(0); setStep('filling')
 
-    // fire all AI calls concurrently (but update state per card)
-    await Promise.all(initial.map(async (card, i) => {
-      try {
-        const result = await generateFields(card.sample_sentence, topicName)
-        const { inputType, ...fields } = result as typeof result & { inputType?: string }
-        setCards(prev => prev.map((c, idx) => idx === i ? { ...c, ...fields, inputType: inputType as PhraseCard['inputType'], status: 'done' } : c))
-      } catch {
-        setCards(prev => prev.map((c, idx) => idx === i ? { ...c, status: 'error' } : c))
-      }
-    }))
+    // All cards process concurrently; each has its own retry loop
+    await Promise.all(initial.map((card, i) => fillCardAtIndex(card, i)))
+
     setStep('review')
-  }, [rawText, topicName])
 
-  /* ── Update a card field ── */
-  const updateCard = (id: string, field: keyof PhraseCard, value: string) => {
+    // Summary toast
+    setCards(prev => {
+      const errCount = prev.filter(c => c.status === 'error').length
+      if (errCount > 0) {
+        toast.warning(
+          `${prev.length - errCount}/${prev.length} mục thành công — ${errCount} lỗi sau ${MAX_RETRIES} lần thử`,
+          { duration: 6000 }
+        )
+      } else {
+        toast.success(`Tất cả ${prev.length} mục đã được phân tích!`)
+      }
+      return prev
+    })
+  }, [rawText, fillCardAtIndex])
+
+  /* ── Manual retry single card by id (in review step) ── */
+  const retryCard = useCallback(async (id: string) => {
+    const card = cards.find(c => c.id === id)
+    if (!card) return
+
+    setCards(prev => prev.map(c =>
+      c.id === id ? { ...c, status: 'loading', retryCount: 0, errorMessage: undefined } : c
+    ))
+
+    try {
+      const result = await callGenerateApi(card.sample_sentence, topicName)
+      const { inputType, ...fields } = result as typeof result & { inputType?: string }
+      setCards(prev => prev.map(c =>
+        c.id === id
+          ? { ...c, ...fields, inputType: inputType as PhraseCard['inputType'], status: 'done', selected: true, errorMessage: undefined }
+          : c
+      ))
+      toast.success(`"${card.sample_sentence}" phân tích xong!`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setCards(prev => prev.map(c =>
+        c.id === id ? { ...c, status: 'error', errorMessage: msg } : c
+      ))
+      toast.error(`Vẫn lỗi: ${msg}`)
+    }
+  }, [cards, topicName])
+
+  /* ── Field update & select toggle ── */
+  const updateCard = (id: string, field: keyof PhraseCard, value: string) =>
     setCards(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c))
-  }
 
-  const toggleSelect = (id: string) => {
+  const toggleSelect = (id: string) =>
     setCards(prev => prev.map(c => c.id === id ? { ...c, selected: !c.selected } : c))
-  }
 
   /* ── Save selected ── */
   const handleSave = async () => {
@@ -308,9 +428,7 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
       if (!res.ok) throw new Error((await res.json()).error)
       const { count } = await res.json()
       toast.success(`Đã thêm ${count} câu thành công!`)
-      onSuccess()
-      reset()
-      onOpenChange(false)
+      onSuccess(); reset(); onOpenChange(false)
     } catch (e: any) {
       toast.error(e.message)
     } finally {
@@ -319,7 +437,7 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
   }
 
   const selectedCount = cards.filter(c => c.selected).length
-  const isAllDone     = cards.length > 0 && cards.every(c => c.status !== 'loading')
+  const errorCount    = cards.filter(c => c.status === 'error').length
   const current       = cards[cursor]
 
   return (
@@ -331,17 +449,19 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
             Thêm nhiều câu với AI
           </DialogTitle>
           <DialogDescription className="text-gray-500">
-            {step === 'input'  && 'Nhập danh sách câu (mỗi dòng 1 câu) hoặc tải file lên, rồi bấm AI Fill.'}
-            {step === 'filling'&& 'AI đang phân tích các câu, vui lòng đợi...'}
-            {step === 'review' && `Xem lại ${cards.length} câu — đã chọn ${selectedCount}. Bấm nút mũi tên để duyệt từng câu.`}
+            {step === 'input'   && 'Nhập danh sách câu/từ (mỗi dòng 1 mục) hoặc tải file lên, rồi bấm AI Fill.'}
+            {step === 'filling' && `AI đang phân tích — lỗi sẽ tự động thử lại tối đa ${MAX_RETRIES} lần...`}
+            {step === 'review'  &&
+              `Xem lại ${cards.length} mục — ${selectedCount} đã chọn${errorCount > 0 ? ` · ${errorCount} lỗi` : ''}`
+            }
           </DialogDescription>
         </DialogHeader>
 
-        {/* ════════════ STEP: INPUT ════════════ */}
+        {/* ════════════ STEP: INPUT / FILLING ════════════ */}
         {(step === 'input' || step === 'filling') && (
           <div className="space-y-4 mt-2">
             <Textarea
-              placeholder={"Who are you?\nWhat do you do?\nNice to meet you."}
+              placeholder={"Who are you?\nWhat do you do?\nbeautiful\ngive up\nNice to meet you."}
               value={rawText}
               onChange={e => setRawText(e.target.value)}
               rows={8}
@@ -349,13 +469,15 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
               className="border-gray-200 bg-gray-50 text-gray-800 placeholder:text-gray-400 focus:border-orange-500 font-mono resize-none text-sm"
             />
 
-            {/* File upload strip */}
             <div
               className="flex items-center gap-3 rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:border-orange-400 transition-colors"
               onClick={() => fileInputRef.current?.click()}
             >
               <UploadCloud className="h-5 w-5 text-gray-400 shrink-0" />
-              <p className="text-xs text-gray-500">Hoặc tải file <span className="text-orange-500">.csv / .xlsx</span> lên (cột <code className="bg-gray-100 px-1 rounded">sample_sentence</code> bắt buộc)</p>
+              <p className="text-xs text-gray-500">
+                Hoặc tải file <span className="text-orange-500">.csv / .xlsx</span> lên
+                (cột <code className="bg-gray-100 px-1 rounded">sample_sentence</code> bắt buộc)
+              </p>
               <input
                 ref={fileInputRef} type="file"
                 accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -364,15 +486,16 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
               />
             </div>
 
-            {/* Show sentence count preview */}
             {rawText.trim() && (
               <p className="text-xs text-gray-500">
-                {rawText.split('\n').filter(s => s.trim()).length} câu được phát hiện
+                {rawText.split('\n').filter(s => s.trim()).length} mục được phát hiện
               </p>
             )}
 
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-gray-500 hover:text-gray-900">Hủy</Button>
+              <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-gray-500 hover:text-gray-900">
+                Hủy
+              </Button>
               <Button
                 onClick={startFill}
                 disabled={!rawText.trim() || step === 'filling'}
@@ -385,14 +508,23 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
               </Button>
             </div>
 
-            {/* Live progress cards while filling */}
+            {/* Live progress list */}
             {step === 'filling' && cards.length > 0 && (
               <div className="space-y-2 mt-2">
-                {cards.map((c) => (
-                  <div key={c.id} className="flex items-center gap-3 rounded-lg bg-gray-50 border border-gray-100 px-4 py-2.5">
+                {cards.map(c => (
+                  <div key={c.id} className={cn(
+                    'flex items-center gap-3 rounded-lg border px-4 py-2.5 transition-colors',
+                    c.status === 'error' ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100'
+                  )}>
                     <StatusDot status={c.status} />
-                    <span className="text-sm text-gray-600 truncate">{c.sample_sentence}</span>
-                    {c.status === 'error' && <span className="ml-auto text-xs text-red-500">Lỗi</span>}
+                    <span className="text-sm text-gray-600 truncate flex-1">{c.sample_sentence}</span>
+                    {c.status === 'loading' && c.retryCount > 0 && (
+                      <span className="text-xs text-orange-500 shrink-0">
+                        Thử lại {c.retryCount}/{MAX_RETRIES}...
+                      </span>
+                    )}
+                    {c.status === 'done'  && <span className="text-xs text-emerald-600 shrink-0">✓ Xong</span>}
+                    {c.status === 'error' && <span className="text-xs text-red-500 shrink-0">✗ Lỗi</span>}
                   </div>
                 ))}
               </div>
@@ -403,33 +535,42 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
         {/* ════════════ STEP: REVIEW ════════════ */}
         {step === 'review' && current && (
           <div className="space-y-4 mt-2">
-            {/* Navigation bar */}
+            {/* Navigation dots */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 {cards.map((c, i) => (
                   <button
                     key={c.id}
                     onClick={() => setCursor(i)}
+                    title={c.sample_sentence}
                     className={cn(
                       'h-2 rounded-full transition-all',
-                      i === cursor ? 'w-6 bg-orange-500' : c.selected ? 'w-2 bg-slate-500' : 'w-2 bg-red-800/50'
+                      c.status === 'error'
+                        ? (i === cursor ? 'w-6 bg-red-500' : 'w-2 bg-red-300')
+                        : i === cursor ? 'w-6 bg-orange-500'
+                        : c.selected ? 'w-2 bg-slate-400'
+                        : 'w-2 bg-gray-200'
                     )}
                   />
                 ))}
               </div>
-              <span className="text-sm text-gray-500">
-                {cursor + 1} / {cards.length} • <span className="text-orange-600">{selectedCount} đã chọn</span>
+              <span className="text-sm text-gray-500 shrink-0 ml-3">
+                {cursor + 1} / {cards.length}
+                {' • '}
+                <span className="text-orange-600">{selectedCount} chọn</span>
+                {errorCount > 0 && <span className="text-red-500"> · {errorCount} lỗi</span>}
               </span>
             </div>
 
-            {/* Card */}
+            {/* Current card */}
             <ReviewCard
               card={current}
               onToggleSelect={() => toggleSelect(current.id)}
               onChange={(field, value) => updateCard(current.id, field, value)}
+              onRetry={() => retryCard(current.id)}
             />
 
-            {/* Prev / Next */}
+            {/* Navigation buttons */}
             <div className="flex items-center justify-between">
               <Button
                 variant="outline"
@@ -442,8 +583,9 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
 
               <Button
                 variant="ghost"
+                disabled={current.status === 'error'}
                 onClick={() => { toggleSelect(current.id); if (cursor < cards.length - 1) setCursor(c => c + 1) }}
-                className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                className="text-red-400 hover:text-red-300 hover:bg-red-500/10 disabled:opacity-30"
               >
                 <Trash2 className="mr-1.5 h-3.5 w-3.5" />
                 {current.selected ? 'Bỏ câu này' : 'Chọn lại'}
@@ -471,7 +613,7 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
               )}
             </div>
 
-            {/* Quick save button always visible if on any card */}
+            {/* Quick save (always visible when not on last card) */}
             {cursor < cards.length - 1 && (
               <div className="flex justify-end">
                 <Button
