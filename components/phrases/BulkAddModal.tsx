@@ -436,9 +436,45 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
     }
   }
 
-  const selectedCount = cards.filter(c => c.selected).length
-  const errorCount    = cards.filter(c => c.status === 'error').length
-  const current       = cards[cursor]
+  const selectedCount  = cards.filter(c => c.selected).length
+  const errorCount     = cards.filter(c => c.status === 'error').length
+  const errorCards     = cards.filter(c => c.status === 'error')
+  const current        = cards[cursor]
+  const [retryingAll, setRetryingAll] = useState(false)
+
+  /* ── Retry all error cards sequentially ── */
+  const retryAllErrors = useCallback(async () => {
+    const targets = cards.filter(c => c.status === 'error')
+    if (!targets.length) return
+    setRetryingAll(true)
+    for (const card of targets) {
+      // reset to loading
+      setCards(prev => prev.map(c =>
+        c.id === card.id ? { ...c, status: 'loading', retryCount: 0, errorMessage: undefined } : c
+      ))
+      try {
+        const result = await callGenerateApi(card.sample_sentence, topicName)
+        const { inputType, ...fields } = result as typeof result & { inputType?: string }
+        setCards(prev => prev.map(c =>
+          c.id === card.id
+            ? { ...c, ...fields, inputType: inputType as PhraseCard['inputType'], status: 'done', selected: true, errorMessage: undefined }
+            : c
+        ))
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        setCards(prev => prev.map(c =>
+          c.id === card.id ? { ...c, status: 'error', errorMessage: msg } : c
+        ))
+      }
+    }
+    setRetryingAll(false)
+    setCards(prev => {
+      const remaining = prev.filter(c => c.status === 'error').length
+      if (remaining === 0) toast.success('Tất cả mục lỗi đã được phân tích xong!')
+      else toast.warning(`Vẫn còn ${remaining} mục lỗi`, { duration: 5000 })
+      return prev
+    })
+  }, [cards, topicName])
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v) }}>
@@ -535,6 +571,57 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
         {/* ════════════ STEP: REVIEW ════════════ */}
         {step === 'review' && current && (
           <div className="space-y-4 mt-2">
+
+            {/* ──────── ERROR SUMMARY PANEL (only when errors exist) ──────── */}
+            {errorCount > 0 && (
+              <div className="rounded-xl border border-red-200 bg-red-50 overflow-hidden">
+                {/* Panel header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-red-100">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-red-500" />
+                    <span className="text-sm font-semibold text-red-700">
+                      {errorCount} mục thất bại sau {MAX_RETRIES} lần thử tự động
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    disabled={retryingAll}
+                    onClick={retryAllErrors}
+                    className="bg-red-600 hover:bg-red-500 text-white h-7 px-3 text-xs gap-1.5"
+                  >
+                    {retryingAll
+                      ? <><Loader2 className="h-3 w-3 animate-spin" /> Đang retry...</>
+                      : <><RefreshCw className="h-3 w-3" /> Retry tất cả {errorCount} mục</>
+                    }
+                  </Button>
+                </div>
+                {/* Error item list */}
+                <div className="divide-y divide-red-100">
+                  {errorCards.map(c => (
+                    <div key={c.id} className="flex items-center gap-3 px-4 py-2.5">
+                      {c.status === 'loading'
+                        ? <Loader2 className="h-3.5 w-3.5 animate-spin text-orange-400 shrink-0" />
+                        : <AlertCircle className="h-3.5 w-3.5 text-red-400 shrink-0" />
+                      }
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 truncate">{c.sample_sentence}</p>
+                        {c.errorMessage && (
+                          <p className="text-[10px] text-red-400 font-mono truncate mt-0.5">{c.errorMessage}</p>
+                        )}
+                      </div>
+                      <button
+                        disabled={retryingAll || c.status === 'loading'}
+                        onClick={() => retryCard(c.id)}
+                        className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium bg-white border border-red-200 text-red-600 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition-colors disabled:opacity-40 shrink-0"
+                      >
+                        <RefreshCw className="h-2.5 w-2.5" /> Thử lại
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Navigation dots */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 flex-wrap">
