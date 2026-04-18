@@ -7,6 +7,7 @@ import { UploadCloud, FileType, CheckCircle2, AlertCircle, X } from 'lucide-reac
 import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
 import Papa from 'papaparse'
+import { apiFetch } from '@/lib/api-client'
 
 interface BulkImportModalProps {
   open: boolean
@@ -84,21 +85,11 @@ export function BulkImportModal({ open, onOpenChange, topicId, onSuccess }: Bulk
 
     setLoading(true)
     try {
-      const res = await fetch('/api/phrases/bulk', {
+      const result = await apiFetch<{ count: number }>('/api/phrases/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topic_id: topicId,
-          data
-        })
+        body: JSON.stringify({ topic_id: topicId, data }),
       })
-
-      if (!res.ok) {
-        const errData = await res.json()
-        throw new Error(errData.error || 'Import failed')
-      }
-
-      const result = await res.json()
       toast.success(`Nhập thành công ${result.count} câu!`)
       onSuccess()
       onOpenChange(false)

@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
 import Papa from 'papaparse'
 import { cn } from '@/lib/utils'
+import { apiFetch } from '@/lib/api-client'
 
 /* ─── Types ─────────────────────────────────────────────────── */
 type PhraseCard = {
@@ -71,16 +72,11 @@ function makeCard(sentence: string, overrides: Partial<PhraseCard> = {}): Phrase
 }
 
 async function callGenerateApi(sampleSentence: string, topicName: string) {
-  const res = await fetch('/api/generate', {
+  return apiFetch('/api/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sampleSentence, topicName }),
   })
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    throw new Error(body.error ?? `HTTP ${res.status}`)
-  }
-  return res.json()
 }
 
 /**
@@ -420,14 +416,12 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
     if (!selected.length) { toast.error('Chưa có câu nào được chọn'); return }
     setSaving(true)
     try {
-      const res = await fetch('/api/phrases/bulk', {
+      const result = await apiFetch<{ count: number }>('/api/phrases/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic_id: topicId, data: selected }),
       })
-      if (!res.ok) throw new Error((await res.json()).error)
-      const { count } = await res.json()
-      toast.success(`Đã thêm ${count} câu thành công!`)
+      toast.success(`Đã thêm ${result.count} câu thành công!`)
       onSuccess(); reset(); onOpenChange(false)
     } catch (e: any) {
       toast.error(e.message)

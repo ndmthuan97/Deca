@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
 import { db } from '@/db'
 import { phrases } from '@/db/schema'
+import { ok, badRequest, serverError } from '@/lib/api-response'
 
 export async function POST(request: Request) {
   try {
@@ -8,11 +8,10 @@ export async function POST(request: Request) {
     const { topic_id, data } = body
 
     if (!topic_id || !data || !Array.isArray(data) || data.length === 0) {
-      return NextResponse.json({ error: 'topic_id and a non-empty data array are required' }, { status: 400 })
+      return badRequest('topic_id and a non-empty data array are required')
     }
 
-    // Prepare data
-    const records = data.map((item: any) => ({
+    const records = data.map((item: Record<string, string>) => ({
       topic_id: parseInt(topic_id),
       sample_sentence: item.sample_sentence?.trim(),
       type: item.type?.trim() || null,
@@ -26,18 +25,17 @@ export async function POST(request: Request) {
       example2: item.example2?.trim() || null,
       example2_translation: item.example2_translation?.trim() || null,
       example2_pronunciation: item.example2_pronunciation?.trim() || null,
-    })).filter((r: any) => !!r.sample_sentence) // Must have sample sentence
+    })).filter((r) => !!r.sample_sentence)
 
     if (records.length === 0) {
-      return NextResponse.json({ error: 'No valid phrases found to insert' }, { status: 400 })
+      return badRequest('No valid phrases found to insert')
     }
 
-    // Insert chunk to prevent payload too large (though usually fine for < 1000 items)
     const inserted = await db.insert(phrases).values(records).returning()
-
-    return NextResponse.json({ success: true, count: inserted.length }, { status: 201 })
+    return ok({ count: inserted.length }, `Inserted ${inserted.length} phrases`, 201)
   } catch (error) {
     console.error('[POST /api/phrases/bulk]', error)
-    return NextResponse.json({ error: 'Failed to insert phrases' }, { status: 500 })
+    return serverError('Failed to insert phrases', error)
   }
 }
+

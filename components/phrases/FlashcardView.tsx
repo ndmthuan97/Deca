@@ -160,6 +160,36 @@ interface DictPhonetic { text?: string; audio?: string }
 interface DictMeaning { partOfSpeech: string; definitions: { definition: string }[] }
 interface DictEntry { phonetics: DictPhonetic[]; meanings: DictMeaning[] }
 
+// ─── localStorage IPA cache (TTL: 7 days) ────────────────────────────────────
+const IPA_CACHE_KEY_PREFIX = 'dace:ipa:'
+const IPA_CACHE_TTL = 7 * 24 * 60 * 60 * 1000
+
+interface IpaCacheEntry {
+  ipa: { uk: string; us: string }
+  meaning: string | null
+  cachedAt: number
+}
+
+function loadIpaCache(word: string): IpaCacheEntry | null {
+  try {
+    const raw = localStorage.getItem(IPA_CACHE_KEY_PREFIX + word)
+    if (!raw) return null
+    const entry: IpaCacheEntry = JSON.parse(raw)
+    if (Date.now() - entry.cachedAt > IPA_CACHE_TTL) {
+      localStorage.removeItem(IPA_CACHE_KEY_PREFIX + word)
+      return null
+    }
+    return entry
+  } catch { return null }
+}
+
+function saveIpaCache(word: string, ipa: { uk: string; us: string }, meaning: string | null) {
+  try {
+    const entry: IpaCacheEntry = { ipa, meaning, cachedAt: Date.now() }
+    localStorage.setItem(IPA_CACHE_KEY_PREFIX + word, JSON.stringify(entry))
+  } catch { /* quota exceeded — silently ignore */ }
+}
+
 function WordChip({ word }: { word: string }) {
   const [open, setOpen] = useState(false)
   const [ipa, setIpa] = useState<{ uk: string; us: string } | null>(null)
@@ -193,9 +223,22 @@ function WordChip({ word }: { word: string }) {
     setPos({ top: rect.top - 8, left })
   }, [open])
 
+  // Fetch IPA + translation — check localStorage cache first
   useEffect(() => {
-    if (!open || ipa || loading || !cleanWord) return
+    if (!open || ipa !== null || loading || !cleanWord) return
+
+    // Cache hit → restore immediately, skip API calls
+    const cached = loadIpaCache(cleanWord)
+    if (cached) {
+      setIpa(cached.ipa)
+      setMeaning(cached.meaning)
+      return
+    }
+
     setLoading(true)
+    let resolvedIpa: { uk: string; us: string } = { uk: '', us: '' }
+    let resolvedMeaning: string | null = null
+
     const dictP = fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${cleanWord}`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((data: DictEntry[]) => {
@@ -204,17 +247,24 @@ function WordChip({ word }: { word: string }) {
         const ukP = phonetics.find(p => p.text && (p.audio?.includes('uk') || p.audio?.includes('gb')))
         const usP = phonetics.find(p => p.text && (p.audio?.includes('us') || p.audio?.includes('au')))
         const fallback = phonetics.find(p => p.text)
-        setIpa({ uk: ukP?.text ?? fallback?.text ?? '', us: usP?.text ?? fallback?.text ?? '' })
+        resolvedIpa = { uk: ukP?.text ?? fallback?.text ?? '', us: usP?.text ?? fallback?.text ?? '' }
+        setIpa(resolvedIpa)
       })
-      .catch(() => setIpa({ uk: '', us: '' }))
+      .catch(() => { resolvedIpa = { uk: '', us: '' }; setIpa(resolvedIpa) })
+
     const transP = fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanWord)}&langpair=en|vi`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((data: { responseData?: { translatedText?: string } }) => {
         const t = data?.responseData?.translatedText
-        if (t && t.toLowerCase() !== cleanWord) setMeaning(t)
+        if (t && t.toLowerCase() !== cleanWord) { resolvedMeaning = t; setMeaning(t) }
       })
       .catch(() => {})
-    Promise.allSettled([dictP, transP]).finally(() => setLoading(false))
+
+    Promise.allSettled([dictP, transP]).finally(() => {
+      setLoading(false)
+      // Persist to cache after both calls finish
+      saveIpaCache(cleanWord, resolvedIpa, resolvedMeaning)
+    })
   }, [open, ipa, loading, cleanWord])
 
   return (

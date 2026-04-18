@@ -22,20 +22,17 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
 import type { Topic, Phrase } from '@/db/schema'
+import { apiFetch } from '@/lib/api-client'
 
 const PAGE_SIZE = 10  // desktop
 
 /* ── Utils ── */
 async function fetchTopic(id: string): Promise<Topic> {
-  const res = await fetch(`/api/topics/${id}`)
-  if (!res.ok) throw new Error('Not found')
-  return res.json()
+  return apiFetch<Topic>(`/api/topics/${id}`)
 }
 
 async function fetchPhrases(topicId: string): Promise<Phrase[]> {
-  const res = await fetch(`/api/phrases?topic_id=${topicId}`)
-  if (!res.ok) throw new Error('Failed')
-  return res.json()
+  return apiFetch<Phrase[]>(`/api/phrases?topic_id=${topicId}`)
 }
 
 function speak(text: string) {
@@ -268,8 +265,7 @@ export default function TopicPage() {
   /* ── Mutations ── */
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/phrases/${id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Delete failed')
+      await apiFetch(`/api/phrases/${id}`, { method: 'DELETE' })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['phrases', parseInt(params.id)] })
@@ -281,13 +277,11 @@ export default function TopicPage() {
 
   const bulkDeleteMutation = useMutation({
     mutationFn: async (ids: number[]) => {
-      const res = await fetch('/api/phrases/bulk-delete', {
+      return apiFetch<{ count: number }>('/api/phrases/bulk-delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids }),
       })
-      if (!res.ok) throw new Error('Bulk delete failed')
-      return res.json()
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['phrases', parseInt(params.id)] })

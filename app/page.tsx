@@ -15,14 +15,13 @@ import {
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { useDebounce } from '@/lib/hooks/useDebounce'
+import { apiFetch } from '@/lib/api-client'
 import type { TopicWithCount } from '@/db/schema'
 
 const PAGE_SIZE = 10
 
 async function fetchTopics(): Promise<TopicWithCount[]> {
-  const res = await fetch('/api/topics')
-  if (!res.ok) throw new Error('Failed to fetch topics')
-  return res.json()
+  return apiFetch<TopicWithCount[]>('/api/topics')
 }
 
 export default function HomePage() {
@@ -77,11 +76,11 @@ export default function HomePage() {
     }
     let cancelled = false
     setIconLoading(true)
-    fetch(`/api/topics/suggest-icon?name=${encodeURIComponent(debouncedNewName)}`)
-      .then((res) => res.json())
+    apiFetch<{ icon: string }>(`/api/topics/suggest-icon?name=${encodeURIComponent(debouncedNewName)}`)
       .then((data) => {
         if (!cancelled) setPreviewIcon(data.icon ?? '📚')
       })
+      .catch(() => {})
       .finally(() => { if (!cancelled) setIconLoading(false) })
     return () => { cancelled = true }
   }, [debouncedNewName])
@@ -90,13 +89,11 @@ export default function HomePage() {
   const createMutation = useMutation({
     mutationFn: async (name: string) => {
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-      const res = await fetch('/api/topics', {
+      return apiFetch<{ name: string }>('/api/topics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, slug }),
       })
-      if (!res.ok) throw new Error('Failed')
-      return res.json()
     },
     onSuccess: (topic) => {
       queryClient.invalidateQueries({ queryKey: ['topics'] })
@@ -109,19 +106,17 @@ export default function HomePage() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, name, description }: { id: number; name?: string; description?: string }) => {
-      const body: any = {}
+      const payload: Record<string, string> = {}
       if (name !== undefined) {
-        body.slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-        body.name = name
+        payload.slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+        payload.name = name
       }
-      if (description !== undefined) body.description = description
-      const res = await fetch(`/api/topics/${id}`, {
+      if (description !== undefined) payload.description = description
+      return apiFetch<{ name: string }>(`/api/topics/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(payload),
       })
-      if (!res.ok) throw new Error('Failed')
-      return res.json()
     },
     onSuccess: (topic) => {
       queryClient.invalidateQueries({ queryKey: ['topics'] })
@@ -133,8 +128,7 @@ export default function HomePage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/topics/${id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Failed')
+      await apiFetch(`/api/topics/${id}`, { method: 'DELETE' })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['topics'] })

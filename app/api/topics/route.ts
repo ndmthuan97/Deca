@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server'
 import { db } from '@/db'
 import { topics, phrases } from '@/db/schema'
-import { eq, sql } from 'drizzle-orm'
+import { eq, isNull, sql } from 'drizzle-orm'
 import { generateTopicIcon, generateTopicDescription } from '@/lib/ai'
+import { ok, created, badRequest, serverError } from '@/lib/api-response'
 
 export async function GET() {
   try {
-    // Get topics with phrase count via subquery
+    // phrase_count only counts non-deleted phrases (WHERE deleted_at IS NULL)
     const result = await db
       .select({
         id: topics.id,
@@ -16,17 +16,17 @@ export async function GET() {
         icon: topics.icon,
         order_index: topics.order_index,
         created_at: topics.created_at,
-        phrase_count: sql<number>`count(${phrases.id})::int`,
+        phrase_count: sql<number>`count(case when ${phrases.deleted_at} is null then 1 end)::int`,
       })
       .from(topics)
       .leftJoin(phrases, eq(topics.id, phrases.topic_id))
       .groupBy(topics.id)
       .orderBy(topics.order_index)
 
-    return NextResponse.json(result)
+    return ok(result)
   } catch (error) {
     console.error('[GET /api/topics]', error)
-    return NextResponse.json({ error: 'Failed to fetch topics' }, { status: 500 })
+    return serverError('Failed to fetch topics', error)
   }
 }
 
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     let { icon } = body
 
     if (!name || !slug) {
-      return NextResponse.json({ error: 'name and slug are required' }, { status: 400 })
+      return badRequest('name and slug are required')
     }
 
     if (!icon) {
@@ -49,7 +49,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Auto-generate a short description if not provided
     let resolvedDescription = description
     if (!resolvedDescription) {
       try {
@@ -59,14 +58,14 @@ export async function POST(request: Request) {
       }
     }
 
-    const [created] = await db
+    const [newTopic] = await db
       .insert(topics)
       .values({ name, slug, description: resolvedDescription, icon, order_index })
       .returning()
 
-    return NextResponse.json(created, { status: 201 })
+    return created(newTopic)
   } catch (error) {
     console.error('[POST /api/topics]', error)
-    return NextResponse.json({ error: 'Failed to create topic' }, { status: 500 })
+    return serverError('Failed to create topic', error)
   }
 }

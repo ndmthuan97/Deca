@@ -32,7 +32,7 @@ function PinForm() {
 
       if (!res.ok) {
         const data = await res.json()
-        setError(data.error || 'Sai PIN!')
+        setError(data.message || 'Sai PIN!')
         setPin('')
         inputRef.current?.focus()
       } else {

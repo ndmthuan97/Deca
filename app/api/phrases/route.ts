@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server'
 import { db } from '@/db'
 import { phrases } from '@/db/schema'
 import { eq, asc, isNull, and } from 'drizzle-orm'
+import { ok, created, badRequest, serverError } from '@/lib/api-response'
 
 export async function GET(request: Request) {
   try {
@@ -20,10 +20,10 @@ export async function GET(request: Request) {
           .where(isNull(phrases.deleted_at))
           .orderBy(asc(phrases.created_at))
 
-    return NextResponse.json(result)
+    return ok(result)
   } catch (error) {
     console.error('[GET /api/phrases]', error)
-    return NextResponse.json({ error: 'Failed to fetch phrases' }, { status: 500 })
+    return serverError('Failed to fetch phrases', error)
   }
 }
 
@@ -32,16 +32,14 @@ export async function POST(request: Request) {
     const body = await request.json()
 
     if (!body.sample_sentence || !body.topic_id) {
-      return NextResponse.json(
-        { error: 'sample_sentence and topic_id are required' },
-        { status: 400 }
-      )
+      return badRequest('sample_sentence and topic_id are required')
     }
 
-    const [created] = await db.insert(phrases).values(body).returning()
-    return NextResponse.json(created, { status: 201 })
+    const [newPhrase] = await db.insert(phrases).values(body).returning()
+    return created(newPhrase)
   } catch (error) {
     console.error('[POST /api/phrases]', error)
-    return NextResponse.json({ error: 'Failed to create phrase' }, { status: 500 })
+    return serverError('Failed to create phrase', error)
   }
 }
+

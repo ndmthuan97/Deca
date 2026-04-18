@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { Phrase } from '@/db/schema'
+import { apiFetch } from '@/lib/api-client'
 
 interface PhraseCardProps {
   phrase: Phrase
@@ -15,8 +16,7 @@ interface PhraseCardProps {
 }
 
 async function deletePhrase(id: number) {
-  const res = await fetch(`/api/phrases/${id}`, { method: 'DELETE' })
-  if (!res.ok) throw new Error('Failed to delete')
+  await apiFetch(`/api/phrases/${id}`, { method: 'DELETE' })
 }
 
 function speak(text: string) {

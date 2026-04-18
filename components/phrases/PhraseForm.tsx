@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Phrase } from '@/db/schema'
+import { apiFetch } from '@/lib/api-client'
 
 interface PhraseFormProps {
   topicId: number
@@ -42,27 +43,20 @@ const EMPTY_FORM: PhraseFormData = {
 }
 
 async function generateFields(sampleSentence: string, topicName: string) {
-  const res = await fetch('/api/generate', {
+  return apiFetch('/api/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sampleSentence, topicName }),
   })
-  if (!res.ok) {
-    const err = await res.json()
-    throw new Error(err.error || 'AI generation failed')
-  }
-  return res.json()
 }
 
 async function savePhrase(data: PhraseFormData & { topic_id: number }, editId?: number) {
   const url = editId ? `/api/phrases/${editId}` : '/api/phrases'
-  const res = await fetch(url, {
+  return apiFetch(url, {
     method: editId ? 'PUT' : 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to save phrase')
-  return res.json()
 }
 
 // Reusable editable field row

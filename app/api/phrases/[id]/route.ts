@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server'
 import { db } from '@/db'
 import { phrases } from '@/db/schema'
 import { eq, isNull, and } from 'drizzle-orm'
+import { ok, notFound, serverError } from '@/lib/api-response'
 
 export async function GET(
   _request: Request,
@@ -14,11 +14,11 @@ export async function GET(
       .from(phrases)
       .where(and(eq(phrases.id, parseInt(id)), isNull(phrases.deleted_at)))
 
-    if (!phrase) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    return NextResponse.json(phrase)
+    if (!phrase) return notFound('Phrase not found')
+    return ok(phrase)
   } catch (error) {
     console.error('[GET /api/phrases/[id]]', error)
-    return NextResponse.json({ error: 'Failed to fetch phrase' }, { status: 500 })
+    return serverError('Failed to fetch phrase', error)
   }
 }
 
@@ -36,11 +36,11 @@ export async function PUT(
       .where(eq(phrases.id, parseInt(id)))
       .returning()
 
-    if (!updated) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    return NextResponse.json(updated)
+    if (!updated) return notFound('Phrase not found')
+    return ok(updated)
   } catch (error) {
     console.error('[PUT /api/phrases/[id]]', error)
-    return NextResponse.json({ error: 'Failed to update phrase' }, { status: 500 })
+    return serverError('Failed to update phrase', error)
   }
 }
 
@@ -56,10 +56,11 @@ export async function DELETE(
       .set({ deleted_at: new Date() })
       .where(eq(phrases.id, parseInt(id)))
       .returning()
-    if (!updated) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    return NextResponse.json({ success: true })
+    if (!updated) return notFound('Phrase not found')
+    return ok({ id: parseInt(id) }, 'Phrase deleted')
   } catch (error) {
     console.error('[DELETE /api/phrases/[id]]', error)
-    return NextResponse.json({ error: 'Failed to delete phrase' }, { status: 500 })
+    return serverError('Failed to delete phrase', error)
   }
 }
+
