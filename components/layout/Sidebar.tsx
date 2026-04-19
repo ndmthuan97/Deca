@@ -1,130 +1,271 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, LayoutList, Menu, X } from 'lucide-react'
+import {
+  BookOpen, LayoutList, Menu, X, Flame, GraduationCap,
+  Search, BarChart2, Brain, ChevronRight, Settings,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { getStreak, studiedToday } from '@/lib/streak'
 
-function NavLinks({ collapsed, onClose }: { collapsed?: boolean; onClose?: () => void }) {
-  const pathname     = usePathname()
-  const isTopicsPage = pathname === '/'
+/* ── Streak badge (orange stays — semantic learning indicator) ── */
+function StreakBadge({ mini }: { mini?: boolean }) {
+  const [streak, setStreak] = useState(0)
+  const [studied, setStudied] = useState(false)
+
+  useEffect(() => {
+    const data = getStreak()
+    setStreak(data.count)
+    setStudied(studiedToday())
+  }, [])
+
+  if (streak === 0) return null
+
   return (
-    <Link
-      href="/"
-      onClick={onClose}
-      className={cn(
-        'flex items-center rounded-lg px-2.5 py-2.5 text-sm font-medium transition-all',
-        collapsed ? 'justify-center' : 'gap-2.5',
-        isTopicsPage
-          ? 'bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400'
-          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'
-      )}
-      title="Quản lý chủ đề"
-    >
-      <LayoutList className={cn('h-4 w-4 shrink-0', isTopicsPage ? 'text-orange-500' : 'text-gray-400 dark:text-gray-500')} />
-      {!collapsed && <span>Quản lý chủ đề</span>}
-    </Link>
+    <span className={cn(
+      'inline-flex items-center gap-0.5 rounded-full text-xs font-bold',
+      mini ? 'px-1.5 py-0.5' : 'px-2 py-0.5',
+      studied
+        ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400'
+        : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500',
+    )}>
+      <Flame className="h-3 w-3 shrink-0" />
+      {!mini && <span>{streak}</span>}
+    </span>
   )
 }
 
-/* ── Mobile hamburger button (rendered outside sidebar by page layout) ── */
-export function MobileMenuButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex md:hidden items-center justify-center h-9 w-9 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 shadow-sm"
-    >
-      <Menu className="h-4.5 w-4.5" />
-    </button>
-  )
-}
+/* ── Nav items config ── */
+const NAV_ITEMS = [
+  { href: '/',          icon: LayoutList,    label: 'Chủ đề',    title: 'Quản lý chủ đề' },
+  { href: '/review',    icon: GraduationCap, label: 'Ôn tập',    title: 'Ôn tập hôm nay', streak: true },
+  { href: '/dashboard', icon: BarChart2,     label: 'Dashboard', title: 'Thống kê học tập' },
+] as const
 
 /* ── Desktop Sidebar ── */
 export function Sidebar() {
+  const pathname = usePathname()
+  const [expanded, setExpanded] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  useEffect(() => { setMobileOpen(false) }, [pathname])
+
+  const isActive = (href: string) => href === '/' ? pathname === '/' : pathname.startsWith(href)
 
   return (
     <>
-      {/* ─── Desktop: hover to expand ─── */}
-      <aside className="group/sidebar hidden md:flex relative h-full w-14 flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 transition-all duration-200 hover:w-60 shrink-0">
-        {/* Logo */}
-        <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 py-4 px-3 overflow-hidden">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 shadow">
-            <BookOpen className="h-4 w-4 text-white" />
+      {/* ─── Desktop Sidebar ─── */}
+      <aside
+        onMouseEnter={() => setExpanded(true)}
+        onMouseLeave={() => setExpanded(false)}
+        className={cn(
+          // Vercel nav: white bg, shadow-as-border replaces hard border-r
+          'hidden md:flex flex-col h-full bg-white dark:bg-[#111111]',
+          'transition-[width] shrink-0 overflow-hidden',
+          'shadow-[rgba(0,0,0,0.08)_1px_0px_0px_0px] dark:shadow-[rgba(255,255,255,0.06)_1px_0px_0px_0px]',
+          expanded ? 'w-56' : 'w-14',
+        )}
+        style={{ zIndex: 10 }}
+      >
+        {/* Logo — bottom shadow-border */}
+        <div
+          className="flex items-center gap-3 px-3 py-4 h-[60px] overflow-hidden"
+          style={{ boxShadow: 'rgba(0,0,0,0.06) 0px 1px 0px 0px' }}
+        >
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] bg-[#171717] dark:bg-[#f5f5f5]">
+            <BookOpen className="h-4 w-4 text-white dark:text-[#171717]" />
+          </div>
+          <div className={cn('transition-opacity min-w-0', expanded ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
+            <p className="text-sm font-semibold text-[#171717] dark:text-[#f5f5f5] whitespace-nowrap tracking-tight">DACE</p>
+            <p className="text-[11px] text-[#666666] dark:text-[#888888] whitespace-nowrap">English Learning</p>
           </div>
         </div>
-        <nav className="flex-1 px-1.5 py-4">
-          <NavLinks collapsed />
-          {/* On hover: expanded panel */}
-          <div className="absolute inset-y-0 left-0 w-60 flex-col hidden group-hover/sidebar:flex pointer-events-none">
-            <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 py-4 px-5 overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-150">
-              <div className="h-8 w-8 shrink-0" />
-              <div>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">DACE</p>
-                <p className="text-xs text-gray-400 dark:text-gray-500">English Learning</p>
-              </div>
-            </div>
-            <nav className="flex-1 px-3 py-4 pointer-events-auto">
-              <NavLinks />
-            </nav>
-            <div className="pointer-events-auto border-t border-gray-100 dark:border-gray-800">
-              <ThemeToggle />
-            </div>
-          </div>
+
+        {/* Nav */}
+        <nav className="flex-1 px-1.5 py-3 space-y-0.5 overflow-hidden">
+          {NAV_ITEMS.map(({ href, icon: Icon, label, title, streak }) => {
+            const active = isActive(href)
+            return (
+              <Link
+                key={href}
+                href={href}
+                title={expanded ? undefined : title}
+                className={cn(
+                  // Vercel nav: 14px weight-500 default, weight-600 active, no colored bg
+                  'flex items-center gap-2.5 rounded-[6px] px-2.5 py-2.5 whitespace-nowrap',
+                  'text-[14px] transition-colors',
+                  active
+                    ? 'font-semibold text-[#171717] bg-[#f5f5f5] dark:bg-white/8 dark:text-[#f5f5f5]'
+                    : 'font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5',
+                )}
+              >
+                <Icon className={cn(
+                  'h-4 w-4 shrink-0',
+                  active ? 'text-[#171717] dark:text-[#f5f5f5]' : 'text-[#999999] dark:text-[#666666]'
+                )} />
+                <span className={cn(
+                  'flex-1 transition-opacity',
+                  expanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                )}>
+                  {label}
+                </span>
+                {streak && expanded && <StreakBadge />}
+                {streak && !expanded && <StreakBadge mini />}
+              </Link>
+            )
+          })}
+
+          {/* Search shortcut */}
+          <button
+            onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}
+            title={expanded ? undefined : 'Tìm kiếm (Ctrl+K)'}
+            className="w-full flex items-center gap-2.5 rounded-[6px] px-2.5 py-2.5 text-[14px] font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5 transition-colors whitespace-nowrap"
+          >
+            <Search className="h-4 w-4 shrink-0 text-[#999999] dark:text-[#666666]" />
+            <span className={cn('flex-1 text-left transition-opacity', expanded ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
+              Tìm kiếm
+            </span>
+            {expanded && (
+              <kbd className="inline-flex items-center rounded-[4px] px-1.5 py-0.5 text-[10px] font-mono text-[#999999] dark:text-[#666666]"
+                style={{ boxShadow: 'rgb(235, 235, 235) 0px 0px 0px 1px' }}>
+                ⌘K
+              </kbd>
+            )}
+          </button>
         </nav>
-        {/* Collapsed: icon-only theme toggle at bottom */}
-        <div className="border-t border-gray-100 dark:border-gray-800 px-1.5 py-2">
-          <ThemeToggle collapsed />
+
+        {/* Theme toggle + Admin */}
+        <div
+          className="px-1.5 py-2 space-y-0.5"
+          style={{ boxShadow: 'rgba(0,0,0,0.06) 0px -1px 0px 0px' }}
+        >
+          <Link
+            href="/admin"
+            title={expanded ? undefined : 'Admin Panel'}
+            className="flex items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-[14px] font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5 transition-colors whitespace-nowrap"
+          >
+            <Settings className="h-4 w-4 shrink-0 text-[#999999] dark:text-[#666666]" />
+            <span className={cn('flex-1 text-left transition-opacity text-[13px]', expanded ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
+              Admin
+            </span>
+          </Link>
+          {expanded ? <ThemeToggle /> : <ThemeToggle collapsed />}
         </div>
       </aside>
 
-      {/* ─── Mobile: hamburger button ─── */}
+      {/* ─── Mobile: hamburger ─── */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed top-3 left-3 z-40 flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-md"
+        aria-label="Mở menu"
+        className="md:hidden fixed top-3 left-3 z-40 flex h-9 w-9 items-center justify-center rounded-[6px] bg-[#171717] dark:bg-[#f5f5f5] text-white dark:text-[#171717] shadow-lg active:scale-95 transition-transform"
       >
         <Menu className="h-4 w-4" />
       </button>
 
-      {/* ─── Mobile: slide-over drawer ─── */}
-      {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setMobileOpen(false)}
-          />
-          {/* Drawer */}
-          <aside className="relative flex h-full w-72 flex-col bg-white dark:bg-gray-950 shadow-xl">
-            {/* Logo + close */}
-            <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-5 py-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 shadow">
-                  <BookOpen className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-sm font-bold text-gray-900 dark:text-white">DACE</h1>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">English Learning</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <nav className="flex-1 px-3 py-4">
-              <NavLinks onClose={() => setMobileOpen(false)} />
-            </nav>
-            <div className="border-t border-gray-100 dark:border-gray-800">
-              <ThemeToggle />
-            </div>
-          </aside>
-        </div>
+      {/* ─── Mobile: backdrop ─── */}
+      <div
+        className={cn(
+          'md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity',
+          mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
+        )}
+        onClick={() => setMobileOpen(false)}
+      />
+
+      {/* ─── Mobile: drawer ─── */}
+      <aside className={cn(
+        'md:hidden fixed top-0 left-0 z-50 flex h-full w-72 flex-col bg-white dark:bg-[#111111]',
+        'transition-transform',
+        mobileOpen ? 'translate-x-0' : '-translate-x-full',
       )}
+        style={{ boxShadow: 'rgba(0,0,0,0.15) 4px 0px 16px 0px' }}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-5 py-4"
+          style={{ boxShadow: 'rgba(0,0,0,0.06) 0px 1px 0px 0px' }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-[6px] bg-[#171717] dark:bg-[#f5f5f5]">
+              <BookOpen className="h-5 w-5 text-white dark:text-[#171717]" />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-[#171717] dark:text-[#f5f5f5] tracking-tight">DACE</h2>
+              <p className="text-[11px] text-[#666666] dark:text-[#888888]">English Learning</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="rounded-[6px] p-1.5 text-[#666666] hover:bg-[#fafafa] dark:hover:bg-white/8 hover:text-[#171717] dark:text-[#888888] dark:hover:text-[#f5f5f5] transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          {NAV_ITEMS.map(({ href, icon: Icon, label, streak }) => {
+            const active = isActive(href)
+            return (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  'flex items-center gap-3 rounded-[6px] px-3.5 py-3 text-[14px] transition-colors',
+                  active
+                    ? 'font-semibold text-[#171717] bg-[#f5f5f5] dark:bg-white/8 dark:text-[#f5f5f5]'
+                    : 'font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5',
+                )}
+              >
+                <Icon className={cn(
+                  'h-5 w-5 shrink-0',
+                  active ? 'text-[#171717] dark:text-[#f5f5f5]' : 'text-[#999999]'
+                )} />
+                <span className="flex-1">{label}</span>
+                {streak && <StreakBadge />}
+                {active && <ChevronRight className="h-3.5 w-3.5 text-[#999999]" />}
+              </Link>
+            )
+          })}
+
+          {/* Search */}
+          <button
+            onClick={() => {
+              setMobileOpen(false)
+              setTimeout(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true })), 150)
+            }}
+            className="w-full flex items-center gap-3 rounded-[6px] px-3.5 py-3 text-[14px] font-medium text-[#666666] dark:text-[#888888] hover:bg-[#fafafa] dark:hover:bg-white/5 hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
+          >
+            <Search className="h-5 w-5 shrink-0 text-[#999999]" />
+            <span className="flex-1 text-left">Tìm kiếm</span>
+            <kbd className="inline-flex items-center rounded-[4px] px-1.5 py-0.5 text-[10px] font-mono text-[#999999]"
+              style={{ boxShadow: 'rgb(235, 235, 235) 0px 0px 0px 1px' }}>
+              Ctrl K
+            </kbd>
+          </button>
+        </nav>
+
+        {/* Theme + footer */}
+        <div style={{ boxShadow: 'rgba(0,0,0,0.06) 0px -1px 0px 0px' }}>
+          <ThemeToggle />
+          <div className="px-3 pb-4 space-y-1">
+            <Link
+              href="/admin"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-2.5 w-full rounded-[6px] px-3 py-2 text-xs text-[#666666] dark:text-[#888888] hover:bg-[#fafafa] dark:hover:bg-white/5 hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
+            >
+              <Settings className="h-3.5 w-3.5 flex-shrink-0" />
+              <span>Admin Panel</span>
+            </Link>
+            <p className="px-3 text-[11px] text-[#999999] dark:text-[#666666]">
+              DACE v0.1 · Học tiếng Anh mỗi ngày
+            </p>
+          </div>
+        </div>
+      </aside>
     </>
   )
 }

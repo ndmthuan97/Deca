@@ -176,10 +176,13 @@ export default function HomePage() {
       <Sidebar />
 
       <main className="flex flex-col flex-1 overflow-hidden">
-        {/* ── Header ── */}
-        <div className="shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 pl-16 pr-4 py-3 md:px-8 md:py-5">
-          <h1 className="text-lg md:text-xl font-bold text-gray-900">Quản lý chủ đề</h1>
-          <p className="mt-0.5 text-xs md:text-sm text-gray-500 hidden sm:block">
+        {/* ── Header — Vercel nav bottom shadow-border ── */}
+        <div
+          className="shrink-0 bg-white dark:bg-[#111111] pl-[60px] pr-4 py-3 md:pl-6 md:pr-8 md:py-5"
+          style={{ boxShadow: 'rgba(0,0,0,0.06) 0px 1px 0px 0px' }}
+        >
+          <h1 className="text-page-title text-base md:text-[20px]">Quản lý chủ đề</h1>
+          <p className="mt-0.5 text-[13px] text-[#666666] dark:text-[#888888] hidden sm:block">
             Tạo và quản lý các chủ đề học tiếng Anh
           </p>
         </div>
@@ -206,31 +209,33 @@ export default function HomePage() {
             </button>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden shadow-sm">
-            {/* Toolbar – desktop only */}
-            <div className="hidden md:flex items-center justify-between gap-3 px-6 py-4 border-b border-gray-100">
+          {/* Vercel card: shadow stack, no CSS border */}
+          <div
+            className="rounded-[8px] bg-white dark:bg-[#111111] overflow-hidden"
+            style={{ boxShadow: 'var(--shadow-card)' }}
+          >
+            {/* Toolbar – desktop only — Vercel shadow-border bottom */}
+            <div
+              className="hidden md:flex items-center justify-between gap-3 px-6 py-4"
+              style={{ boxShadow: 'rgba(0,0,0,0.06) 0px 1px 0px 0px' }}
+            >
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-semibold text-gray-800">Danh sách chủ đề</h2>
+                <h2 className="text-[14px] font-semibold text-[#171717] dark:text-[#f5f5f5] tracking-tight">Danh sách chủ đề</h2>
                 {!isLoading && (
-                  <span className="rounded-full bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-600">
-                    {filtered.length}
-                  </span>
+                  <span className="badge-vercel">{filtered.length}</span>
                 )}
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative w-72">
-                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#999999]" />
                   <Input
                     placeholder="Tìm chủ đề..."
                     value={search}
                     onChange={e => handleSearchChange(e.target.value)}
-                    className="pl-9 h-8 border-gray-200 bg-white text-sm text-gray-700 placeholder:text-gray-400 focus:border-orange-400"
+                    className="pl-9 h-8"
                   />
                 </div>
-                <Button
-                  onClick={() => setCreating(true)}
-                  className="bg-orange-600 text-white hover:bg-orange-700 h-8 shadow-sm"
-                >
+                <Button onClick={() => setCreating(true)} size="sm">
                   <Plus className="mr-1.5 h-4 w-4" />
                   Thêm chủ đề
                 </Button>
@@ -239,11 +244,14 @@ export default function HomePage() {
 
             {/* ── Inline Create Row ── */}
             {creating && (
-              <div className="flex items-center gap-3 border-b border-orange-100 bg-orange-50/50 px-6 py-3">
+              <div
+                className="flex items-center gap-3 bg-[#fafafa] dark:bg-[#1a1a1a] px-6 py-3"
+                style={{ boxShadow: 'rgba(0,0,0,0.06) 0px 1px 0px 0px' }}
+              >
                 <span className={`text-base min-w-[1.5rem] text-center transition-all ${iconLoading ? 'animate-pulse opacity-50' : ''}`}>
                   {previewIcon}
                 </span>
-                <input
+                <Input
                   autoFocus
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
@@ -252,18 +260,14 @@ export default function HomePage() {
                     if (e.key === 'Escape') { setCreating(false); setNewName('') }
                   }}
                   placeholder="Nhập tên chủ đề mới..."
-                  className="flex-1 rounded-lg border border-orange-300 bg-white px-3 py-1.5 text-sm text-gray-700 placeholder:text-gray-400 outline-none focus:ring-1 focus:ring-orange-400"
+                  className="flex-1 h-8"
                 />
-                <button
-                  onClick={handleCreate}
-                  disabled={createMutation.isPending}
-                  className="flex items-center gap-1 rounded-lg bg-orange-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-orange-700 disabled:opacity-50 transition-colors"
-                >
+                <Button size="sm" onClick={handleCreate} disabled={createMutation.isPending}>
                   {createMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Check className="h-3 w-3" /> Tạo</>}
-                </button>
+                </Button>
                 <button
                   onClick={() => { setCreating(false); setNewName('') }}
-                  className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                  className="rounded-[6px] p-1.5 text-[#999999] hover:bg-[#f5f5f5] hover:text-[#171717] dark:hover:bg-white/8 transition-colors"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -323,12 +327,12 @@ export default function HomePage() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-900">
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400 w-12">Icon</th>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Tên chủ đề</th>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Mô tả</th>
-                    <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-gray-400 w-24">Số câu</th>
-                    <th className="px-6 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-gray-400 w-28">Thao tác</th>
+                  <tr style={{ boxShadow: 'rgba(0,0,0,0.06) 0px 1px 0px 0px' }} className="bg-[#fafafa] dark:bg-[#1a1a1a]">
+                    <th className="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-widest text-[#666666] dark:text-[#888888] w-12">Icon</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-widest text-[#666666] dark:text-[#888888]">Tên chủ đề</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-widest text-[#666666] dark:text-[#888888]">Mô tả</th>
+                    <th className="px-4 py-3 text-center text-[11px] font-medium uppercase tracking-widest text-[#666666] dark:text-[#888888] w-24">Số câu</th>
+                    <th className="px-6 py-3 text-right text-[11px] font-medium uppercase tracking-widest text-[#666666] dark:text-[#888888] w-28">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -364,37 +368,38 @@ export default function HomePage() {
                     paginated.map((topic) => (
                         <tr
                           key={topic.id}
-                          className="group border-b border-gray-100 dark:border-gray-800 transition-colors hover:bg-gray-50 dark:hover:bg-gray-900/50 cursor-pointer"
+                          className="group cursor-pointer transition-colors hover:bg-[#fafafa] dark:hover:bg-white/3"
+                          style={{ boxShadow: 'rgba(0,0,0,0.04) 0px 1px 0px 0px' }}
                           onClick={() => router.push(`/topics/${topic.id}`)}
                         >
                           <td className="px-4 py-3.5 text-xl">
                             <span>{topic.icon ?? '📚'}</span>
                           </td>
                           <td className="px-4 py-3.5">
-                            <p className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-orange-600 transition-colors">{topic.name}</p>
+                            {/* Vercel: hover → link-blue */}
+                            <p className="text-[14px] font-semibold text-[#171717] dark:text-[#f5f5f5] group-hover:text-[#0072f5] transition-colors">{topic.name}</p>
                           </td>
                           <td className="px-4 py-3.5">
-                            <p className="text-gray-500 dark:text-gray-400 text-sm truncate max-w-[300px]">
-                              {topic.description ?? <span className="italic text-gray-300 dark:text-gray-600">Chưa có mô tả</span>}
+                            <p className="text-[13px] text-[#666666] dark:text-[#888888] truncate max-w-[300px]">
+                              {topic.description ?? <span className="italic text-[#aaaaaa] dark:text-[#555555]">Chưa có mô tả</span>}
                             </p>
                           </td>
                           <td className="px-4 py-3.5 text-center">
-                            <span className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
-                              {topic.phrase_count ?? 0}
-                            </span>
+                            {/* Vercel badge style */}
+                            <span className="badge-vercel">{topic.phrase_count ?? 0}</span>
                           </td>
                           <td className="px-6 py-3.5" onClick={e => e.stopPropagation()}>
                             <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
                                 onClick={() => router.push(`/topics/${topic.id}`)}
-                                className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 transition-colors"
+                                className="rounded-[6px] p-1.5 text-[#999999] hover:bg-[#f0f7ff] hover:text-[#0072f5] dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-colors"
                                 title="Xem chi tiết"
                               >
                                 <Eye className="h-3.5 w-3.5" />
                               </button>
                               <button
                                 onClick={() => handleOpenUpdate(topic)}
-                                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300 transition-colors"
+                                className="rounded-[6px] p-1.5 text-[#999999] hover:bg-[#fafafa] hover:text-[#171717] dark:hover:bg-white/8 dark:hover:text-[#f5f5f5] transition-colors"
                                 title="Chỉnh sửa"
                               >
                                 <Pencil className="h-3.5 w-3.5" />
@@ -402,7 +407,7 @@ export default function HomePage() {
                               <button
                                 onClick={() => handleDelete(topic.id)}
                                 disabled={deleteMutation.isPending}
-                                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950 dark:hover:text-red-400 transition-colors disabled:opacity-40"
+                                className="rounded-[6px] p-1.5 text-[#999999] hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors disabled:opacity-40"
                                 title="Xóa"
                               >
                                 {deleteMutation.isPending
@@ -420,15 +425,18 @@ export default function HomePage() {
 
             {/* ── Pagination ── */}
             {!isLoading && totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-gray-100 px-6 py-3">
-                <p className="text-xs text-gray-400">
+              <div
+                className="flex items-center justify-between px-6 py-3"
+                style={{ boxShadow: 'rgba(0,0,0,0.06) 0px -1px 0px 0px' }}
+              >
+                <p className="text-[12px] text-[#666666] dark:text-[#888888]">
                   Hiển thị {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} / {filtered.length} chủ đề
                 </p>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="flex h-7 w-7 items-center justify-center rounded-[6px] text-[#666666] hover:bg-[#fafafa] hover:text-[#171717] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
@@ -436,8 +444,10 @@ export default function HomePage() {
                     <button
                       key={i}
                       onClick={() => setPage(i + 1)}
-                      className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs font-medium transition-colors ${
-                        currentPage === i + 1 ? 'bg-orange-600 text-white' : 'text-gray-500 hover:bg-gray-100'
+                      className={`flex h-7 w-7 items-center justify-center rounded-[6px] text-[12px] font-medium transition-colors ${
+                        currentPage === i + 1
+                          ? 'bg-[#171717] dark:bg-[#f5f5f5] text-white dark:text-[#171717]'
+                          : 'text-[#666666] hover:bg-[#fafafa] dark:hover:bg-white/5'
                       }`}
                     >
                       {i + 1}
@@ -446,7 +456,7 @@ export default function HomePage() {
                   <button
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="flex h-7 w-7 items-center justify-center rounded-[6px] text-[#666666] hover:bg-[#fafafa] hover:text-[#171717] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </button>
@@ -484,18 +494,17 @@ export default function HomePage() {
                 onChange={e => setUpdateDesc(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleUpdate() }}
                 placeholder="Mô tả ngắn về chủ đề..."
-                className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:border-orange-400"
+                className="border-[#eaeaea] dark:border-[#333] bg-white dark:bg-[#111] text-[#171717] dark:text-[#f5f5f5] placeholder:text-[#999] focus:border-black dark:focus:border-white"
               />
             </div>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setUpdateDialogTopic(null)}
-                className="border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300">
+              <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setUpdateDialogTopic(null)} className="border-[#eaeaea] dark:border-[#333] text-[#666] dark:text-[#888] hover:bg-[#fafafa] dark:hover:bg-[#222]">
                 Hủy
               </Button>
               <Button
                 onClick={handleUpdate}
                 disabled={!updateName.trim() || updateMutation.isPending}
-                className="bg-orange-600 hover:bg-orange-700 text-white"
+                className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/80 dark:hover:bg-white/80"
               >
                 {updateMutation.isPending
                   ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Đang lưu...</>
@@ -508,16 +517,16 @@ export default function HomePage() {
 
       {/* ── Dialog tạo chủ đề (mobile) ── */}
       <Dialog open={mobileCreateOpen} onOpenChange={open => { setMobileCreateOpen(open); if (!open) setMobileNewName('') }}>
-        <DialogContent className="sm:max-w-sm bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+        <DialogContent className="sm:max-w-sm bg-white dark:bg-[#111] border-[#eaeaea] dark:border-[#333]">
           <DialogHeader>
-            <DialogTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <Plus className="h-4 w-4 text-orange-500" />
+            <DialogTitle className="text-[#171717] dark:text-[#f5f5f5] flex items-center gap-2">
+              <Plus className="h-4 w-4 text-[#666]" />
               Tạo chủ đề mới
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-1">
             <div>
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">
+              <label className="text-xs font-medium text-[#666] dark:text-[#888] mb-1.5 block">
                 Tên chủ đề
               </label>
               <Input
@@ -526,21 +535,21 @@ export default function HomePage() {
                 onChange={e => setMobileNewName(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleMobileCreate() }}
                 placeholder="VD: Greetings, Meeting..."
-                className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:border-orange-400"
+                className="border-[#eaeaea] dark:border-[#333] bg-white dark:bg-[#111] text-[#171717] dark:text-[#f5f5f5] placeholder:text-[#999] focus:border-black dark:focus:border-white"
               />
             </div>
-            <div className="flex gap-2 justify-end">
+              <div className="flex gap-2 justify-end">
               <Button
                 variant="outline"
                 onClick={() => { setMobileCreateOpen(false); setMobileNewName('') }}
-                className="border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300"
+                className="border-[#eaeaea] dark:border-[#333] text-[#666] dark:text-[#888] hover:bg-[#fafafa] dark:hover:bg-[#222]"
               >
                 Hủy
               </Button>
               <Button
                 onClick={handleMobileCreate}
                 disabled={!mobileNewName.trim() || createMutation.isPending}
-                className="bg-orange-600 hover:bg-orange-700 text-white"
+                className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/80 dark:hover:bg-white/80"
               >
                 {createMutation.isPending
                   ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Đang tạo...</>

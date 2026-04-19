@@ -16,7 +16,7 @@ import { FlashcardView } from '@/components/phrases/FlashcardView'
 import {
   BookOpen, Search, Pencil, Trash2, Volume2, Sparkles, Eye, Filter, MoreVertical,
   ChevronLeft, ChevronRight, ChevronDown,
-  List, GalleryHorizontal, Loader2,
+  List, GalleryHorizontal, Loader2, Brain,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -357,7 +357,7 @@ export default function TopicPage() {
 
       <main className="flex flex-col flex-1 overflow-hidden">
         {/* ── Header ── */}
-        <div className="shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 pl-16 pr-4 py-3 md:px-8 md:py-4">
+        <div className="shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 pl-[60px] pr-4 py-3 md:pl-6 md:pr-8 md:py-4">
           <div className="flex items-center justify-between">
             {topicLoading ? (
               <Skeleton className="h-6 w-40 bg-gray-100" />
@@ -567,6 +567,16 @@ export default function TopicPage() {
                   </button>
                 </div>
               </div>
+              {/* Quiz button */}
+              {topic && (
+                <button
+                  onClick={() => router.push(`/quiz?topic_id=${topic.id}&topic_name=${encodeURIComponent(topic.name)}`)}
+                  className="hidden sm:flex items-center gap-1.5 rounded-xl border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/20 px-3 py-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors"
+                  title="Quiz Mode"
+                >
+                  <Brain className="h-3.5 w-3.5" /> Quiz
+                </button>
+              )}
             </div>
 
             {/* ── Bulk action bar ── */}

@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, serial, text, integer, timestamp, real } from 'drizzle-orm/pg-core'
 
 // Using snake_case column names in JS to match frontend expectations
 export const topics = pgTable('topics', {
@@ -28,12 +28,26 @@ export const phrases = pgTable('phrases', {
   example2_pronunciation: text('example2_pronunciation'),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
   deleted_at: timestamp('deleted_at', { withTimezone: true }),
+  // ── SRS (Spaced Repetition) fields ──────────────────────────────────────
+  next_review_at:   timestamp('next_review_at',   { withTimezone: true }).defaultNow(),
+  ease_factor:      real('ease_factor').default(2.5),
+  review_interval:  integer('review_interval').default(0),
+  repetitions:      integer('repetitions').default(0),
 })
 
-export type Topic = typeof topics.$inferSelect
-export type NewTopic = typeof topics.$inferInsert
-export type Phrase = typeof phrases.$inferSelect
-export type NewPhrase = typeof phrases.$inferInsert
+export const studyLogs = pgTable('study_logs', {
+  id:          serial('id').primaryKey(),
+  phrase_id:   integer('phrase_id').references(() => phrases.id, { onDelete: 'cascade' }),
+  result:      text('result').notNull(),           // 'again' | 'hard' | 'good' | 'easy'
+  reviewed_at: timestamp('reviewed_at', { withTimezone: true }).defaultNow(),
+})
+
+export type Topic       = typeof topics.$inferSelect
+export type NewTopic    = typeof topics.$inferInsert
+export type Phrase      = typeof phrases.$inferSelect
+export type NewPhrase   = typeof phrases.$inferInsert
+export type StudyLog    = typeof studyLogs.$inferSelect
+export type NewStudyLog = typeof studyLogs.$inferInsert
 
 // Extended type returned by GET /api/topics (includes computed phrase_count)
 export type TopicWithCount = Topic & { phrase_count: number }

@@ -2,14 +2,79 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* ── Mona Sans VF — GitHub open-source variable font via CDN ── */
+@font-face {
+  font-family: 'Mona Sans';
+  src: url('https://cdn.jsdelivr.net/gh/github/mona-sans@1.0.1/fonts/variable/MonaSans%5Bwdth%2Cwght%5D.woff2')
+       format('woff2');
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
+/* ═══════════════════════════════════════════════
+   VERCEL / GEIST DESIGN TOKENS
+   ═══════════════════════════════════════════════ */
+:root {
+  /* ── Vercel Color Palette ── */
+  --vk-black:        #171717;
+  --vk-white:        #ffffff;
+  --vk-gray-600:     #4d4d4d;
+  --vk-gray-500:     #666666;
+  --vk-gray-100:     #ebebeb;
+  --vk-gray-50:      #fafafa;
+  --vk-link-blue:    #0072f5;
+  --vk-focus-blue:   hsla(212, 100%, 48%, 1);
+  --vk-badge-bg:     #ebf5ff;
+  --vk-badge-text:   #0068d6;
+
+  /* ── Shadow Tokens (shadow-as-border philosophy) ── */
+  --shadow-border:      rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+  --shadow-ring-light:  rgb(235, 235, 235) 0px 0px 0px 1px;
+  --shadow-nav-bottom:  rgba(0, 0, 0, 0.08) 0px 1px 0px 0px;
+  --shadow-card:
+    rgba(0, 0, 0, 0.08) 0px 0px 0px 1px,
+    rgba(0, 0, 0, 0.04) 0px 2px 2px,
+    rgba(0, 0, 0, 0.04) 0px 8px 8px -8px,
+    #fafafa 0px 0px 0px 1px;
+
+  /* ── Focus Ring ── */
+  --focus-ring:  2px solid hsla(212, 100%, 48%, 1);
+
+  /* ── Motion ── */
+  --duration-fast:   150ms;
+  --duration-medium: 200ms;
+  --ease-default:    ease;
+}
+
+/* ── Dark mode shadow overrides ── */
+.dark {
+  --shadow-border:     rgba(255, 255, 255, 0.08) 0px 0px 0px 1px;
+  --shadow-ring-light: rgba(255, 255, 255, 0.1) 0px 0px 0px 1px;
+  --shadow-nav-bottom: rgba(255, 255, 255, 0.06) 0px 1px 0px 0px;
+  --shadow-card:
+    rgba(0, 0, 0, 0.3) 0px 0px 0px 1px,
+    rgba(0, 0, 0, 0.15) 0px 2px 2px,
+    rgba(0, 0, 0, 0.15) 0px 8px 8px -8px,
+    rgba(255, 255, 255, 0.03) 0px 0px 0px 1px;
+  --vk-gray-600: #a0a0a0;
+  --vk-gray-500: #888888;
+  --vk-gray-100: #333333;
+  --vk-gray-50:  #1a1a1a;
+}
+
+/* ═══════════════════════════════════════════════
+   TAILWIND THEME BRIDGE
+   ═══════════════════════════════════════════════ */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* ── Tailwind font stack — Mona Sans VF first ── */
+  --font-sans: 'Mona Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Mona Sans', ui-monospace, 'Cascadia Code', monospace;
+  --font-heading: 'Mona Sans', ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,84 +104,91 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Vercel border-radius scale */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
 }
 
+/* ═══════════════════════════════════════════════
+   SHADCN THEME — LIGHT (Vercel-aligned)
+   ═══════════════════════════════════════════════ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background:          oklch(1 0 0);           /* #ffffff */
+  --foreground:          oklch(0.098 0 0);        /* #171717 */
+  --card:                oklch(1 0 0);
+  --card-foreground:     oklch(0.098 0 0);
+  --popover:             oklch(1 0 0);
+  --popover-foreground:  oklch(0.098 0 0);
+  --primary:             oklch(0.098 0 0);        /* Vercel Black */
+  --primary-foreground:  oklch(1 0 0);
+  --secondary:           oklch(0.97 0 0);         /* #fafafa */
+  --secondary-foreground: oklch(0.098 0 0);
+  --muted:               oklch(0.97 0 0);
+  --muted-foreground:    oklch(0.44 0 0);         /* #666666 */
+  --accent:              oklch(0.97 0 0);
+  --accent-foreground:   oklch(0.098 0 0);
+  --destructive:         oklch(0.577 0.245 27.325);
+  --border:              oklch(0.922 0 0);        /* #ebebeb */
+  --input:               oklch(0.922 0 0);
+  --ring:                oklch(0.098 0 0);
+  --chart-1:             oklch(0.87 0 0);
+  --chart-2:             oklch(0.556 0 0);
+  --chart-3:             oklch(0.439 0 0);
+  --chart-4:             oklch(0.371 0 0);
+  --chart-5:             oklch(0.269 0 0);
+  --radius:              0.5rem;                  /* 8px card radius */
+  --sidebar:             oklch(0.985 0 0);
+  --sidebar-foreground:  oklch(0.098 0 0);
+  --sidebar-primary:     oklch(0.098 0 0);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent:      oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.098 0 0);
+  --sidebar-border:      oklch(0.922 0 0);
+  --sidebar-ring:        oklch(0.708 0 0);
 }
 
+/* ═══════════════════════════════════════════════
+   SHADCN THEME — DARK
+   ═══════════════════════════════════════════════ */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --background:          oklch(0.098 0 0);        /* #171717 */
+  --foreground:          oklch(0.985 0 0);
+  --card:                oklch(0.145 0 0);
+  --card-foreground:     oklch(0.985 0 0);
+  --popover:             oklch(0.145 0 0);
+  --popover-foreground:  oklch(0.985 0 0);
+  --primary:             oklch(0.985 0 0);
+  --primary-foreground:  oklch(0.145 0 0);
+  --secondary:           oklch(0.205 0 0);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --muted:               oklch(0.205 0 0);
+  --muted-foreground:    oklch(0.62 0 0);
+  --accent:              oklch(0.205 0 0);
+  --accent-foreground:   oklch(0.985 0 0);
+  --destructive:         oklch(0.704 0.191 22.216);
+  --border:              oklch(1 0 0 / 10%);
+  --input:               oklch(1 0 0 / 15%);
+  --ring:                oklch(0.62 0 0);
+  --chart-1:             oklch(0.87 0 0);
+  --chart-2:             oklch(0.556 0 0);
+  --chart-3:             oklch(0.439 0 0);
+  --chart-4:             oklch(0.371 0 0);
+  --chart-5:             oklch(0.269 0 0);
+  --sidebar:             oklch(0.145 0 0);
+  --sidebar-foreground:  oklch(0.985 0 0);
+  --sidebar-primary:     oklch(0.985 0 0);
+  --sidebar-primary-foreground: oklch(0.145 0 0);
+  --sidebar-accent:      oklch(0.205 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-border:      oklch(1 0 0 / 10%);
+  --sidebar-ring:        oklch(0.62 0 0);
 }
 
+/* ═══════════════════════════════════════════════
+   BASE LAYER
+   ═══════════════════════════════════════════════ */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -126,22 +198,195 @@
   }
   html {
     @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* ── Dark mode overrides cho toàn bộ app ── */
+/* ═══════════════════════════════════════════════
+   VERCEL TYPOGRAPHY UTILITIES
+   ═══════════════════════════════════════════════ */
 
-/* Page backgrounds */
+/* Display Hero: 48px / weight 600 / ls -2.4px */
+.text-display {
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.05em;
+}
+
+/* Section Heading: 40px / weight 600 / ls -2.4px */
+.text-section {
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.06em;
+}
+
+/* Card Title: 24px / weight 600 / ls -0.96px */
+.text-card-title {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.33;
+  letter-spacing: -0.04em;
+}
+
+/* Page Title (shell h1): 20px / weight 600 / ls -0.4px */
+.text-page-title {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  color: var(--vk-black);
+}
+.dark .text-page-title {
+  color: #f5f5f5;
+}
+
+/* Body: 16px / weight 400 */
+.text-body {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: normal;
+}
+
+/* Caption: 12px */
+.text-caption {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.33;
+  letter-spacing: normal;
+}
+
+/* Mono Small: 12px uppercase */
+.text-mono-sm {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════════════════════════
+   VERCEL BADGE UTILITY
+   ═══════════════════════════════════════════════ */
+.badge-vercel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--vk-badge-bg);
+  color: var(--vk-badge-text);
+  padding: 0 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 22px;
+}
+.dark .badge-vercel {
+  background: rgba(0, 114, 245, 0.15);
+  color: #60a5fa;
+}
+
+/* ═══════════════════════════════════════════════
+   MOTION — prefers-reduced-motion GUARD
+   (RISK-9 compliance)
+   ═══════════════════════════════════════════════ */
+* {
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-default);
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   SHELL CHROME — VERCEL SHADOW-AS-BORDER
+   Applied to sidebar, nav, panels (not components)
+   ═══════════════════════════════════════════════ */
+
+/* Vercel card shell */
+.vk-card {
+  background: #ffffff;
+  border-radius: 8px;
+  border: none;
+  box-shadow: var(--shadow-card);
+}
+.dark .vk-card {
+  background: oklch(0.145 0 0);
+  box-shadow: var(--shadow-card);
+}
+
+/* High Contrast fallback (RISK-2 compliance) */
+@media (forced-colors: active) {
+  .vk-card {
+    border: 1px solid ButtonBorder;
+    box-shadow: none;
+  }
+  [class*="shadow-border"] {
+    border: 1px solid ButtonBorder;
+    box-shadow: none;
+  }
+}
+
+/* Vercel button — primary dark */
+.btn-vk-primary {
+  background: var(--vk-black);
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity var(--duration-fast) var(--ease-default);
+}
+.btn-vk-primary:hover {
+  opacity: 0.85;
+}
+.dark .btn-vk-primary {
+  background: #f5f5f5;
+  color: #171717;
+}
+
+/* Vercel button — secondary (ghost with shadow-ring) */
+.btn-vk-secondary {
+  background: #ffffff;
+  color: var(--vk-black);
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--shadow-ring-light);
+  transition: box-shadow var(--duration-fast) var(--ease-default);
+}
+.btn-vk-secondary:hover {
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 0px 0px 1px;
+}
+.dark .btn-vk-secondary {
+  background: oklch(0.205 0 0);
+  color: #f5f5f5;
+  box-shadow: var(--shadow-ring-light);
+}
+
+/* ── Dark mode overrides (kept for backward-compat) ── */
 .dark .bg-gray-50  { background-color: oklch(0.13 0 0) !important; }
 .dark .bg-white    { background-color: oklch(0.17 0 0) !important; }
 .dark .bg-gray-100 { background-color: oklch(0.22 0 0) !important; }
 
-/* Borders */
 .dark .border-gray-100 { border-color: oklch(0.25 0 0) !important; }
 .dark .border-gray-200 { border-color: oklch(0.28 0 0) !important; }
 .dark .border-gray-300 { border-color: oklch(0.35 0 0) !important; }
 
-/* Text */
 .dark .text-gray-900 { color: oklch(0.96 0 0) !important; }
 .dark .text-gray-800 { color: oklch(0.91 0 0) !important; }
 .dark .text-gray-700 { color: oklch(0.85 0 0) !important; }
@@ -150,24 +395,19 @@
 .dark .text-gray-400 { color: oklch(0.52 0 0) !important; }
 .dark .text-gray-300 { color: oklch(0.42 0 0) !important; }
 
-/* Hover backgrounds */
 .dark .hover\:bg-gray-50:hover  { background-color: oklch(0.22 0 0) !important; }
 .dark .hover\:bg-gray-100:hover { background-color: oklch(0.25 0 0) !important; }
 .dark .hover\:bg-gray-50\/60:hover { background-color: oklch(0.22 0 0 / 60%) !important; }
 .dark .hover\:bg-gray-100\/60:hover { background-color: oklch(0.25 0 0 / 60%) !important; }
 
-/* Subtle accent backgrounds */
 .dark .bg-orange-50 { background-color: oklch(0.22 0.04 60) !important; }
 .dark .bg-blue-50   { background-color: oklch(0.19 0.04 250) !important; }
 .dark .bg-red-50    { background-color: oklch(0.20 0.04 20) !important; }
 
-/* Table striping */
 .dark .even\:bg-gray-50\/70:nth-child(even) { background-color: oklch(0.19 0 0 / 70%) !important; }
 
-/* Orange accent borders */
 .dark .border-orange-100 { border-color: oklch(0.35 0.08 50) !important; }
 .dark .border-orange-200 { border-color: oklch(0.38 0.1 50) !important; }
 
-/* Input / shadow overrides */
 .dark .shadow-sm { box-shadow: 0 1px 2px oklch(0 0 0 / 40%) !important; }
 .dark .shadow-md { box-shadow: 0 4px 6px oklch(0 0 0 / 50%) !important; }
