@@ -30,5 +30,20 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "db/run-sql.ts",
+    "db/fill-examples.ts",
+    "db/fill-pronunciation.ts",
+    "db/cleanup-phrases.ts",
+    "db/crawl-langmaster.ts",
+    "db/post-crawl.ts",
+    "db/analyze.ts",
+    "db/debug-parse.ts",
+    "db/fix-phrases.ts",
+    "db/fix-translations.ts",
+    "db/scan.ts",
+    "db/seed.ts",
+    "db/test-parser.ts"
+  ]
 }
