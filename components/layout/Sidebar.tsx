@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -39,11 +39,11 @@ function StreakBadge({ mini }: { mini?: boolean }) {
 }
 
 /* ── Nav items config ── */
-const NAV_ITEMS = [
+const NAV_ITEMS: { href: string; icon: React.ComponentType<{ className?: string }>; label: string; title: string; streak?: true }[] = [
   { href: '/',          icon: LayoutList,    label: 'Chủ đề',    title: 'Quản lý chủ đề' },
   { href: '/review',    icon: GraduationCap, label: 'Ôn tập',    title: 'Ôn tập hôm nay', streak: true },
   { href: '/dashboard', icon: BarChart2,     label: 'Dashboard', title: 'Thống kê học tập' },
-] as const
+]
 
 /* ── Desktop Sidebar ── */
 export function Sidebar() {
