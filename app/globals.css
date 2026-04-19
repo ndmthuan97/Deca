@@ -51,18 +51,18 @@
 
 /* ── Dark mode shadow overrides ── */
 .dark {
-  --shadow-border:     rgba(255, 255, 255, 0.08) 0px 0px 0px 1px;
-  --shadow-ring-light: rgba(255, 255, 255, 0.1) 0px 0px 0px 1px;
-  --shadow-nav-bottom: rgba(255, 255, 255, 0.06) 0px 1px 0px 0px;
+  /* White-ring approach: visible border on dark backgrounds */
+  --shadow-border:     rgba(255, 255, 255, 0.14) 0px 0px 0px 1px;
+  --shadow-ring-light: rgba(255, 255, 255, 0.16) 0px 0px 0px 1px;
+  --shadow-nav-bottom: rgba(255, 255, 255, 0.08) 0px 1px 0px 0px;
   --shadow-card:
-    rgba(0, 0, 0, 0.3) 0px 0px 0px 1px,
-    rgba(0, 0, 0, 0.15) 0px 2px 2px,
-    rgba(0, 0, 0, 0.15) 0px 8px 8px -8px,
-    rgba(255, 255, 255, 0.03) 0px 0px 0px 1px;
+    rgba(255, 255, 255, 0.10) 0px 0px 0px 1px,
+    rgba(0, 0, 0, 0.40) 0px 2px 8px,
+    rgba(0, 0, 0, 0.20) 0px 8px 16px -8px;
   --vk-gray-600: #a0a0a0;
   --vk-gray-500: #888888;
-  --vk-gray-100: #333333;
-  --vk-gray-50:  #1a1a1a;
+  --vk-gray-100: #3a3a3a;
+  --vk-gray-50:  #222222;
 }
 
 /* ═══════════════════════════════════════════════
@@ -168,8 +168,8 @@
   --accent:              oklch(0.205 0 0);
   --accent-foreground:   oklch(0.985 0 0);
   --destructive:         oklch(0.704 0.191 22.216);
-  --border:              oklch(1 0 0 / 10%);
-  --input:               oklch(1 0 0 / 15%);
+  --border:              oklch(1 0 0 / 18%);   /* raised from 10% for visibility */
+  --input:               oklch(1 0 0 / 20%);
   --ring:                oklch(0.62 0 0);
   --chart-1:             oklch(0.87 0 0);
   --chart-2:             oklch(0.556 0 0);
@@ -379,13 +379,13 @@
 }
 
 /* ── Dark mode overrides (kept for backward-compat) ── */
-.dark .bg-gray-50  { background-color: oklch(0.13 0 0) !important; }
-.dark .bg-white    { background-color: oklch(0.17 0 0) !important; }
-.dark .bg-gray-100 { background-color: oklch(0.22 0 0) !important; }
+.dark .bg-gray-50  { background-color: oklch(0.16 0 0) !important; }  /* #282828 */
+.dark .bg-white    { background-color: oklch(0.20 0 0) !important; }  /* #333333 */
+.dark .bg-gray-100 { background-color: oklch(0.24 0 0) !important; }  /* #3d3d3d */
 
-.dark .border-gray-100 { border-color: oklch(0.25 0 0) !important; }
-.dark .border-gray-200 { border-color: oklch(0.28 0 0) !important; }
-.dark .border-gray-300 { border-color: oklch(0.35 0 0) !important; }
+.dark .border-gray-100 { border-color: oklch(0.30 0 0) !important; }
+.dark .border-gray-200 { border-color: oklch(0.34 0 0) !important; }
+.dark .border-gray-300 { border-color: oklch(0.40 0 0) !important; }
 
 .dark .text-gray-900 { color: oklch(0.96 0 0) !important; }
 .dark .text-gray-800 { color: oklch(0.91 0 0) !important; }
@@ -406,8 +406,8 @@
 
 .dark .even\:bg-gray-50\/70:nth-child(even) { background-color: oklch(0.19 0 0 / 70%) !important; }
 
-.dark .border-orange-100 { border-color: oklch(0.35 0.08 50) !important; }
-.dark .border-orange-200 { border-color: oklch(0.38 0.1 50) !important; }
+/* .dark .border-orange-100 removed — no longer used */
+/* .dark .border-orange-200 removed — no longer used */
 
 .dark .shadow-sm { box-shadow: 0 1px 2px oklch(0 0 0 / 40%) !important; }
 .dark .shadow-md { box-shadow: 0 4px 6px oklch(0 0 0 / 50%) !important; }

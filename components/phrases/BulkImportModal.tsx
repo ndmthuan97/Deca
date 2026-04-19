@@ -114,7 +114,7 @@ export function BulkImportModal({ open, onOpenChange, topicId, onSuccess }: Bulk
         <DialogHeader>
           <DialogTitle>Nhập từ file Excel/CSV</DialogTitle>
           <DialogDescription>
-            Đảm bảo file của bạn có dòng tiêu đề (cột thứ nhất). Cột bắt buộc: <code className="bg-gray-100 px-1 rounded text-orange-600">sample_sentence</code>.
+            Đảm bảo file của bạn có dòng tiêu đề (cột thứ nhất). Cột bắt buộc: <code className="bg-gray-100 px-1 rounded text-[#0068d6]">sample_sentence</code>.
             Các cột khác (tùy chọn): <code className="bg-gray-100 px-1 rounded">translation, pronunciation, structure, type, example1, ...</code>
           </DialogDescription>
         </DialogHeader>
@@ -138,10 +138,10 @@ export function BulkImportModal({ open, onOpenChange, topicId, onSuccess }: Bulk
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between p-4 bg-orange-50 border border-orange-100 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-[#fafafa] border border-[#ebebeb] rounded-lg">
                 <div className="flex items-center gap-3">
-                  <div className="bg-orange-100 p-2 rounded-lg">
-                    <FileType className="h-5 w-5 text-orange-600" />
+                  <div className="bg-[#ebebeb] p-2 rounded-lg">
+                    <FileType className="h-5 w-5 text-[#666]" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-800">{file.name}</p>
@@ -198,7 +198,7 @@ export function BulkImportModal({ open, onOpenChange, topicId, onSuccess }: Bulk
                 <Button 
                   onClick={handleImport} 
                   disabled={loading || data.length === 0}
-                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                  className="bg-[#171717] hover:opacity-85 text-white"
                 >
                   {loading ? 'Đang xử lý...' : (
                     <>

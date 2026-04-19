@@ -143,6 +143,16 @@ export function Sidebar() {
           style={{ boxShadow: 'rgba(0,0,0,0.06) 0px -1px 0px 0px' }}
         >
           <Link
+            href="/settings"
+            title={expanded ? undefined : 'Cài đặt'}
+            className="flex items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-[14px] font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5 transition-colors whitespace-nowrap"
+          >
+            <Settings className="h-4 w-4 shrink-0 text-[#999999] dark:text-[#666666]" />
+            <span className={cn('flex-1 text-left transition-opacity text-[13px]', expanded ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
+              Cài đặt
+            </span>
+          </Link>
+          <Link
             href="/admin"
             title={expanded ? undefined : 'Admin Panel'}
             className="flex items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-[14px] font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5 transition-colors whitespace-nowrap"
@@ -252,6 +262,14 @@ export function Sidebar() {
         <div style={{ boxShadow: 'rgba(0,0,0,0.06) 0px -1px 0px 0px' }}>
           <ThemeToggle />
           <div className="px-3 pb-4 space-y-1">
+            <Link
+              href="/settings"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-2.5 w-full rounded-[6px] px-3 py-2 text-xs text-[#666666] dark:text-[#888888] hover:bg-[#fafafa] dark:hover:bg-white/5 hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
+            >
+              <Settings className="h-3.5 w-3.5 flex-shrink-0" />
+              <span>Cài đặt</span>
+            </Link>
             <Link
               href="/admin"
               onClick={() => setMobileOpen(false)}

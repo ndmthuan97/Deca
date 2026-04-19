@@ -100,7 +100,7 @@ export function CommandPalette() {
         {/* Search input */}
         <div className="flex items-center gap-3 px-4 py-3.5 border-b border-gray-100 dark:border-gray-800">
           {loading
-            ? <Loader2 className="h-4 w-4 text-orange-500 animate-spin shrink-0" />
+            ? <Loader2 className="h-4 w-4 text-[#888] animate-spin shrink-0" />
             : <Search   className="h-4 w-4 text-gray-400 shrink-0" />
           }
           <input
@@ -146,7 +146,7 @@ export function CommandPalette() {
               className={cn(
                 'w-full flex items-start gap-3 px-4 py-3 text-left transition-colors',
                 i === cursor
-                  ? 'bg-orange-50 dark:bg-orange-500/10'
+                  ? 'bg-[#fafafa] dark:bg-white/5'
                   : 'hover:bg-gray-50 dark:hover:bg-gray-800/60'
               )}
             >
@@ -166,8 +166,8 @@ export function CommandPalette() {
                 )}
                 {/* Topic badge */}
                 <div className="flex items-center gap-1 mt-1">
-                  <BookOpen className="h-2.5 w-2.5 text-orange-400" />
-                  <span className="text-[10px] text-orange-500 font-medium">{r.topic_name}</span>
+                  <BookOpen className="h-2.5 w-2.5 text-[#999]" />
+                  <span className="text-[10px] text-[#0068d6] font-medium">{r.topic_name}</span>
                   {r.type && (
                     <span className="text-[10px] text-gray-400 ml-1">· {r.type}</span>
                   )}
@@ -176,7 +176,7 @@ export function CommandPalette() {
 
               <ArrowRight className={cn(
                 'h-3.5 w-3.5 shrink-0 mt-1 transition-opacity',
-                i === cursor ? 'text-orange-500 opacity-100' : 'text-gray-300 opacity-0 group-hover:opacity-100'
+                i === cursor ? 'text-[#171717] dark:text-white opacity-100' : 'text-gray-300 opacity-0 group-hover:opacity-100'
               )} />
             </button>
           ))}

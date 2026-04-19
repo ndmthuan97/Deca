@@ -6,13 +6,13 @@ import { useRouter } from 'next/navigation'
 import {
   Flame, BookOpen, Brain, GraduationCap, ArrowLeft,
   TrendingUp, BarChart2, Target, Loader2, AlertTriangle,
-  CheckCircle2
+  CheckCircle2, Puzzle, Star, Sparkles
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api-client'
 import { getStreak } from '@/lib/streak'
 
-/* ─── Types ──────────────────────────────────────────────────── */
+/* --- Types ---------------------------------------------------- */
 interface DashboardStats {
   summary: {
     totalPhrases:   number
@@ -20,14 +20,132 @@ interface DashboardStats {
     learnedPhrases: number
     dueToday:       number
     reviewedWeek:   number
+    reviewedToday:  number
   }
   activity: { date: string; count: number }[]
   resultBreakdown: { again: number; hard: number; good: number; easy: number }
   hardestPhrases: { phraseId: number; againCount: number; sampleSentence: string; translation: string | null }[]
   typeDist: { type: string; count: number }[]
+  weakTopics: { topicId: number | null; topicName: string; totalReviews: number; againRate: number }[]
 }
 
-/* ─── Stat Card — Vercel style ───────────────────────────────── */
+/* --- Daily Target Card ---------------------------------------- */
+const DAILY_TARGET_KEY = 'dace:daily_target'
+
+function DailyTargetCard({ reviewed }: { reviewed: number }) {
+  const [target, setTarget] = useState<number>(20)
+
+  useEffect(() => {
+    const saved = parseInt(localStorage.getItem(DAILY_TARGET_KEY) ?? '20', 10)
+    setTarget(isNaN(saved) ? 20 : saved)
+  }, [])
+
+  function adjust(delta: number) {
+    const next = Math.max(5, Math.min(100, target + delta))
+    setTarget(next)
+    localStorage.setItem(DAILY_TARGET_KEY, String(next))
+  }
+
+  const pct    = Math.min(100, Math.round((reviewed / target) * 100))
+  const done   = pct >= 100
+  const r      = 38
+  const circ   = 2 * Math.PI * r
+  const offset = circ * (1 - pct / 100)
+
+  return (
+    <div className="rounded-[8px] bg-white dark:bg-[#111] p-5"
+      style={{ boxShadow: 'var(--shadow-card)' }}>
+      <p className="text-[11px] font-medium uppercase tracking-widest text-[#666] dark:text-[#888] mb-4">
+        Mục tiêu hôm nay
+      </p>
+      <div className="flex items-center gap-6">
+        {/* Circular progress ring */}
+        <div className="relative w-20 h-20 shrink-0">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 88 88">
+            <circle cx="44" cy="44" r={r} fill="none" stroke="currentColor" strokeWidth="7"
+              className="text-[#f0f0f0] dark:text-[#2a2a2a]" />
+            <circle cx="44" cy="44" r={r} fill="none" stroke="currentColor" strokeWidth="7"
+              strokeDasharray={circ}
+              strokeDashoffset={offset}
+              strokeLinecap="round"
+              className={done ? 'text-emerald-500' : 'text-[#0072f5]'}
+              style={{ transition: 'stroke-dashoffset 0.8s ease' }} />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className={`text-[18px] font-bold tabular-nums leading-none ${done ? 'text-emerald-500' : 'text-[#171717] dark:text-[#f5f5f5]'}`}>
+              {reviewed}
+            </span>
+            <span className="text-[10px] text-[#999]">{pct}%</span>
+          </div>
+        </div>
+        {/* Info + adjust buttons */}
+        <div className="flex-1">
+          <p className="text-[13px] font-medium text-[#171717] dark:text-[#f5f5f5] mb-0.5">
+            {done ? '🎉 Hoàn thành!' : `Còn ${Math.max(0, target - reviewed)} câu`}
+          </p>
+          <p className="text-[12px] text-[#999] mb-3">
+            Target: <strong className="text-[#171717] dark:text-[#f5f5f5]">{target}</strong> câu
+          </p>
+          <div className="flex items-center gap-1.5">
+            <button onClick={() => adjust(-5)}
+              className="flex h-6 w-6 items-center justify-center rounded-[4px] text-[12px] font-bold text-[#666] hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
+              style={{ boxShadow: 'var(--shadow-border)' }}>−</button>
+            <button onClick={() => adjust(5)}
+              className="flex h-6 w-6 items-center justify-center rounded-[4px] text-[12px] font-bold text-[#666] hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
+              style={{ boxShadow: 'var(--shadow-border)' }}>+</button>
+            <span className="text-[10px] text-[#bbb] ml-1">±5</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* --- Weak Topics ---------------------------------------------- */
+function WeakTopics({ data }: { data: DashboardStats['weakTopics'] }) {
+  const router = useRouter()
+  if (data.length === 0) return null
+
+  function rateColor(rate: number) {
+    if (rate >= 0.5)  return 'bg-red-500'
+    if (rate >= 0.25) return 'bg-amber-400'
+    return 'bg-emerald-500'
+  }
+
+  return (
+    <div className="rounded-[8px] bg-white dark:bg-[#111] p-5"
+      style={{ boxShadow: 'var(--shadow-card)' }}>
+      <div className="flex items-center gap-2 mb-4" style={{ boxShadow: 'rgba(0,0,0,0.06) 0px 1px 0px 0px' }}>
+        <TrendingUp className="h-3.5 w-3.5 text-[#666]" />
+        <p className="text-[11px] font-medium uppercase tracking-widest text-[#666] dark:text-[#888] pb-3">
+          Điểm yếu theo chủ đề
+        </p>
+      </div>
+      <div className="space-y-3">
+        {data.map(t => (
+          <button key={t.topicId} onClick={() => t.topicId && router.push(`/topics/${t.topicId}`)}
+            className="w-full text-left group">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[12px] text-[#666] dark:text-[#888] group-hover:text-[#171717] dark:group-hover:text-[#f5f5f5] transition-colors truncate max-w-[60%]">
+                {t.topicName}
+              </span>
+              <span className="text-[12px] font-semibold tabular-nums text-[#171717] dark:text-[#f5f5f5]">
+                {Math.round(t.againRate * 100)}%
+                <span className="text-[#aaa] font-normal ml-1">quên</span>
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full bg-[#f0f0f0] dark:bg-[#2a2a2a] overflow-hidden">
+              <div className={`h-full rounded-full transition-all duration-700 ${rateColor(t.againRate)}`}
+                style={{ width: `${Math.round(t.againRate * 100)}%` }} />
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* --- Stat Card — Vercel style --------------------------------- */
 function StatCard({ icon, label, value, sub }: {
   icon: React.ReactNode; label: string; value: string | number; sub?: string
 }) {
@@ -44,7 +162,7 @@ function StatCard({ icon, label, value, sub }: {
   )
 }
 
-/* ─── Activity Heatmap (30 ngày) ────────────────────────────── */
+/* --- Activity Heatmap (30 ngày) ------------------------------- */
 function ActivityHeatmap({ activity }: { activity: { date: string; count: number }[] }) {
   const days: { date: string; count: number }[] = []
   for (let i = 29; i >= 0; i--) {
@@ -91,7 +209,7 @@ function ActivityHeatmap({ activity }: { activity: { date: string; count: number
   )
 }
 
-/* ─── Result Breakdown Bar ───────────────────────────────────── */
+/* --- Result Breakdown Bar ------------------------------------- */
 function ResultBreakdown({ data }: { data: DashboardStats['resultBreakdown'] }) {
   const entries: { key: string; label: string; color: string; value: number }[] = [
     { key: 'easy',  label: 'Dễ',   color: 'bg-sky-400',     value: data.easy },
@@ -136,7 +254,7 @@ function ResultBreakdown({ data }: { data: DashboardStats['resultBreakdown'] }) 
   )
 }
 
-/* ─── Type Distribution ──────────────────────────────────────── */
+/* --- Type Distribution ---------------------------------------- */
 function TypeDist({ data }: { data: DashboardStats['typeDist'] }) {
   const total = data.reduce((s, t) => s + t.count, 0)
   const colors = ['bg-[#171717] dark:bg-[#f5f5f5]','bg-[#555]','bg-[#888]','bg-[#aaa]','bg-[#ccc]','bg-[#e0e0e0]']
@@ -173,7 +291,7 @@ function TypeDist({ data }: { data: DashboardStats['typeDist'] }) {
   )
 }
 
-/* ─── Hardest Phrases ────────────────────────────────────────── */
+/* --- Hardest Phrases ------------------------------------------ */
 function HardestPhrases({ data }: { data: DashboardStats['hardestPhrases'] }) {
   return (
     <div className="rounded-[8px] bg-white dark:bg-[#111] p-5"
@@ -206,7 +324,7 @@ function HardestPhrases({ data }: { data: DashboardStats['hardestPhrases'] }) {
   )
 }
 
-/* ─── Main Dashboard Page ────────────────────────────────────── */
+/* --- Main Dashboard Page -------------------------------------- */
 export default function DashboardPage() {
   const router = useRouter()
   const [stats, setStats]     = useState<DashboardStats | null>(null)
@@ -228,7 +346,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
 
-      {/* ── Header — Vercel nav bottom shadow-border ── */}
+      {/* Header */}
       <header className="sticky top-0 z-10 bg-white dark:bg-[#0a0a0a]"
         style={{ boxShadow: 'rgba(0,0,0,0.06) 0px 1px 0px 0px' }}>
         <div className="mx-auto max-w-3xl px-4 h-14 flex items-center justify-between">
@@ -240,7 +358,11 @@ export default function DashboardPage() {
           <h1 className="text-[14px] font-semibold text-[#171717] dark:text-[#f5f5f5] tracking-tight">
             Dashboard học tập
           </h1>
-          <div />
+          <Link href="/starred"
+            className="flex items-center gap-1.5 text-[13px] text-[#999] hover:text-amber-500 transition-colors"
+            title="Câu đã ghim">
+            <Star className="h-3.5 w-3.5" /> Đã ghim
+          </Link>
         </div>
       </header>
 
@@ -253,7 +375,7 @@ export default function DashboardPage() {
           <p className="text-center text-[#999] py-20 text-[13px]">Không thể tải dữ liệu</p>
         ) : (
           <>
-            {/* ── Stat cards ── */}
+            {/* Stat cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <StatCard
                 icon={<BookOpen className="h-4 w-4" />}
@@ -281,7 +403,7 @@ export default function DashboardPage() {
               />
             </div>
 
-            {/* ── Progress bar ── */}
+            {/* Progress bar */}
             <div className="rounded-[8px] bg-white dark:bg-[#111] p-5"
               style={{ boxShadow: 'var(--shadow-card)' }}>
               <div className="flex items-center justify-between mb-3">
@@ -301,30 +423,49 @@ export default function DashboardPage() {
               </p>
             </div>
 
-            {/* ── Activity Heatmap ── */}
+            {/* Activity Heatmap */}
             <ActivityHeatmap activity={stats.activity} />
 
-            {/* ── Result + Type Dist ── */}
+            {/* Result + Type Dist */}
             <div className="grid sm:grid-cols-2 gap-3">
               <ResultBreakdown data={stats.resultBreakdown as DashboardStats['resultBreakdown']} />
               <TypeDist data={stats.typeDist} />
             </div>
 
-            {/* ── Hardest phrases ── */}
+            {/* Daily Target + Weak Topics */}
+            <div className="grid sm:grid-cols-2 gap-3">
+              <DailyTargetCard reviewed={stats.summary.reviewedToday} />
+              <WeakTopics data={stats.weakTopics} />
+            </div>
+
+            {/* Hardest phrases */}
             <HardestPhrases data={stats.hardestPhrases} />
 
-            {/* ── CTA ── */}
+            {/* CTA */}
             <div className="grid sm:grid-cols-2 gap-3">
               <Link href="/review"
-                className="flex items-center justify-center gap-2 rounded-[6px] bg-[#171717] dark:bg-[#f5f5f5] px-6 py-3.5 text-[14px] font-medium text-white dark:text-[#171717] hover:opacity-90 transition-opacity">
+                className="flex items-center justify-center gap-2 rounded-[6px] bg-[#171717] dark:bg-[#f5f5f5] px-6 py-3.5 text-[14px] font-medium text-white dark:text-[#171717] hover:opacity-90 transition-opacity col-span-2 sm:col-span-1">
                 <GraduationCap className="h-4 w-4" />
-                Ôn tập ngay ({stats.summary.dueToday} câu)
+                Ôn tập SRS ({stats.summary.dueToday} câu)
+              </Link>
+              <Link href="/"
+                className="flex items-center justify-center gap-2 rounded-[6px] px-6 py-3.5 text-[14px] font-medium text-[#171717] dark:text-[#f5f5f5] transition-colors hover:opacity-80 col-span-2 sm:col-span-1"
+                style={{ boxShadow: 'var(--shadow-border)' }}
+                title="Chọn chủ đề → nhấn Learn">
+                <Sparkles className="h-4 w-4" />
+                Learn Mode
+              </Link>
+              <Link href="/match"
+                className="flex items-center justify-center gap-2 rounded-[6px] px-6 py-3.5 text-[14px] font-medium text-[#171717] dark:text-[#f5f5f5] transition-colors hover:opacity-80"
+                style={{ boxShadow: 'var(--shadow-border)' }}>
+                <Puzzle className="h-4 w-4" />
+                Match Game
               </Link>
               <Link href="/"
                 className="flex items-center justify-center gap-2 rounded-[6px] px-6 py-3.5 text-[14px] font-medium text-[#171717] dark:text-[#f5f5f5] transition-colors"
                 style={{ boxShadow: 'var(--shadow-border)' }}>
                 <BookOpen className="h-4 w-4" />
-                Xem tất cả chủ đề
+                Xem chủ đề
               </Link>
             </div>
           </>

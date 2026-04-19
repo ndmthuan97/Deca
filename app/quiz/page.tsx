@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import {
   Volume2, Loader2, ArrowLeft, CheckCircle2, XCircle,
-  Trophy, RotateCcw, Brain, ChevronRight, Headphones, PenLine, Languages
+  Trophy, RotateCcw, Brain, ChevronRight, Headphones, PenLine, Languages, Mic
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api-client'
@@ -12,11 +12,12 @@ import { toast } from 'sonner'
 import type { QuizMode, QuizQuestion } from '@/app/api/quiz/route'
 
 /* ─── Mode meta ─────────────────────────────────────────────── */
-const MODE_META: Record<QuizMode, { label: string; icon: React.ReactNode; color: string; hint: string }> = {
+const MODE_META: Record<QuizMode | 'dictation', { label: string; icon: React.ReactNode; color: string; hint: string }> = {
   multiple_choice: { label: 'Trắc nghiệm',    icon: <Brain className="h-4 w-4" />,     color: 'text-violet-500', hint: 'Chọn bản dịch đúng' },
   fill_blank:      { label: 'Điền vào chỗ trống', icon: <PenLine className="h-4 w-4" />,  color: 'text-emerald-500', hint: 'Điền từ còn thiếu' },
   listening:       { label: 'Nghe hiểu',       icon: <Headphones className="h-4 w-4" />, color: 'text-sky-500',    hint: 'Nghe và chọn nghĩa đúng' },
-  translation:     { label: 'Dịch câu',        icon: <Languages className="h-4 w-4" />,  color: 'text-orange-500', hint: 'Gõ câu tiếng Anh' },
+  translation:     { label: 'Dịch câu',        icon: <Languages className="h-4 w-4" />,  color: 'text-[#666]', hint: 'Gõ câu tiếng Anh' },
+  dictation:       { label: 'Chính tả',        icon: <Mic className="h-4 w-4" />,        color: 'text-rose-500',  hint: 'Nghe và gõ lại toàn bộ câu' },
 }
 
 function speak(text: string) {
@@ -52,7 +53,7 @@ function SessionComplete({
             strokeDasharray={`${2 * Math.PI * 42}`}
             strokeDashoffset={`${2 * Math.PI * 42 * (1 - pct / 100)}`}
             strokeLinecap="round"
-            className={pct >= 70 ? 'text-emerald-500' : pct >= 50 ? 'text-orange-500' : 'text-red-500'}
+            className={pct >= 70 ? 'text-emerald-500' : pct >= 50 ? 'text-[#888]' : 'text-red-500'}
             style={{ transition: 'stroke-dashoffset 1s ease' }} />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
@@ -66,7 +67,7 @@ function SessionComplete({
           <ArrowLeft className="h-4 w-4" /> Quay lại
         </button>
         <button onClick={onRetry}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-2.5 text-sm font-semibold text-white hover:from-orange-400 hover:to-amber-400 transition-all">
+          className="flex items-center gap-2 rounded-xl bg-[#171717] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-85 transition-all">
           <RotateCcw className="h-4 w-4" /> Làm lại
         </button>
       </div>
@@ -83,11 +84,13 @@ function QuizCard({
   index: number
   total: number
 }) {
-  const meta = MODE_META[q.mode]
+  // Mode meta — support dictation as overlay on top of quiz modes
+  const meta = (q.mode in MODE_META ? MODE_META[q.mode as keyof typeof MODE_META] : MODE_META.translation)
   const [selected, setSelected]   = useState<number | null>(null)
   const [textInput, setTextInput]  = useState('')
   const [revealed, setRevealed]    = useState(false)
   const [isCorrect, setIsCorrect]  = useState<boolean | null>(null)
+  const [wordScores, setWordScores] = useState<boolean[]>([])
   const inputRef                   = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -95,10 +98,10 @@ function QuizCard({
     setTextInput('')
     setRevealed(false)
     setIsCorrect(null)
-    if (q.mode === 'fill_blank' || q.mode === 'translation') {
+    if (q.mode === 'fill_blank' || q.mode === 'translation' || q.mode === 'dictation') {
       setTimeout(() => inputRef.current?.focus(), 100)
     }
-    if (q.mode === 'listening') speak(q.sentence)
+    if (q.mode === 'listening' || q.mode === 'dictation') speak(q.sentence)
   }, [q])
 
   // Keyboard: 1–4 for multiple choice, Enter to submit text
@@ -128,6 +131,22 @@ function QuizCard({
   function handleTextSubmit() {
     if (revealed) return
     const answer  = textInput.trim().toLowerCase()
+
+    if (q.mode === 'dictation') {
+      // Word-by-word scoring
+      const targetWords  = q.sentence.toLowerCase().replace(/[^a-z0-9'\s]/g, '').split(/\s+/)
+      const givenWords   = answer.replace(/[^a-z0-9'\s]/g, '').split(/\s+/)
+      const scores       = targetWords.map((tw, i) => {
+        const gw = givenWords[i] ?? ''
+        return gw === tw || levenshtein(gw, tw) <= 1
+      })
+      setWordScores(scores)
+      const allCorrect = scores.every(Boolean)
+      setIsCorrect(allCorrect)
+      setRevealed(true)
+      return
+    }
+
     const correct = (q.mode === 'fill_blank' ? q.blankWord! : q.sentence)
       .toLowerCase()
       .replace(/[^a-z0-9'\s]/g, '')
@@ -150,6 +169,18 @@ function QuizCard({
       {/* Question card */}
       <div className="rounded-2xl border bg-white dark:bg-gray-900 shadow-md p-6 space-y-4">
 
+        {/* Dictation: big play button + no text shown */}
+        {q.mode === 'dictation' && (
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">{meta.hint}</p>
+            <button onClick={() => speak(q.sentence)}
+              className="flex h-20 w-20 items-center justify-center rounded-full bg-rose-50 dark:bg-rose-900/30 border-2 border-rose-200 dark:border-rose-700 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors shadow-sm">
+              <Volume2 className="h-9 w-9" />
+            </button>
+            <p className="text-[11px] text-gray-400">Nghe & gõ lại toàn bộ câu</p>
+          </div>
+        )}
+
         {/* Listening: play button prominent */}
         {q.mode === 'listening' && (
           <div className="flex justify-center">
@@ -161,7 +192,7 @@ function QuizCard({
         )}
 
         {/* Sentence or translation as prompt */}
-        {q.mode !== 'listening' && (
+        {q.mode !== 'listening' && q.mode !== 'dictation' && (
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">{meta.hint}</p>
             {q.mode === 'translation' ? (
@@ -187,7 +218,7 @@ function QuizCard({
               <div className="flex items-start gap-2">
                 <p className="flex-1 text-xl font-bold text-gray-900 dark:text-white leading-snug">{q.sentence}</p>
                 <button onClick={() => speak(q.sentence)}
-                  className="shrink-0 mt-0.5 rounded-full p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30">
+                  className="shrink-0 mt-0.5 rounded-full p-1.5 text-gray-400 hover:text-[#171717] hover:bg-[#fafafa] dark:hover:bg-white/10">
                   <Volume2 className="h-4 w-4" />
                 </button>
               </div>
@@ -203,7 +234,7 @@ function QuizCard({
               const isRight    = i === q.correctIndex
               let cls = 'flex items-center gap-3 w-full rounded-xl border-2 px-4 py-3 text-sm font-medium text-left transition-all'
               if (!revealed) {
-                cls += ' border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 cursor-pointer'
+                cls += ' border-gray-200 dark:border-gray-700 hover:border-[#ddd] dark:hover:border-gray-600 hover:bg-[#fafafa] dark:hover:bg-white/5 cursor-pointer'
               } else if (isRight) {
                 cls += ' border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400'
               } else if (isSelected && !isRight) {
@@ -233,19 +264,19 @@ function QuizCard({
               <p className="flex-1 text-sm font-semibold text-gray-900 dark:text-white">{q.sentence}</p>
               <button
                 onClick={() => speak(q.sentence)}
-                className="shrink-0 rounded-full p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors"
+                className="shrink-0 rounded-full p-1.5 text-gray-400 hover:text-[#171717] hover:bg-[#fafafa] dark:hover:bg-white/10 transition-colors"
               >
                 <Volume2 className="h-4 w-4" />
               </button>
             </div>
             {q.pronunciation && (
-              <p className="mt-1 font-mono text-xs text-orange-400">{q.pronunciation}</p>
+              <p className="mt-1 font-mono text-xs text-[#888]">{q.pronunciation}</p>
             )}
           </div>
         )}
 
-        {/* ── Fill blank / Translation ── */}
-        {(q.mode === 'fill_blank' || q.mode === 'translation') && (
+        {/* ── Fill blank / Translation / Dictation ── */}
+        {(q.mode === 'fill_blank' || q.mode === 'translation' || q.mode === 'dictation') && (
           <div className="space-y-2">
             <div className="flex gap-2">
               <input
@@ -254,25 +285,46 @@ function QuizCard({
                 onChange={e => setTextInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleTextSubmit() }}
                 disabled={revealed}
-                placeholder={q.mode === 'fill_blank' ? 'Điền từ...' : 'Nhập câu tiếng Anh...'}
+                placeholder={q.mode === 'fill_blank' ? 'Điền từ...' : q.mode === 'dictation' ? 'Gõ câu vừa nghe...' : 'Nhập câu tiếng Anh...'}
                 className={cn(
                   'flex-1 rounded-xl border-2 px-4 py-3 text-sm outline-none transition-all bg-white dark:bg-gray-800',
                   revealed && isCorrect
                     ? 'border-emerald-400 text-emerald-700 dark:text-emerald-400'
                     : revealed && !isCorrect
                     ? 'border-red-400 text-red-700 dark:text-red-400'
-                    : 'border-gray-200 dark:border-gray-700 focus:border-orange-400'
+                    : 'border-gray-200 dark:border-gray-700 focus:border-[#0072f5]'
                 )}
               />
               {!revealed && (
                 <button onClick={handleTextSubmit}
-                  className="rounded-xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-400 transition-colors">
+                  className="rounded-xl bg-[#171717] px-4 py-2 text-sm font-semibold text-white hover:opacity-85 transition-colors">
                   OK
                 </button>
               )}
             </div>
-            {/* Đáp án sau khi reveal */}
-            {revealed && !isCorrect && (
+
+            {/* Dictation: word-by-word diff */}
+            {revealed && q.mode === 'dictation' && (
+              <div className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-3 space-y-1.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-2">Chấm từng từ</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {q.sentence.split(' ').map((word, i) => (
+                    <span key={i} className={cn(
+                      'rounded-md px-2 py-0.5 text-sm font-medium',
+                      wordScores[i]
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                    )}>{word}</span>
+                  ))}
+                </div>
+                <p className="text-[11px] text-gray-400">
+                  {wordScores.filter(Boolean).length}/{wordScores.length} từ đúng
+                </p>
+              </div>
+            )}
+
+            {/* Đáp án sau khi reveal (non-dictation) */}
+            {revealed && !isCorrect && q.mode !== 'dictation' && (
               <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-4 py-2.5">
                 <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                   Đáp án: <span className="font-bold">
@@ -294,7 +346,7 @@ function QuizCard({
           </div>
           <button
             onClick={() => onAnswer(isCorrect ?? false)}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-2.5 text-sm font-semibold text-white hover:from-orange-400 hover:to-amber-400 transition-all"
+            className="flex items-center gap-2 rounded-xl bg-[#171717] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-85 transition-all"
           >
             Tiếp theo <ChevronRight className="h-4 w-4" />
           </button>
@@ -323,6 +375,7 @@ function QuizContent() {
   const searchParams = useSearchParams()
   const topicId      = searchParams.get('topic_id')
   const topicName    = searchParams.get('topic_name') ?? 'Quiz'
+  const modeParam    = searchParams.get('mode') ?? 'random'
 
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [index, setIndex]         = useState(0)
@@ -336,11 +389,11 @@ function QuizContent() {
     setIndex(0)
     setScore(0)
     setFinished(false)
-    apiFetch<{ questions: QuizQuestion[] }>(`/api/quiz?topic_id=${topicId}&limit=10&mode=random`)
+    apiFetch<{ questions: QuizQuestion[] }>(`/api/quiz?topic_id=${topicId}&limit=10&mode=${modeParam}`)
       .then(d => setQuestions(d.questions))
       .catch(() => toast.error('Không thể tải quiz'))
       .finally(() => setLoading(false))
-  }, [topicId, router])
+  }, [topicId, modeParam, router])
 
   useEffect(() => { load() }, [load])
 
@@ -356,7 +409,7 @@ function QuizContent() {
   if (!topicId) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-orange-50/30 dark:from-slate-950 dark:to-orange-950/10">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white/80 dark:bg-slate-950/80 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="mx-auto max-w-xl px-4 h-14 flex items-center justify-between">
@@ -376,7 +429,7 @@ function QuizContent() {
         {/* Progress */}
         {!finished && questions.length > 0 && (
           <div className="h-1 bg-gray-100 dark:bg-gray-800">
-            <div className="h-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-500"
+            <div className="h-full bg-[#171717] dark:bg-[#f5f5f5] transition-all duration-500"
               style={{ width: `${(index / questions.length) * 100}%` }} />
           </div>
         )}
@@ -385,7 +438,7 @@ function QuizContent() {
       <main className="mx-auto max-w-xl px-4 py-8">
         {loading && (
           <div className="flex justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#888]" />
           </div>
         )}
 
@@ -416,7 +469,7 @@ export default function QuizPage() {
   return (
     <Suspense fallback={
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#888]" />
       </div>
     }>
       <QuizContent />

@@ -3,7 +3,7 @@ import { phrases, topics } from '@/db/schema'
 import { and, isNull, eq, ne, sql } from 'drizzle-orm'
 import { ok, badRequest, serverError } from '@/lib/api-response'
 
-export type QuizMode = 'multiple_choice' | 'fill_blank' | 'listening' | 'translation'
+export type QuizMode = 'multiple_choice' | 'fill_blank' | 'listening' | 'translation' | 'dictation'
 
 export interface QuizQuestion {
   mode:           QuizMode
@@ -22,7 +22,7 @@ export interface QuizQuestion {
   blankWord?:       string        // "see" (đáp án điền vào chỗ trống)
 }
 
-const MODES: QuizMode[] = ['multiple_choice', 'fill_blank', 'listening', 'translation']
+const MODES: QuizMode[] = ['multiple_choice', 'fill_blank', 'listening', 'translation', 'dictation']
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -159,6 +159,9 @@ export async function GET(request: Request) {
           blankedSentence: fb.blanked,
           blankWord:       fb.word,
         })
+      } else if (mode === 'dictation') {
+        // Dictation: just needs the sentence — client handles TTS + word scoring
+        questions.push({ ...base, mode: 'dictation' })
       } else {
         // translation mode
         questions.push({ ...base, mode: 'translation' })

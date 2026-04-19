@@ -16,7 +16,7 @@ import { FlashcardView } from '@/components/phrases/FlashcardView'
 import {
   BookOpen, Search, Pencil, Trash2, Volume2, Sparkles, Eye, Filter, MoreVertical,
   ChevronLeft, ChevronRight, ChevronDown,
-  List, GalleryHorizontal, Loader2, Brain,
+  List, GalleryHorizontal, Loader2, Brain, GraduationCap, Mic,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -107,7 +107,7 @@ function StructureText({ text }: { text: string }) {
     <span className="text-xs font-mono">
       {parts.map((part, i) =>
         part.startsWith('(') && part.endsWith(')') ? (
-          <span key={i} className="text-orange-500 font-semibold">{part}</span>
+          <span key={i} className="text-[#0072f5] font-semibold">{part}</span>
         ) : (
           <span key={i} className="text-gray-700">{part}</span>
         )
@@ -124,7 +124,7 @@ function PhraseViewDialog({ phrase, open, onClose }: { phrase: Phrase | null; op
       <DialogContent className="sm:max-w-2xl bg-white border-gray-200 text-gray-900 max-h-[90vh] overflow-y-auto shadow-xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-gray-900">
-            <Eye className="h-4 w-4 text-orange-500" />
+            <Eye className="h-4 w-4 text-[#666]" />
             Chi tiết câu
           </DialogTitle>
         </DialogHeader>
@@ -133,9 +133,9 @@ function PhraseViewDialog({ phrase, open, onClose }: { phrase: Phrase | null; op
           {/* Sample sentence */}
           <div>
             <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Câu mẫu</p>
-            <div className="rounded-xl bg-orange-50 border border-orange-100 p-4">
+            <div className="rounded-xl bg-[#fafafa] border border-[#ebebeb] p-4">
               <div className="flex items-center gap-2">
-                <button onClick={() => speak(phrase.sample_sentence)} className="text-orange-400 hover:text-orange-600 shrink-0">
+                <button onClick={() => speak(phrase.sample_sentence)} className="text-[#999] hover:text-[#171717] shrink-0">
                   <Volume2 className="h-4 w-4" />
                 </button>
                 <p className="text-xl font-bold text-gray-900">{phrase.sample_sentence}</p>
@@ -152,7 +152,7 @@ function PhraseViewDialog({ phrase, open, onClose }: { phrase: Phrase | null; op
             {/* IPA */}
             <div>
               <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Phát âm IPA</p>
-              <p className="font-mono text-orange-600">{phrase.pronunciation || '—'}</p>
+              <p className="font-mono text-[#888]">{phrase.pronunciation || '—'}</p>
             </div>
             {/* Type */}
             <div>
@@ -175,7 +175,7 @@ function PhraseViewDialog({ phrase, open, onClose }: { phrase: Phrase | null; op
                   <StructureText text={phrase.structure} />
                 </p>
                 <p className="mt-2 text-[10px] text-gray-400 italic">
-                  Phần <span className="text-orange-500 font-semibold">cam</span> = có thể thay đổi linh hoạt
+                  Phần <span className="text-[#0072f5] font-semibold">xanh</span> = có thể thay đổi linh hoạt
                 </p>
               </div>
             </div>
@@ -191,13 +191,13 @@ function PhraseViewDialog({ phrase, open, onClose }: { phrase: Phrase | null; op
               ].filter(e => e.ex).map(e => (
                 <div key={e.n} className="rounded-lg bg-gray-50 p-3 border border-gray-200">
                   <div className="flex items-start gap-2.5">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-500 shrink-0 mt-0.5">{e.n}</span>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#ebebeb] text-[10px] font-bold text-[#666] shrink-0 mt-0.5">{e.n}</span>
                     <div className="flex-1 min-w-0 space-y-0.5">
                       <p className="text-sm text-gray-800 italic">{e.ex}</p>
                       {e.tr && <p className="text-xs text-gray-500">{e.tr}</p>}
-                      {e.ipa && <p className="font-mono text-xs text-orange-500">{e.ipa}</p>}
+                      {e.ipa && <p className="font-mono text-xs text-[#888]">{e.ipa}</p>}
                     </div>
-                    <button onClick={() => speak(e.ex!)} className="text-gray-400 hover:text-orange-500 shrink-0 mt-0.5">
+                    <button onClick={() => speak(e.ex!)} className="text-gray-400 hover:text-[#171717] shrink-0 mt-0.5">
                       <Volume2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -391,7 +391,7 @@ export default function TopicPage() {
                 placeholder="Tìm câu..."
                 value={search}
                 onChange={e => handleSearchChange(e.target.value)}
-                className="pl-8 h-9 w-full border-gray-200 bg-white text-sm placeholder:text-gray-400 focus:border-orange-400 shadow-sm"
+                className="pl-8 h-9 w-full border-gray-200 bg-white text-sm placeholder:text-gray-400 focus:border-[#0072f5] shadow-sm"
               />
             </div>
             {/* Mobile filter button */}
@@ -402,13 +402,13 @@ export default function TopicPage() {
                   className={cn(
                     'flex h-9 w-9 items-center justify-center rounded-lg border shadow-sm transition-colors',
                     typeFilter.size > 0
-                      ? 'border-orange-500 bg-orange-50 text-orange-600'
+                      ? 'border-[#171717] bg-[#fafafa] text-[#171717]'
                       : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
                   )}
                 >
                   <Filter className="h-4 w-4" />
                   {typeFilter.size > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[9px] font-bold text-white">
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#171717] text-[9px] font-bold text-white">
                       {typeFilter.size}
                     </span>
                   )}
@@ -418,7 +418,7 @@ export default function TopicPage() {
                     <div className="flex items-center justify-between px-2 pb-1.5 mb-1 border-b border-gray-100">
                       <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Loại câu</span>
                       {typeFilter.size > 0 && (
-                        <button onClick={clearTypeFilter} className="text-[11px] text-orange-500 hover:text-orange-700 font-medium">Xóa tất cả</button>
+                        <button onClick={clearTypeFilter} className="text-[11px] text-[#0072f5] hover:text-[#0060d0] font-medium">Xóa tất cả</button>
                       )}
                     </div>
                     {availableTypes.map(type => {
@@ -426,7 +426,7 @@ export default function TopicPage() {
                       const checked = typeFilter.has(type)
                       return (
                         <label key={type} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 cursor-pointer hover:bg-gray-50">
-                          <input type="checkbox" checked={checked} onChange={() => toggleTypeFilter(type)} className="h-3.5 w-3.5 rounded accent-orange-500" />
+                          <input type="checkbox" checked={checked} onChange={() => toggleTypeFilter(type)} className="h-3.5 w-3.5 rounded accent-[#171717]" />
                           <TypeBadge type={type} />
                           <span className="ml-auto text-[11px] text-gray-400">{count}</span>
                         </label>
@@ -438,7 +438,7 @@ export default function TopicPage() {
             )}
             <button
               onClick={() => setBulkAddOpen(true)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-600 text-white hover:bg-orange-700 shrink-0 shadow-sm"
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#171717] text-white hover:opacity-80 shrink-0 shadow-sm"
               title="Thêm nhiều câu"
             >
               <Sparkles className="h-4 w-4" />
@@ -449,7 +449,7 @@ export default function TopicPage() {
               className={cn(
                 'flex h-9 w-9 items-center justify-center rounded-lg border shadow-sm transition-colors shrink-0',
                 layoutMode === 'flashcard'
-                  ? 'border-orange-500 bg-orange-50 text-orange-600'
+                  ? 'border-[#171717] bg-[#fafafa] text-[#171717]'
                   : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
               )}
               title={layoutMode === 'flashcard' ? 'Xem danh sách' : 'Xem flashcard'}
@@ -458,6 +458,30 @@ export default function TopicPage() {
             </button>
           </div>
 
+          {/* Mobile: Learn / Quiz / Dictation action buttons */}
+          {topic && (
+            <div className="flex md:hidden gap-2 mb-3">
+              <button
+                onClick={() => router.push(`/learn?topic_id=${topic.id}`)}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 hover:bg-amber-100 active:scale-95 transition-all"
+              >
+                <GraduationCap className="h-3.5 w-3.5" /> Learn
+              </button>
+              <button
+                onClick={() => router.push(`/quiz?topic_id=${topic.id}&topic_name=${encodeURIComponent(topic.name)}`)}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700 hover:bg-violet-100 active:scale-95 transition-all"
+              >
+                <Brain className="h-3.5 w-3.5" /> Quiz
+              </button>
+              <button
+                onClick={() => router.push(`/quiz?topic_id=${topic.id}&topic_name=${encodeURIComponent(topic.name)}&mode=dictation`)}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100 active:scale-95 transition-all"
+              >
+                <Mic className="h-3.5 w-3.5" /> Chính tả
+              </button>
+            </div>
+          )}
+
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm hidden md:block">
 
             {/* ── Toolbar – desktop only ── */}
@@ -465,7 +489,7 @@ export default function TopicPage() {
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-semibold text-gray-800">Danh sách câu</h2>
                 {!phrasesLoading && (
-                  <span className="rounded-full bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-600">
+                  <span className="rounded-full bg-[#ebf5ff] px-2 py-0.5 text-xs font-medium text-[#0068d6]">
                     {filtered.length}
                   </span>
                 )}
@@ -478,7 +502,7 @@ export default function TopicPage() {
                     placeholder="Tìm câu, dịch nghĩa..."
                     value={search}
                     onChange={e => handleSearchChange(e.target.value)}
-                    className="pl-9 h-8 border-gray-200 bg-white text-sm text-gray-700 placeholder:text-gray-400 focus:border-orange-400"
+                    className="pl-9 h-8 border-gray-200 bg-white text-sm text-gray-700 placeholder:text-gray-400 focus:border-[#0072f5]"
                   />
                 </div>
 
@@ -490,14 +514,14 @@ export default function TopicPage() {
                       className={cn(
                         'flex items-center gap-1.5 h-8 rounded-lg border px-3 text-xs font-medium transition-colors',
                         typeFilter.size > 0
-                          ? 'border-orange-500 bg-orange-50 text-orange-700'
+                          ? 'border-[#171717] bg-[#fafafa] text-[#171717]'
                           : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-gray-800'
                       )}
                     >
                       <Filter className="h-3 w-3" />
                       Lọc loại
                       {typeFilter.size > 0 && (
-                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white">
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#171717] text-[10px] font-bold text-white">
                           {typeFilter.size}
                         </span>
                       )}
@@ -508,7 +532,7 @@ export default function TopicPage() {
                         <div className="flex items-center justify-between px-2 pb-1.5 mb-1 border-b border-gray-100">
                           <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Loại câu</span>
                           {typeFilter.size > 0 && (
-                            <button onClick={clearTypeFilter} className="text-[11px] text-orange-500 hover:text-orange-700 font-medium">
+                            <button onClick={clearTypeFilter} className="text-[11px] text-[#0072f5] hover:text-[#0060d0] font-medium">
                               Xóa tất cả
                             </button>
                           )}
@@ -522,7 +546,7 @@ export default function TopicPage() {
                                 type="checkbox"
                                 checked={checked}
                                 onChange={() => toggleTypeFilter(type)}
-                                className="h-3.5 w-3.5 rounded accent-orange-500"
+                                className="h-3.5 w-3.5 rounded accent-[#171717]"
                               />
                               <TypeBadge type={type} />
                               <span className="ml-auto text-[11px] text-gray-400">{count}</span>
@@ -540,7 +564,7 @@ export default function TopicPage() {
                   onClick={() => setBulkAddOpen(true)}
                   className="h-8 text-gray-700 bg-white border-gray-200 hover:bg-gray-50 hover:text-gray-900 text-xs"
                 >
-                  <Sparkles className="mr-1.5 h-3.5 w-3.5 text-orange-500" />
+                  <Sparkles className="mr-1.5 h-3.5 w-3.5 text-[#666]" />
                   Nhiều câu
                 </Button>
                 {/* Layout toggle - desktop */}
@@ -559,7 +583,7 @@ export default function TopicPage() {
                     onClick={() => setLayoutMode('flashcard')}
                     className={cn(
                       'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
-                      layoutMode === 'flashcard' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                      layoutMode === 'flashcard' ? 'bg-white text-[#171717] shadow-sm' : 'text-gray-400 hover:text-gray-600'
                     )}
                     title="Flashcard"
                   >
@@ -567,17 +591,34 @@ export default function TopicPage() {
                   </button>
                 </div>
               </div>
-              {/* Quiz button */}
+              {/* Learn + Quiz + Dictation buttons */}
               {topic && (
-                <button
-                  onClick={() => router.push(`/quiz?topic_id=${topic.id}&topic_name=${encodeURIComponent(topic.name)}`)}
-                  className="hidden sm:flex items-center gap-1.5 rounded-xl border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/20 px-3 py-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors"
-                  title="Quiz Mode"
-                >
-                  <Brain className="h-3.5 w-3.5" /> Quiz
-                </button>
+                <div className="hidden sm:flex items-center gap-1.5">
+                  <button
+                    onClick={() => router.push(`/learn?topic_id=${topic.id}`)}
+                    className="flex items-center gap-1.5 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+                    title="Learn Mode — học từng bước"
+                  >
+                    <GraduationCap className="h-3.5 w-3.5" /> Learn
+                  </button>
+                  <button
+                    onClick={() => router.push(`/quiz?topic_id=${topic.id}&topic_name=${encodeURIComponent(topic.name)}`)}
+                    className="flex items-center gap-1.5 rounded-xl border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/20 px-3 py-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors"
+                    title="Quiz Mode"
+                  >
+                    <Brain className="h-3.5 w-3.5" /> Quiz
+                  </button>
+                  <button
+                    onClick={() => router.push(`/quiz?topic_id=${topic.id}&topic_name=${encodeURIComponent(topic.name)}&mode=dictation`)}
+                    className="flex items-center gap-1.5 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/20 px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors"
+                    title="Chính tả — Nghe & gõ lại"
+                  >
+                    <Mic className="h-3.5 w-3.5" /> Chính tả
+                  </button>
+                </div>
               )}
             </div>
+
 
             {/* ── Bulk action bar ── */}
             {selected.size > 0 && (
@@ -625,7 +666,7 @@ export default function TopicPage() {
                   {search ? `Không tìm thấy kết quả cho "${search}"` : 'Chưa có câu nào — thêm câu đầu tiên!'}
                 </p>
                 {!search && (
-                  <Button onClick={() => setBulkAddOpen(true)} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white">
+                  <Button onClick={() => setBulkAddOpen(true)} size="sm" className="mt-4 bg-[#171717] hover:opacity-80 text-white">
                     <Sparkles className="mr-1.5 h-3.5 w-3.5" /> Thêm câu
                   </Button>
                 )}
@@ -683,7 +724,7 @@ export default function TopicPage() {
                           <p className="font-semibold text-gray-900 leading-snug">{phrase.sample_sentence}</p>
                           <p className="text-sm text-gray-500 mt-0.5">{phrase.translation ?? '—'}</p>
                           {phrase.pronunciation && (
-                            <p className="text-xs font-mono text-orange-500 mt-0.5">{phrase.pronunciation}</p>
+                            <p className="text-xs font-mono text-[#888] mt-0.5">{phrase.pronunciation}</p>
                           )}
                         </div>
                       </div>
@@ -693,7 +734,7 @@ export default function TopicPage() {
                         {hasExamples ? (
                           <button
                             onClick={() => toggleExpand(phrase.id)}
-                            className="flex items-center gap-1 text-xs text-gray-400 hover:text-orange-500 transition-colors"
+                            className="flex items-center gap-1 text-xs text-gray-400 hover:text-[#171717] transition-colors"
                           >
                             {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                             Ví dụ
@@ -735,7 +776,7 @@ export default function TopicPage() {
                 {hasMoreMobile && (
                   <button
                     onClick={() => setShowAllMobile(true)}
-                    className="w-full py-3 rounded-xl border border-dashed border-gray-200 text-sm font-medium text-orange-600 hover:bg-orange-50 hover:border-orange-200 transition-colors flex items-center justify-center gap-1.5"
+                    className="w-full py-3 rounded-xl border border-dashed border-gray-200 text-sm font-medium text-[#666] hover:bg-[#fafafa] hover:border-[#ddd] transition-colors flex items-center justify-center gap-1.5"
                   >
                     <ChevronDown className="h-4 w-4" />
                     Xem tất cả {filtered.length} câu
@@ -753,7 +794,7 @@ export default function TopicPage() {
                   <colgroup><col className="w-[4%]" /><col className="w-[3%]" /><col className="w-[28%]" /><col className="w-[22%]" /><col className="w-[17%]" /><col className="w-[18%]" /><col className="w-[8%]" /></colgroup>
                   <thead>
                     <tr className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
-                      <th className="py-3 w-10 text-center align-middle"><input type="checkbox" checked={allPageSel} onChange={toggleAllPage} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" /></th>
+                      <th className="py-3 w-10 text-center align-middle"><input type="checkbox" checked={allPageSel} onChange={toggleAllPage} className="h-3.5 w-3.5 rounded border-gray-300 accent-[#171717] cursor-pointer" /></th>
                       <th className="py-3 w-8" />
                       <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Câu mẫu</th>
                       <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Dịch nghĩa</th>
@@ -778,7 +819,7 @@ export default function TopicPage() {
                           <p className="text-sm font-medium text-gray-400">
                             {search ? `Không tìm thấy kết quả cho "${search}"` : 'Chưa có câu nào — thêm câu đầu tiên!'}
                           </p>
-                          {!search && (<Button onClick={() => setBulkAddOpen(true)} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white"><Sparkles className="mr-1.5 h-3.5 w-3.5" /> Thêm câu</Button>)}
+                          {!search && (<Button onClick={() => setBulkAddOpen(true)} size="sm" className="mt-4 bg-[#171717] hover:opacity-80 text-white"><Sparkles className="mr-1.5 h-3.5 w-3.5" /> Thêm câu</Button>)}
                         </div>
                       </td></tr>
                     ) : (
@@ -792,10 +833,10 @@ export default function TopicPage() {
                               onClick={() => setViewPhrase(phrase)}
                               className={cn(
                                 'group border-b border-gray-100 transition-colors even:bg-gray-50/70 cursor-pointer',
-                                isSel ? 'bg-orange-50/60 even:bg-orange-50/60' : isOpen ? 'bg-orange-50/30 even:bg-orange-50/30' : 'hover:bg-gray-100/60'
+                                isSel ? 'bg-blue-50/50 even:bg-blue-50/50' : isOpen ? 'bg-gray-50/80 even:bg-gray-50/80' : 'hover:bg-gray-100/60'
                               )}>
                               <td className="w-10 text-center" onClick={e => e.stopPropagation()}>
-                                <input type="checkbox" checked={isSel} onChange={() => toggleOne(phrase.id)} className="h-3.5 w-3.5 rounded border-gray-300 accent-orange-500 cursor-pointer" />
+                                <input type="checkbox" checked={isSel} onChange={() => toggleOne(phrase.id)} className="h-3.5 w-3.5 rounded border-gray-300 accent-[#171717] cursor-pointer" />
                               </td>
                               <td className="w-8 pl-1 cursor-pointer" onClick={() => hasExamples && toggleExpand(phrase.id)}>
                                 {hasExamples && (
@@ -811,7 +852,7 @@ export default function TopicPage() {
                                 </div>
                               </td>
                               <td className="px-4 py-3 max-w-0 overflow-hidden"><p className="text-gray-500 text-sm truncate">{phrase.translation ?? '—'}</p></td>
-                              <td className="px-4 py-3 max-w-0 overflow-hidden"><span className="font-mono text-xs text-orange-500 block truncate">{phrase.pronunciation ?? '—'}</span></td>
+                              <td className="px-4 py-3 max-w-0 overflow-hidden"><span className="font-mono text-xs text-[#888] block truncate">{phrase.pronunciation ?? '—'}</span></td>
                               <td className="px-4 py-3"><TypeBadges type={phrase.type} functionText={phrase.function} /></td>
                               <td className="px-6 py-3" onClick={e => e.stopPropagation()}>
                                 <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -836,7 +877,7 @@ export default function TopicPage() {
                                   { ex: phrase.example1, tr: phrase.example1_translation, n: 1 },
                                   { ex: phrase.example2, tr: phrase.example2_translation, n: 2 },
                                 ].filter(e => e.ex).map(e => (
-                                  <tr key={`ex-${phrase.id}-${e.n}`} className="border-b border-gray-50 bg-orange-50/20">
+                                  <tr key={`ex-${phrase.id}-${e.n}`} className="border-b border-gray-50 bg-[#fafafa]/30">
                                     <td className="w-10 pl-5" />
                                     <td className="w-8 pl-2"><div className="flex items-center gap-1"><div className="w-3 h-px bg-gray-200" /><span className="text-[10px] font-semibold text-gray-300">VD{e.n}</span></div></td>
                                     <td className="px-4 py-2"><div className="flex items-center gap-1.5 min-w-0"><button onClick={ev => { ev.stopPropagation(); speak(e.ex!) }} className="shrink-0 text-gray-300 hover:text-blue-500 transition-colors"><Volume2 className="h-3 w-3" /></button><p className="text-gray-600 text-xs italic truncate">{e.ex}</p></div></td>
@@ -859,7 +900,7 @@ export default function TopicPage() {
                     <div className="flex items-center gap-1">
                       <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLeft className="h-4 w-4" /></button>
                       {[...Array(totalPages)].map((_, i) => (
-                        <button key={i} onClick={() => setPage(i + 1)} className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs font-medium transition-colors ${currentPage === i + 1 ? 'bg-orange-600 text-white' : 'text-gray-500 hover:bg-gray-100'}`}>{i + 1}</button>
+                        <button key={i} onClick={() => setPage(i + 1)} className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs font-medium transition-colors ${currentPage === i + 1 ? 'bg-[#171717] text-white' : 'text-gray-500 hover:bg-gray-100'}`}>{i + 1}</button>
                       ))}
                       <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronRight className="h-4 w-4" /></button>
                     </div>

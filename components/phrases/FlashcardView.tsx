@@ -25,7 +25,7 @@ function FlashcardTypeBadges({ type, functionText }: { type: string; functionTex
       onMouseLeave={() => setTipOpen(false)}
     >
       {types.map(t => (
-        <span key={t} className="rounded-full bg-orange-50 dark:bg-orange-900/30 px-2 py-0.5 text-[11px] font-medium text-orange-500 dark:text-orange-300 border border-orange-100 dark:border-orange-800 cursor-default">
+        <span key={t} className="rounded-full bg-[#ebf5ff] dark:bg-[#0072f5]/10 px-2 py-0.5 text-[11px] font-medium text-[#0068d6] dark:text-[#60a5fa] border border-[#d0e8ff] dark:border-[#0072f5]/30 cursor-default">
           {t}
         </span>
       ))}
@@ -275,8 +275,8 @@ function WordChip({ word }: { word: string }) {
         className={cn(
           'px-1.5 py-0.5 rounded-lg border font-medium transition-colors cursor-pointer underline decoration-dotted underline-offset-4',
           open
-            ? 'border-orange-300 dark:border-orange-600 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 decoration-orange-300'
-            : 'border-transparent hover:border-orange-200 dark:hover:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 text-gray-900 dark:text-gray-100 decoration-gray-300 dark:decoration-gray-600'
+            ? 'border-[#0072f5] dark:border-[#0072f5] bg-[#ebf5ff] dark:bg-[#0072f5]/20 text-[#0060d0] dark:text-[#60a5fa] decoration-[#0072f5]'
+            : 'border-transparent hover:border-[#d0e8ff] dark:hover:border-[#0072f5]/30 hover:bg-[#f5faff] dark:hover:bg-[#0072f5]/10 text-gray-900 dark:text-gray-100 decoration-gray-300 dark:decoration-gray-600'
         )}
       >
         {word}
@@ -426,7 +426,7 @@ function ListeningPractice({ phrase, onNext }: { phrase: Phrase; onNext: () => v
             onClick={() => speakWithProgress(phrase.sample_sentence)}
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded-full text-white transition-all shrink-0',
-              isPlaying ? 'bg-orange-600 scale-105' : 'bg-gray-600 dark:bg-gray-500 hover:bg-orange-500'
+              isPlaying ? 'bg-[#171717] scale-105' : 'bg-gray-600 dark:bg-gray-500 hover:bg-[#333]'
             )}
           >
             {isPlaying ? <Volume2 className="h-3.5 w-3.5" /> : <Play className="h-3 w-3 ml-0.5" />}
@@ -436,7 +436,7 @@ function ListeningPractice({ phrase, onNext }: { phrase: Phrase; onNext: () => v
           </span>
           <div className="flex-1 h-1 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
             <div
-              className="h-full rounded-full bg-orange-400 transition-all duration-75"
+              className="h-full rounded-full bg-[#171717] dark:bg-[#f5f5f5] transition-all duration-75"
               style={{ width: `${progressPct}%` }}
             />
           </div>
@@ -708,7 +708,7 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
           className={cn(
             'flex h-7 w-7 items-center justify-center rounded-lg border transition-colors shrink-0',
             shuffleOn
-              ? 'border-orange-300 bg-orange-50 text-orange-500 dark:border-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+              ? 'border-[#171717] bg-[#fafafa] text-[#171717] dark:border-gray-400 dark:bg-gray-800 dark:text-gray-200'
               : 'border-gray-200 bg-white text-gray-400 hover:text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:hover:text-gray-300'
           )}
           title={shuffleOn ? 'Tắt xáo trộn' : 'Xáo trộn'}
@@ -720,7 +720,7 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
           className={cn(
             'flex h-7 w-7 items-center justify-center rounded-lg border transition-colors shrink-0',
             practiceMode
-              ? 'border-orange-300 bg-orange-50 text-orange-500 dark:border-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+              ? 'border-[#171717] bg-[#fafafa] text-[#171717] dark:border-gray-400 dark:bg-gray-800 dark:text-gray-200'
               : 'border-gray-200 bg-white text-gray-400 hover:text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:hover:text-gray-300'
           )}
           title={practiceMode ? 'Tắt luyện tập' : 'Luyện tập nghe'}
@@ -729,7 +729,7 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
         </button>
         <div className="flex-1 h-1 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
           <div
-            className="h-full rounded-full bg-orange-400 transition-all duration-300"
+            className="h-full rounded-full bg-[#171717] dark:bg-[#f5f5f5] transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -767,18 +767,18 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
           </div>
 
           {/* ── Câu mẫu + phiên âm + nghĩa ── */}
-          <div className="rounded-xl bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800 p-4 mx-5 mt-1.5">
+          <div className="rounded-xl bg-[#fafafa] dark:bg-gray-800/50 border border-[#ebebeb] dark:border-gray-700 p-4 mx-5 mt-1.5">
             <div className="flex items-start gap-2">
               <div className="flex-1 min-w-0">
                 <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{current.sample_sentence}</p>
                 {current.pronunciation && (
-                  <p className="font-mono text-sm text-orange-500 dark:text-orange-400 mt-0.5">{current.pronunciation}</p>
+                  <p className="font-mono text-sm text-[#888] dark:text-[#aaa] mt-0.5">{current.pronunciation}</p>
                 )}
                 {current.translation && (
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1.5">{current.translation}</p>
                 )}
               </div>
-              <button onClick={() => speak(current.sample_sentence)} className="text-orange-400 hover:text-orange-600 shrink-0 mt-1">
+              <button onClick={() => speak(current.sample_sentence)} className="text-[#999] hover:text-[#171717] shrink-0 mt-1">
                 <Volume2 className="h-4 w-4" />
               </button>
             </div>
@@ -792,7 +792,7 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
                 <p className="text-sm leading-relaxed font-mono">
                   {current.structure.split(/(\([^)]+\))/g).map((part: string, i: number) =>
                     part.startsWith('(') && part.endsWith(')') ? (
-                      <span key={i} className="text-orange-500 dark:text-orange-400 font-semibold">{part}</span>
+                      <span key={i} className="text-[#0072f5] dark:text-[#60a5fa] font-semibold">{part}</span>
                     ) : (
                       <span key={i} className="text-gray-700 dark:text-gray-300">{part}</span>
                     )
@@ -809,9 +809,9 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
               {examples.map(ex => (
                 <div key={ex.n} className="rounded-lg bg-gray-50 dark:bg-gray-800/50 px-3 py-2 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/40 text-[9px] font-bold text-orange-500 dark:text-orange-300 shrink-0">{ex.n}</span>
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#ebebeb] dark:bg-gray-700 text-[9px] font-bold text-[#666] dark:text-gray-300 shrink-0">{ex.n}</span>
                     <p className="text-sm text-gray-800 dark:text-gray-200 italic flex-1 min-w-0">{ex.sentence}</p>
-                    <button onClick={() => speak(ex.sentence!)} className="text-gray-400 hover:text-orange-500 shrink-0">
+                    <button onClick={() => speak(ex.sentence!)} className="text-gray-400 hover:text-[#171717] shrink-0">
                       <Volume2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -843,7 +843,7 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
                 onClick={() => setIndex(i)}
                 className={cn(
                   'rounded-full transition-all duration-200',
-                  i === index ? 'w-4 h-2 bg-orange-400' : 'w-2 h-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300'
+                  i === index ? 'w-4 h-2 bg-[#171717] dark:bg-[#f5f5f5]' : 'w-2 h-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300'
                 )}
               />
             ))
@@ -885,7 +885,7 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
         <DialogContent className="sm:max-w-sm bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
-              <Settings className="h-4 w-4 text-orange-500" />
+              <Settings className="h-4 w-4 text-[#666]" />
               Cài đặt phím tắt
             </DialogTitle>
           </DialogHeader>
@@ -898,7 +898,7 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
                   className={cn(
                     'min-w-[72px] px-3 py-1.5 rounded-lg border text-sm font-mono text-center transition-colors',
                     capturingId === b.id
-                      ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/20 text-orange-600 animate-pulse'
+                      ? 'border-[#0072f5] bg-[#ebf5ff] dark:bg-[#0072f5]/10 text-[#0068d6] animate-pulse'
                       : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-gray-300'
                   )}
                 >
@@ -911,7 +911,7 @@ export function FlashcardView({ phrases }: FlashcardViewProps) {
             <p className="text-[11px] text-gray-400 italic">Nhấn vào ô → bấm phím mới • Esc để hủy</p>
             <button
               onClick={() => { setBindings(DEFAULT_BINDINGS); saveBindings(DEFAULT_BINDINGS) }}
-              className="text-xs text-orange-500 hover:text-orange-600 font-medium"
+              className="text-xs text-[#0072f5] hover:text-[#0060d0] font-medium"
             >Mặc định</button>
           </div>
         </DialogContent>

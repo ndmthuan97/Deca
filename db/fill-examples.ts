@@ -77,11 +77,11 @@ async function generateExamples(phrase: string, translation: string): Promise<{
           messages: [
             {
               role: 'system',
-              content: 'You are a helpful assistant that ONLY outputs valid JSON objects. No markdown, no explanation.',
+              content: 'You are an English teacher. Output ONLY valid JSON. No markdown, no explanation.',
             },
             {
               role: 'user',
-              content: `Phrase: "${phrase}" (= ${translation})\nReturn JSON: {"e1":"example sentence 1","v1":"Vietnamese translation 1","e2":"example sentence 2","v2":"Vietnamese translation 2"}`,
+              content: `Create 2 different example sentences using the English phrase "${phrase}" (meaning: ${translation}).\nRULES: Each sentence must be a COMPLETE sentence using the phrase in context. Do NOT repeat the phrase itself as the sentence. The 2 examples must be different from each other.\nJSON: {"e1":"complete example sentence 1","v1":"Vietnamese translation","e2":"complete example sentence 2","v2":"Vietnamese translation"}`,
             },
           ],
         }),

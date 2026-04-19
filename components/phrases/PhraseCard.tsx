@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Trash2, Edit2, Volume2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Trash2, Edit2, Volume2, ChevronDown, ChevronUp, Star } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { Phrase } from '@/db/schema'
 import { apiFetch } from '@/lib/api-client'
+import { toggleStar, isStarred } from '@/lib/starred'
 
 interface PhraseCardProps {
   phrase: Phrase
@@ -30,6 +31,9 @@ function speak(text: string) {
 export function PhraseCard({ phrase, topicName, onEdit }: PhraseCardProps) {
   const queryClient = useQueryClient()
   const [expanded, setExpanded] = useState(false)
+  const [starred, setStarred]   = useState(false)
+
+  useEffect(() => { setStarred(isStarred(phrase.id)) }, [phrase.id])
 
   const deleteMutation = useMutation({
     mutationFn: () => deletePhrase(phrase.id),
@@ -42,13 +46,13 @@ export function PhraseCard({ phrase, topicName, onEdit }: PhraseCardProps) {
   })
 
   return (
-    <div className="group rounded-xl border border-white/10 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm transition-all duration-300 hover:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/10">
+    <div className="group rounded-xl border border-white/10 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:shadow-lg hover:shadow-black/20">
       {/* Header */}
       <div className="flex items-start justify-between gap-3 p-4">
         <div className="min-w-0 flex-1">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             {phrase.type && (
-              <Badge className="bg-orange-500/20 text-xs text-orange-300 border-orange-500/30">
+              <Badge className="bg-[#0072f5]/20 text-xs text-[#60a5fa] border-[#0072f5]/30">
                 {phrase.type}
               </Badge>
             )}
@@ -62,7 +66,7 @@ export function PhraseCard({ phrase, topicName, onEdit }: PhraseCardProps) {
             <h3 className="text-base font-semibold text-white">{phrase.sample_sentence}</h3>
             <button
               onClick={() => speak(phrase.sample_sentence)}
-              className="rounded-full p-1 text-slate-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-white/10 hover:text-orange-400"
+              className="rounded-full p-1 text-slate-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-white/10 hover:text-white/80"
               title="Nghe phát âm"
             >
               <Volume2 className="h-3.5 w-3.5" />
@@ -85,7 +89,20 @@ export function PhraseCard({ phrase, topicName, onEdit }: PhraseCardProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-slate-500 hover:text-orange-400"
+            className={`h-7 w-7 ${starred ? 'text-amber-400 opacity-100' : 'text-slate-500 hover:text-amber-400'}`}
+            title={starred ? 'Bỏ ghim' : 'Ghim câu này'}
+            onClick={() => {
+              const next = toggleStar(phrase.id)
+              setStarred(next)
+              toast.success(next ? '⭐ Đã ghim' : 'Bỏ ghim')
+            }}
+          >
+            <Star className={`h-3.5 w-3.5 ${starred ? 'fill-current' : ''}`} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-slate-500 hover:text-white/80"
             onClick={() => onEdit(phrase)}
           >
             <Edit2 className="h-3.5 w-3.5" />
@@ -145,7 +162,7 @@ export function PhraseCard({ phrase, topicName, onEdit }: PhraseCardProps) {
                       <span className="font-medium text-slate-200">{ex.sentence}</span>
                       <button
                         onClick={() => speak(ex.sentence!)}
-                        className="ml-auto text-slate-600 hover:text-orange-400"
+                        className="ml-auto text-slate-600 hover:text-white/80"
                       >
                         <Volume2 className="h-3 w-3" />
                       </button>

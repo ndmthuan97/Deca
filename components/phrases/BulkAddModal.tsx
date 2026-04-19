@@ -108,7 +108,7 @@ async function generateWithRetry(
 
 /* ─── Sub-components ─────────────────────────────────────────── */
 function StatusDot({ status }: { status: PhraseCard['status'] }) {
-  if (status === 'loading') return <Loader2 className="h-3.5 w-3.5 animate-spin text-orange-400" />
+  if (status === 'loading') return <Loader2 className="h-3.5 w-3.5 animate-spin text-[#888]" />
   if (status === 'done')    return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
   if (status === 'error')   return <AlertCircle className="h-3.5 w-3.5 text-red-500" />
   return <span className="h-3.5 w-3.5 rounded-full bg-gray-300 block" />
@@ -130,7 +130,7 @@ function ReviewCard({
       'rounded-2xl border bg-white transition-all overflow-hidden',
       card.status === 'error'
         ? 'border-red-200 bg-red-50/30'
-        : card.selected ? 'border-orange-300' : 'border-gray-200 opacity-60'
+        : card.selected ? 'border-[#0072f5]' : 'border-gray-200 opacity-60'
     )}>
       {/* Card Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
@@ -147,7 +147,7 @@ function ReviewCard({
           {/* Mode badge (only on done cards) */}
           {card.inputType && card.status === 'done' && (
             <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-              card.inputType === 'vocabulary' ? 'bg-sky-100 text-sky-600' : 'bg-orange-100 text-orange-600'
+              card.inputType === 'vocabulary' ? 'bg-sky-100 text-sky-600' : 'bg-[#ebebeb] text-[#666]'
             }`}>
               {card.inputType === 'vocabulary'
                 ? <><BookOpen className="h-2.5 w-2.5" /> Từ vựng</>
@@ -159,7 +159,7 @@ function ReviewCard({
           {card.status === 'error' && (
             <button
               onClick={onRetry}
-              className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium bg-red-100 text-red-600 hover:bg-orange-100 hover:text-orange-700 transition-colors"
+              className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium bg-red-100 text-red-600 hover:bg-[#fafafa] hover:text-[#171717] transition-colors"
             >
               <RefreshCw className="h-3 w-3" /> Thử lại
             </button>
@@ -171,8 +171,8 @@ function ReviewCard({
               className={cn(
                 'flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors',
                 card.selected
-                  ? 'bg-orange-100 text-orange-700 hover:bg-red-100 hover:text-red-600'
-                  : 'bg-gray-100 text-gray-500 hover:bg-orange-100 hover:text-orange-600'
+                  ? 'bg-[#171717]/10 text-[#171717] hover:bg-red-100 hover:text-red-600'
+                  : 'bg-gray-100 text-gray-500 hover:bg-[#fafafa] hover:text-[#171717]'
               )}
             >
               {card.selected
@@ -213,12 +213,12 @@ function ReviewCard({
                   {card.inputType === 'vocabulary' ? 'Loại từ' : 'Loại câu'}
                 </label>
                 <Input value={card.type} onChange={e => onChange('type', e.target.value)}
-                  className="h-7 border-0 border-b border-gray-200 bg-transparent px-0 text-sm text-gray-800 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                  className="h-7 border-0 border-b border-gray-200 bg-transparent px-0 text-sm text-gray-800 shadow-none focus-visible:border-[#0072f5] focus-visible:ring-0" />
               </div>
               <div>
                 <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-gray-400">IPA</label>
                 <Input value={card.pronunciation} onChange={e => onChange('pronunciation', e.target.value)}
-                  className="h-7 border-0 border-b border-gray-200 bg-transparent px-0 font-mono text-sm text-orange-600 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                  className="h-7 border-0 border-b border-gray-200 bg-transparent px-0 font-mono text-sm text-[#888] shadow-none focus-visible:border-[#0072f5] focus-visible:ring-0" />
               </div>
             </div>
             <div>
@@ -226,12 +226,12 @@ function ReviewCard({
                 {card.inputType === 'vocabulary' ? 'Dạng từ & Collocation' : 'Cấu trúc'}
               </label>
               <Input value={card.structure} onChange={e => onChange('structure', e.target.value)}
-                className="h-7 border-0 border-b border-gray-200 bg-transparent px-0 text-sm text-gray-800 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                className="h-7 border-0 border-b border-gray-200 bg-transparent px-0 text-sm text-gray-800 shadow-none focus-visible:border-[#0072f5] focus-visible:ring-0" />
             </div>
             <div>
               <label className="block mb-0.5 text-[10px] uppercase tracking-wider text-gray-400">Dịch nghĩa</label>
               <Input value={card.translation} onChange={e => onChange('translation', e.target.value)}
-                className="h-7 border-0 border-b border-gray-200 bg-transparent px-0 text-sm text-gray-600 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                className="h-7 border-0 border-b border-gray-200 bg-transparent px-0 text-sm text-gray-600 shadow-none focus-visible:border-[#0072f5] focus-visible:ring-0" />
             </div>
           </div>
           {/* Right column — examples */}
@@ -242,15 +242,15 @@ function ReviewCard({
               return (
                 <div key={n} className="rounded-lg bg-gray-50 border border-gray-100 p-3 space-y-1.5">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-100 text-[9px] font-bold text-orange-600">{n}</span>
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#ebebeb] text-[9px] font-bold text-[#666]">{n}</span>
                     <span className="text-[10px] text-gray-400">Ví dụ {n}</span>
                   </div>
                   <Input value={(card as any)[pre]} onChange={e => onChange(pre as any, e.target.value)} placeholder="Câu ví dụ"
-                    className="h-6 border-0 border-b border-gray-200 bg-transparent px-0 text-xs text-gray-700 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                    className="h-6 border-0 border-b border-gray-200 bg-transparent px-0 text-xs text-gray-700 shadow-none focus-visible:border-[#0072f5] focus-visible:ring-0" />
                   <Input value={(card as any)[`${pre}_translation`]} onChange={e => onChange(`${pre}_translation` as any, e.target.value)} placeholder="Bản dịch"
-                    className="h-6 border-0 border-b border-gray-200 bg-transparent px-0 text-xs text-gray-500 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                    className="h-6 border-0 border-b border-gray-200 bg-transparent px-0 text-xs text-gray-500 shadow-none focus-visible:border-[#0072f5] focus-visible:ring-0" />
                   <Input value={(card as any)[`${pre}_pronunciation`]} onChange={e => onChange(`${pre}_pronunciation` as any, e.target.value)} placeholder="IPA"
-                    className="h-6 border-0 border-b border-gray-200 bg-transparent px-0 font-mono text-xs text-orange-600 shadow-none focus-visible:border-orange-400 focus-visible:ring-0" />
+                    className="h-6 border-0 border-b border-gray-200 bg-transparent px-0 font-mono text-xs text-[#888] shadow-none focus-visible:border-[#0072f5] focus-visible:ring-0" />
                 </div>
               )
             })}
@@ -475,7 +475,7 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto bg-white border-gray-200 text-gray-900">
         <DialogHeader>
           <DialogTitle className="text-gray-900 flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-orange-500" />
+            <Sparkles className="h-5 w-5 text-[#666]" />
             Thêm nhiều câu với AI
           </DialogTitle>
           <DialogDescription className="text-gray-500">
@@ -496,16 +496,16 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
               onChange={e => setRawText(e.target.value)}
               rows={8}
               disabled={step === 'filling'}
-              className="border-gray-200 bg-gray-50 text-gray-800 placeholder:text-gray-400 focus:border-orange-500 font-mono resize-none text-sm"
+              className="border-gray-200 bg-gray-50 text-gray-800 placeholder:text-gray-400 focus:border-[#0072f5] font-mono resize-none text-sm"
             />
 
             <div
-              className="flex items-center gap-3 rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:border-orange-400 transition-colors"
+              className="flex items-center gap-3 rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:border-[#0072f5] transition-colors"
               onClick={() => fileInputRef.current?.click()}
             >
               <UploadCloud className="h-5 w-5 text-gray-400 shrink-0" />
               <p className="text-xs text-gray-500">
-                Hoặc tải file <span className="text-orange-500">.csv / .xlsx</span> lên
+                Hoặc tải file <span className="text-[#0068d6]">.csv / .xlsx</span> lên
                 (cột <code className="bg-gray-100 px-1 rounded">sample_sentence</code> bắt buộc)
               </p>
               <input
@@ -529,7 +529,7 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
               <Button
                 onClick={startFill}
                 disabled={!rawText.trim() || step === 'filling'}
-                className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white"
+                className="bg-[#171717] hover:opacity-85 text-white"
               >
                 {step === 'filling'
                   ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang phân tích...</>
@@ -549,7 +549,7 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
                     <StatusDot status={c.status} />
                     <span className="text-sm text-gray-600 truncate flex-1">{c.sample_sentence}</span>
                     {c.status === 'loading' && c.retryCount > 0 && (
-                      <span className="text-xs text-orange-500 shrink-0">
+                      <span className="text-xs text-[#888] shrink-0">
                         Thử lại {c.retryCount}/{MAX_RETRIES}...
                       </span>
                     )}
@@ -594,14 +594,14 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
                   {errorCards.map(c => (
                     <div key={c.id} className="flex items-center gap-3 px-4 py-2.5">
                       {c.status === 'loading'
-                        ? <Loader2 className="h-3.5 w-3.5 animate-spin text-orange-400 shrink-0" />
+                        ? <Loader2 className="h-3.5 w-3.5 animate-spin text-[#888] shrink-0" />
                         : <AlertCircle className="h-3.5 w-3.5 text-red-400 shrink-0" />
                       }
                       <p className="text-sm font-medium text-gray-800 truncate flex-1 min-w-0">{c.sample_sentence}</p>
                       <button
                         disabled={retryingAll || c.status === 'loading'}
                         onClick={() => retryCard(c.id)}
-                        className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium bg-white border border-red-200 text-red-600 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition-colors disabled:opacity-40 shrink-0"
+                        className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium bg-white border border-red-200 text-red-600 hover:bg-[#fafafa] hover:border-[#ddd] hover:text-[#171717] transition-colors disabled:opacity-40 shrink-0"
                       >
                         <RefreshCw className="h-2.5 w-2.5" /> Thử lại
                       </button>
@@ -623,7 +623,7 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
                       'h-2 rounded-full transition-all',
                       c.status === 'error'
                         ? (i === cursor ? 'w-6 bg-red-500' : 'w-2 bg-red-300')
-                        : i === cursor ? 'w-6 bg-orange-500'
+                        : i === cursor ? 'w-6 bg-[#171717]'
                         : c.selected ? 'w-2 bg-slate-400'
                         : 'w-2 bg-gray-200'
                     )}
@@ -633,7 +633,7 @@ export function BulkAddModal({ open, onOpenChange, topicId, topicName, onSuccess
               <span className="text-sm text-gray-500 shrink-0 ml-3">
                 {cursor + 1} / {cards.length}
                 {' • '}
-                <span className="text-orange-600">{selectedCount} chọn</span>
+                <span className="text-[#171717] font-medium">{selectedCount} chọn</span>
                 {errorCount > 0 && <span className="text-red-500"> · {errorCount} lỗi</span>}
               </span>
             </div>

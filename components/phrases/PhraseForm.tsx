@@ -77,13 +77,13 @@ function Field({ label, value, onChange, mono = false, multiline = false }: {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={2}
-          className={`resize-none border-0 border-b border-white/10 bg-transparent px-0 pb-1 text-sm shadow-none focus-visible:border-orange-400 focus-visible:ring-0 ${mono ? 'font-mono text-orange-300' : 'text-white'}`}
+          className={`resize-none border-0 border-b border-white/10 bg-transparent px-0 pb-1 text-sm shadow-none focus-visible:border-white/40 focus-visible:ring-0 ${mono ? 'font-mono text-[#60a5fa]' : 'text-white'}`}
         />
       ) : (
         <Input
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`h-8 border-0 border-b border-white/10 bg-transparent px-0 shadow-none focus-visible:border-orange-400 focus-visible:ring-0 ${mono ? 'font-mono text-orange-300 text-sm' : 'text-white text-sm'}`}
+          className={`h-8 border-0 border-b border-white/10 bg-transparent px-0 shadow-none focus-visible:border-white/40 focus-visible:ring-0 ${mono ? 'font-mono text-[#60a5fa] text-sm' : 'text-white text-sm'}`}
         />
       )}
     </div>
@@ -101,7 +101,7 @@ function ExampleCard({ n, sentence, translation, pronunciation, onChange }: {
   return (
     <div className="rounded-xl border border-white/8 bg-slate-800/60 p-4 space-y-3">
       <div className="flex items-center gap-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-500/20 text-[10px] font-bold text-orange-300">
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[10px] font-bold text-white/60">
           {n}
         </span>
         <span className="text-xs font-medium text-slate-400">Ví dụ {n}</span>
@@ -114,7 +114,7 @@ function ExampleCard({ n, sentence, translation, pronunciation, onChange }: {
             value={sentence}
             onChange={(e) => onChange('sentence', e.target.value)}
             placeholder="Example sentence"
-            className="h-8 border-0 border-b border-white/10 bg-transparent px-0 text-sm text-white shadow-none focus-visible:border-orange-400 focus-visible:ring-0"
+            className="h-8 border-0 border-b border-white/10 bg-transparent px-0 text-sm text-white shadow-none focus-visible:border-white/40 focus-visible:ring-0"
           />
         </div>
         <div>
@@ -123,7 +123,7 @@ function ExampleCard({ n, sentence, translation, pronunciation, onChange }: {
             value={translation}
             onChange={(e) => onChange('translation', e.target.value)}
             placeholder="Bản dịch"
-            className="h-8 border-0 border-b border-white/10 bg-transparent px-0 text-sm text-slate-300 shadow-none focus-visible:border-orange-400 focus-visible:ring-0"
+            className="h-8 border-0 border-b border-white/10 bg-transparent px-0 text-sm text-slate-300 shadow-none focus-visible:border-white/40 focus-visible:ring-0"
           />
         </div>
         <div>
@@ -132,7 +132,7 @@ function ExampleCard({ n, sentence, translation, pronunciation, onChange }: {
             value={pronunciation}
             onChange={(e) => onChange('pronunciation', e.target.value)}
             placeholder="/.../"
-            className="h-8 border-0 border-b border-white/10 bg-transparent px-0 font-mono text-sm text-orange-300 shadow-none focus-visible:border-orange-400 focus-visible:ring-0"
+            className="h-8 border-0 border-b border-white/10 bg-transparent px-0 font-mono text-sm text-[#60a5fa] shadow-none focus-visible:border-white/40 focus-visible:ring-0"
           />
         </div>
       </div>
@@ -216,12 +216,12 @@ export function PhraseForm({ topicId, topicName, onSuccess, onCancel, editPhrase
             value={form.sample_sentence}
             onChange={(e) => update('sample_sentence', e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
-            className="border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-orange-500"
+            className="border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-white/40"
           />
           <Button
             onClick={handleGenerate}
             disabled={isGenerating}
-            className="shrink-0 bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:from-orange-500 hover:to-amber-500"
+            className="shrink-0 bg-[#f5f5f5] text-[#171717] hover:bg-white"
           >
             {isGenerating
               ? <Loader2 className="h-4 w-4 animate-spin" />
@@ -242,10 +242,10 @@ export function PhraseForm({ topicId, topicName, onSuccess, onCancel, editPhrase
 
       {/* ── AI-filled fields ── */}
       {!isGenerating && hasGenerated && (
-        <div className="rounded-2xl border border-orange-500/20 bg-slate-800/40 p-5">
+        <div className="rounded-2xl border border-white/10 bg-slate-800/40 p-5">
           {/* AI badge + Mode indicator */}
           <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs text-orange-400">
+            <div className="flex items-center gap-2 text-xs text-slate-300">
               <Sparkles className="h-3.5 w-3.5" />
               <span className="font-medium">AI đã phân tích — click vào ô để chỉnh sửa</span>
             </div>
@@ -253,7 +253,7 @@ export function PhraseForm({ topicId, topicName, onSuccess, onCancel, editPhrase
               <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
                 inputMode === 'vocabulary'
                   ? 'bg-sky-500/15 text-sky-300'
-                  : 'bg-orange-500/15 text-orange-300'
+                  : 'bg-white/10 text-slate-200'
               }`}>
                 {inputMode === 'vocabulary'
                   ? <><BookOpen className="h-3 w-3" /> Từ vựng</>

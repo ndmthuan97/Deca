@@ -12,6 +12,9 @@ export async function GET() {
     const now      = new Date()
     const day30ago = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const day7ago  = new Date(now.getTime() -  7 * 24 * 60 * 60 * 1000)
+    // Đầu ngày hôm nay (UTC midnight)
+    const todayStart = new Date(now)
+    todayStart.setUTCHours(0, 0, 0, 0)
 
     // ── 1. Tổng phrases / topics ─────────────────────────────────
     const [totalPhrasesRow] = await db
@@ -105,6 +108,36 @@ export async function GET() {
       .from(studyLogs)
       .where(gte(studyLogs.reviewed_at, day7ago))
 
+    // ── 9. Lượt ôn hôm nay (cho Daily Target widget) ────────────
+    const [reviewedTodayRow] = await db
+      .select({ total: count() })
+      .from(studyLogs)
+      .where(gte(studyLogs.reviewed_at, todayStart))
+
+    // ── 10. Điểm yếu theo topic (tỷ lệ quên) ────────────────────
+    const weakTopicsRaw = await db
+      .select({
+        topicId:      phrases.topic_id,
+        topicName:    topics.name,
+        totalReviews: count(),
+        againCount:   sql<number>`SUM(CASE WHEN ${studyLogs.result} = 'again' THEN 1 ELSE 0 END)`,
+      })
+      .from(studyLogs)
+      .innerJoin(phrases, eq(studyLogs.phrase_id, phrases.id))
+      .innerJoin(topics, eq(phrases.topic_id, topics.id))
+      .where(and(isNull(phrases.deleted_at), gte(studyLogs.reviewed_at, day30ago)))
+      .groupBy(phrases.topic_id, topics.name)
+      .having(sql`count(*) >= 3`) // chỉ hiển thị topic đã ôn ít nhất 3 lần
+      .orderBy(sql`SUM(CASE WHEN ${studyLogs.result} = 'again' THEN 1 ELSE 0 END) * 1.0 / count(*) DESC`)
+      .limit(8)
+
+    const weakTopics = weakTopicsRaw.map(r => ({
+      topicId:      r.topicId,
+      topicName:    r.topicName,
+      totalReviews: Number(r.totalReviews),
+      againRate:    Number(r.againCount) / Number(r.totalReviews),
+    }))
+
     return ok({
       summary: {
         totalPhrases:   Number(totalPhrasesRow.total),
@@ -112,6 +145,7 @@ export async function GET() {
         learnedPhrases: Number(learnedRow.total),
         dueToday:       Number(dueTodayRow.total),
         reviewedWeek:   Number(reviewedWeekRow.total),
+        reviewedToday:  Number(reviewedTodayRow.total),
       },
       activity:      activityRaw.map(r => ({ date: r.date, count: Number(r.count) })),
       resultBreakdown: resultMap,
@@ -122,6 +156,7 @@ export async function GET() {
         translation:    h.translation,
       })),
       typeDist,
+      weakTopics,
     })
   } catch (err) {
     console.error('[GET /api/dashboard/stats]', err)
