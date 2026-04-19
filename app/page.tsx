@@ -172,7 +172,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-[#0a0a0a]">
       <Sidebar />
 
       <main className="flex flex-col flex-1 overflow-hidden">
@@ -198,12 +198,12 @@ export default function HomePage() {
                 placeholder="Tìm chủ đề..."
                 value={search}
                 onChange={e => handleSearchChange(e.target.value)}
-                className="pl-8 h-9 w-full border-gray-200 bg-white text-sm placeholder:text-gray-400 focus:border-orange-400 shadow-sm"
+                className="pl-8 h-9 w-full text-sm"
               />
             </div>
             <button
               onClick={() => setMobileCreateOpen(true)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-600 text-white hover:bg-orange-700 shrink-0 shadow-sm"
+              className="flex h-9 w-9 items-center justify-center rounded-[6px] bg-[#171717] dark:bg-[#f5f5f5] text-white dark:text-[#171717] hover:opacity-90 shrink-0 transition-opacity"
             >
               <Plus className="h-4 w-4" />
             </button>
@@ -278,11 +278,11 @@ export default function HomePage() {
               <div className="space-y-2 p-3">
                 {isLoading ? (
                   [...Array(4)].map((_, i) => (
-                    <div key={i} className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3">
-                      <div className="h-11 w-11 animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800 shrink-0" />
+                    <div key={i} className="flex items-center gap-3 rounded-[8px] bg-white dark:bg-[#111] px-4 py-3" style={{ boxShadow: 'var(--shadow-card)' }}>
+                      <div className="h-10 w-10 animate-pulse rounded-[6px] bg-[#f0f0f0] dark:bg-[#222] shrink-0" />
                       <div className="flex-1 space-y-1.5">
-                        <div className="h-4 w-2/3 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
-                        <div className="h-3 w-1/2 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
+                        <div className="h-3.5 w-2/3 animate-pulse rounded bg-[#f0f0f0] dark:bg-[#222]" />
+                        <div className="h-3 w-1/2 animate-pulse rounded bg-[#f0f0f0] dark:bg-[#222]" />
                       </div>
                     </div>
                   ))
@@ -298,22 +298,23 @@ export default function HomePage() {
                     <div
                       key={topic.id}
                       onClick={() => router.push(`/topics/${topic.id}`)}
-                      className="group flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 hover:border-orange-200 dark:hover:border-orange-900 hover:shadow-sm active:bg-orange-50 dark:active:bg-orange-950 cursor-pointer transition-all"
+                      className="group flex items-center gap-3 rounded-[8px] bg-white dark:bg-[#111] px-4 py-3 cursor-pointer transition-opacity hover:opacity-90"
+                      style={{ boxShadow: 'var(--shadow-card)' }}
                     >
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 text-xl shadow-sm">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] bg-[#171717] dark:bg-[#f5f5f5] text-lg">
                         {topic.icon ?? '📚'}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{topic.name}</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">{topic.phrase_count ?? 0} câu</p>
+                        <p className="text-[14px] font-semibold text-[#171717] dark:text-[#f5f5f5] truncate">{topic.name}</p>
+                        <p className="text-[11px] text-[#999] tabular-nums">{topic.phrase_count ?? 0} câu</p>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+                      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
                         <button onClick={() => handleOpenUpdate(topic)}
-                          className="rounded-lg p-1.5 text-gray-300 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300">
+                          className="rounded-[6px] p-1.5 text-[#bbb] hover:bg-[#f5f5f5] dark:hover:bg-[#222] hover:text-[#666] transition-colors">
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
                         <button onClick={() => handleDelete(topic.id)}
-                          className="rounded-lg p-1.5 text-gray-300 dark:text-gray-600 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-400">
+                          className="rounded-[6px] p-1.5 text-[#bbb] hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 transition-colors">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </div>
@@ -357,7 +358,7 @@ export default function HomePage() {
                             {search ? `Không tìm thấy "${search}"` : 'Chưa có chủ đề nào'}
                           </p>
                           {!search && (
-                            <Button onClick={() => setCreating(true)} size="sm" className="mt-4 bg-orange-600 hover:bg-orange-700 text-white">
+                            <Button onClick={() => setCreating(true)} size="sm" className="mt-4 bg-[#171717] dark:bg-[#f5f5f5] text-white dark:text-[#171717] hover:opacity-90">
                               <Plus className="mr-1.5 h-3.5 w-3.5" /> Thêm chủ đề đầu tiên
                             </Button>
                           )}
@@ -469,26 +470,26 @@ export default function HomePage() {
 
       {/* ── Dialog cập nhật chủ đề ── */}
       <Dialog open={!!updateDialogTopic} onOpenChange={open => { if (!open) setUpdateDialogTopic(null) }}>
-        <DialogContent className="sm:max-w-sm bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+        <DialogContent className="sm:max-w-sm bg-white dark:bg-[#111] border-[#eaeaea] dark:border-[#333]">
           <DialogHeader>
-            <DialogTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <Pencil className="h-4 w-4 text-orange-500" />
+            <DialogTitle className="text-[#171717] dark:text-[#f5f5f5] flex items-center gap-2">
+              <Pencil className="h-4 w-4 text-[#666]" />
               Chỉnh sửa chủ đề
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-1">
             <div>
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">Tên chủ đề</label>
+              <label className="text-[11px] font-medium uppercase tracking-widest text-[#999] mb-1.5 block">Tên chủ đề</label>
               <Input
                 autoFocus
                 value={updateName}
                 onChange={e => setUpdateName(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleUpdate() }}
-                className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-orange-400"
+                className="border-[#eaeaea] dark:border-[#333] bg-white dark:bg-[#111] text-[#171717] dark:text-[#f5f5f5] focus:border-black dark:focus:border-white"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">Mô tả (tuỳ chọn)</label>
+              <label className="text-[11px] font-medium uppercase tracking-widest text-[#999] mb-1.5 block">Mô tả (tuỳ chọn)</label>
               <Input
                 value={updateDesc}
                 onChange={e => setUpdateDesc(e.target.value)}

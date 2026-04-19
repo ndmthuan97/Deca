@@ -120,9 +120,22 @@ async function generateExamples(phrase: string, translation: string): Promise<{
 
 // ── Main ─────────────────────────────────────────────────────────────────
 async function main() {
-  const { db } = await import('./index.js')
   const { phrases } = await import('./schema.js')
   const { isNull, eq } = await import('drizzle-orm')
+  const postgres = (await import('postgres')).default
+
+  // Helper: tạo fresh client — tránh ECONNRESET do connection cũ bị Supabase đóng
+  function makeClient() {
+    const client = postgres(process.env.DATABASE_URL!, {
+      max: 1,
+      idle_timeout: 30,
+      connect_timeout: 15,
+    })
+    const { drizzle } = require('drizzle-orm/postgres-js')
+    return { client, db: drizzle(client, {}) }
+  }
+
+  let { client, db } = makeClient()
 
   console.log('🔍 Scanning Supabase for phrases missing example1...')
   const needEx = await db
@@ -130,7 +143,7 @@ async function main() {
     .from(phrases)
     .where(isNull(phrases.example1))
 
-  const withTranslation = needEx.filter(p => !!p.translation)
+  const withTranslation = needEx.filter((p: { translation: string | null }) => !!p.translation)
   const total = withTranslation.length
   console.log(`📊 Found: ${needEx.length} missing examples | ${total} have translation (will process)`)
   console.log(`⏱  Estimated time @ ~1 req/s: ~${Math.ceil(total / 60)} min\n`)
@@ -141,27 +154,45 @@ async function main() {
   let failed = 0
   const startTime = Date.now()
 
-  // Sequential — đơn giản, không rate-limit, không cần concurrency phức tạp
-  // Groq free: 30 RPM → 1 req/2s safe. Với delay 100ms giữa req, burst tự điều tiết qua retry 429
   for (let i = 0; i < total; i++) {
     const p = withTranslation[i]
     const pct = Math.round(((i + 1) / total) * 100)
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(0)
     const eta = i > 0 ? Math.ceil((Date.now() - startTime) / 1000 / i * (total - i)) : 0
 
-    process.stdout.write(`\r[${pct}%] ${i + 1}/${total} | ✅ ${success} ❌ ${failed} | ${elapsed}s elapsed, ETA ~${eta}s  `)
+    process.stdout.write(`\r[${pct}%] ${i + 1}/${total} | ✅ ${success} ❌ ${failed} | ${elapsed}s | ETA ~${eta}s  `)
 
     const result = await generateExamples(p.sample_sentence, p.translation!)
     if (result) {
-      await db.update(phrases).set({
-        example1: result.example1,
-        example1_translation: result.example1_translation,
-        example1_pronunciation: toPhonetic(result.example1),
-        example2: result.example2,
-        example2_translation: result.example2_translation,
-        example2_pronunciation: toPhonetic(result.example2),
-      }).where(eq(phrases.id, p.id))
-      success++
+      // Retry DB write 3 lần, reconnect khi ECONNRESET
+      let written = false
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          await db.update(phrases).set({
+            example1: result.example1,
+            example1_translation: result.example1_translation,
+            example1_pronunciation: toPhonetic(result.example1),
+            example2: result.example2,
+            example2_translation: result.example2_translation,
+            example2_pronunciation: toPhonetic(result.example2),
+          }).where(eq(phrases.id, p.id))
+          written = true
+          break
+        } catch (e: unknown) {
+          const code = (e as { code?: string })?.code
+          if ((code === 'ECONNRESET' || code === 'ECONNREFUSED') && attempt < 2) {
+            process.stdout.write(` [reconnect...]`)
+            try { await client.end({ timeout: 3 }) } catch { /* ignore */ }
+            await new Promise(r => setTimeout(r, 2000));
+            ({ client, db } = makeClient())  // fresh connection
+          } else {
+            process.stdout.write(` [DB err: ${String(e).slice(0, 50)}]`)
+            break
+          }
+        }
+      }
+      if (written) success++
+      else failed++
     } else {
       failed++
     }
