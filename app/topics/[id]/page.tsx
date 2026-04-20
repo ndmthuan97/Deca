@@ -22,6 +22,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { QuickCaptureModal } from '@/components/phrases/QuickCaptureModal'
 import { SRSBadge } from '@/components/phrases/SRSBadge'
+import { DDImportModal } from '@/components/phrases/DDImportModal'
 
 import type { Topic, Phrase } from '@/db/schema'
 import { apiFetch } from '@/lib/api-client'
@@ -232,6 +233,7 @@ export default function TopicPage() {
   const MOBILE_INITIAL = 10
   const [activeCardMenu, setActiveCardMenu] = useState<number | null>(null)
   const [showQuickCapture, setShowQuickCapture] = useState(false)
+  const [showDDImport, setShowDDImport] = useState(false)
   const filterRef = useRef<HTMLDivElement>(null)
   const mobileFilterRef = useRef<HTMLDivElement>(null)
 
@@ -523,6 +525,13 @@ export default function TopicPage() {
               >
                 <Zap className="h-3.5 w-3.5" /> Capture
               </button>
+              <button
+                onClick={() => setShowDDImport(true)}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-700 hover:bg-sky-100 active:scale-95 transition-all"
+                title="Import từ Daily Dictation"
+              >
+                🎧 DD
+              </button>
             </div>
           )}
 
@@ -610,6 +619,15 @@ export default function TopicPage() {
                 >
                   <Sparkles className="mr-1.5 h-3.5 w-3.5 text-[#666]" />
                   Nhiều câu
+                </Button>
+                {/* Daily Dictation import */}
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDDImport(true)}
+                  className="h-8 text-sky-700 bg-sky-50 border-sky-200 hover:bg-sky-100 text-xs"
+                  title="Import từ Daily Dictation"
+                >
+                  🎧 DD Import
                 </Button>
                 {/* Layout toggle - desktop */}
                 <div className="flex items-center rounded-lg border border-gray-200 bg-gray-50 p-0.5 gap-0.5">
@@ -1024,6 +1042,19 @@ export default function TopicPage() {
             queryClient.invalidateQueries({ queryKey: ['phrases', parseInt(params.id)] })
             queryClient.invalidateQueries({ queryKey: ['topics'] })
             setShowQuickCapture(false)
+          }}
+        />
+      )}
+
+      {/* ── Daily Dictation Import Modal ── */}
+      {showDDImport && topic && (
+        <DDImportModal
+          open={showDDImport}
+          onClose={() => setShowDDImport(false)}
+          topicId={topic.id}
+          onImported={() => {
+            queryClient.invalidateQueries({ queryKey: ['phrases', parseInt(params.id)] })
+            queryClient.invalidateQueries({ queryKey: ['topics'] })
           }}
         />
       )}

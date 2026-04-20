@@ -3,6 +3,7 @@ import './globals.css'
 import { Providers } from '@/components/providers'
 import { Toaster } from '@/components/ui/sonner'
 import { CommandPalette } from '@/components/layout/CommandPalette'
+import { AppBootstrap } from '@/components/AppBootstrap'
 
 // Font: Mona Sans VF loaded via @font-face CDN in globals.css
 // No next/font/local needed — just apply via font-sans Tailwind class
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="vi" suppressHydrationWarning>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <Providers>
+          <AppBootstrap />
           {children}
           <Toaster richColors position="top-right" />
           <CommandPalette />

@@ -9,7 +9,9 @@ import { ok, serverError } from '@/lib/api-response'
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const limit    = Math.min(parseInt(searchParams.get('limit') ?? '20', 10), 100)
+  const rawLimit = parseInt(searchParams.get('limit') ?? '20', 10)
+  // 999 means "all" — use a large but safe cap (500)
+  const limit    = rawLimit >= 999 ? 500 : Math.min(rawLimit, 200)
   const topicId  = searchParams.get('topic_id')
 
   try {

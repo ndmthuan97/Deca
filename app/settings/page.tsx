@@ -3,14 +3,15 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  ArrowLeft, Volume2, VolumeX, Sun, Moon, Monitor,
-  RotateCcw, Save, Check, Layers, BookOpen, Mic
+  ArrowLeft, Volume2, VolumeX, Sun, Moon, Monitor, Clock,
+  RotateCcw, Save, Check, Layers, BookOpen, Mic, Bell, BellOff, BellRing
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   getSettings, saveSettings, resetSettings,
   DEFAULT_SETTINGS, type UserSettings
 } from '@/lib/settings'
+import { requestPermission, getPermission, scheduleDailyReminder, clearDailyReminder } from '@/lib/notifications'
 import { toast } from 'sonner'
 
 /* ─── Voice picker ────────────────────────────────────────────── */
@@ -73,6 +74,105 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
   )
 }
 
+/* ─── Notification Section ─────────────────────────────────── */
+function NotificationSection({
+  s,
+  update,
+}: {
+  s: UserSettings
+  update: <K extends keyof UserSettings>(k: K, v: UserSettings[K]) => void
+}) {
+  const [perm, setPerm] = useState<string>('default')
+
+  useEffect(() => { setPerm(getPermission()) }, [])
+
+  async function handleEnable() {
+    const result = await requestPermission()
+    setPerm(result)
+    if (result === 'granted') {
+      update('notificationsEnabled', true)
+      scheduleDailyReminder(s.notificationHour)
+      toast.success('Đã bật thông báo nhắc ôn tập!')
+    } else if (result === 'denied') {
+      toast.error('Trình duyệt đã chặn thông báo — vào Site Settings để mở lại')
+    }
+  }
+
+  function handleDisable() {
+    update('notificationsEnabled', false)
+    clearDailyReminder()
+  }
+
+  if (perm === 'unsupported') {
+    return (
+      <div className="px-5 py-4 text-[13px] text-[#999]">
+        Trình duyệt không hỗ trợ Web Notifications.
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <Row
+        label="Nhắc ôn tập mỗi ngày"
+        desc={
+          perm === 'denied'
+            ? 'Trình duyệt đã chặn — vào Site Settings để cho phép'
+            : s.notificationsEnabled
+              ? `Sẽ thông báo lúc ${String(s.notificationHour).padStart(2,'0')}:00`
+              : 'Nhận thông báo nhắc nhở khi đến giờ ôn tập'
+        }
+      >
+        {perm !== 'granted' ? (
+          <button
+            onClick={handleEnable}
+            disabled={perm === 'denied'}
+            className="flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 text-[12px] font-medium bg-[#171717] dark:bg-[#f5f5f5] text-white dark:text-[#171717] hover:opacity-90 disabled:opacity-40 transition-opacity"
+          >
+            <Bell className="h-3.5 w-3.5" />
+            Cho phép
+          </button>
+        ) : (
+          <div className="flex items-center gap-2">
+            {s.notificationsEnabled
+              ? <BellRing className="h-4 w-4 text-amber-500" />
+              : <BellOff  className="h-4 w-4 text-[#bbb]" />
+            }
+            <button
+              onClick={() => s.notificationsEnabled ? handleDisable() : (update('notificationsEnabled', true), scheduleDailyReminder(s.notificationHour))}
+              className={cn(
+                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                s.notificationsEnabled ? 'bg-[#171717] dark:bg-[#f5f5f5]' : 'bg-[#ddd] dark:bg-[#444]'
+              )}
+              role="switch" aria-checked={s.notificationsEnabled}
+            >
+              <span className={cn(
+                'inline-block h-4 w-4 rounded-full bg-white dark:bg-[#171717] shadow-sm transition-transform',
+                s.notificationsEnabled ? 'translate-x-6' : 'translate-x-1'
+              )} />
+            </button>
+          </div>
+        )}
+      </Row>
+
+      {perm === 'granted' && s.notificationsEnabled && (
+        <Row label="Giờ nhắc nhở" desc={`Thông báo lúc ${String(s.notificationHour).padStart(2,'0')}:00 hàng ngày`}>
+          <div className="flex items-center gap-2">
+            <input type="range" min={6} max={23} step={1}
+              value={s.notificationHour}
+              onChange={e => update('notificationHour', Number(e.target.value))}
+              className="w-24 accent-[#171717]"
+            />
+            <span className="w-10 text-right text-[13px] font-mono font-semibold text-[#171717] dark:text-[#f5f5f5]">
+              {String(s.notificationHour).padStart(2,'0')}:00
+            </span>
+          </div>
+        </Row>
+      )}
+    </>
+  )
+}
+
 /* ─── Main Settings Page ──────────────────────────────────────── */
 export default function SettingsPage() {
   const router = useRouter()
@@ -120,9 +220,10 @@ export default function SettingsPage() {
   }
 
   const THEMES: Array<{ value: UserSettings['theme']; label: string; icon: React.ReactNode }> = [
-    { value: 'light',  label: 'Sáng',    icon: <Sun className="h-4 w-4" /> },
+    { value: 'light',  label: 'Sáng',    icon: <Sun  className="h-4 w-4" /> },
     { value: 'dark',   label: 'Tối',     icon: <Moon className="h-4 w-4" /> },
     { value: 'system', label: 'Hệ thống', icon: <Monitor className="h-4 w-4" /> },
+    { value: 'auto',   label: 'Tự động', icon: <Clock className="h-4 w-4" /> },
   ]
 
   return (
@@ -154,7 +255,7 @@ export default function SettingsPage() {
         {/* ── Giao diện ── */}
         <Section title="Giao diện">
           <Row label="Chủ đề" desc="Màu nền của ứng dụng">
-            <div className="flex gap-1.5">
+            <div className="flex gap-1.5 flex-wrap">
               {THEMES.map(t => (
                 <button key={t.value} onClick={() => update('theme', t.value)}
                   className={cn(
@@ -169,6 +270,34 @@ export default function SettingsPage() {
               ))}
             </div>
           </Row>
+          {s.theme === 'auto' && (
+            <>
+              <Row label="Bắt đầu tối" desc="Giờ bật Dark mode">
+                <div className="flex items-center gap-2">
+                  <input type="range" min={0} max={23} step={1}
+                    value={s.autoThemeDarkFrom}
+                    onChange={e => update('autoThemeDarkFrom', Number(e.target.value))}
+                    className="w-24 accent-[#171717]"
+                  />
+                  <span className="w-10 text-right text-[13px] font-mono font-semibold text-[#171717] dark:text-[#f5f5f5]">
+                    {String(s.autoThemeDarkFrom).padStart(2,'0')}:00
+                  </span>
+                </div>
+              </Row>
+              <Row label="Kết thúc tối" desc="Giờ tắt Dark mode (sang sáng)">
+                <div className="flex items-center gap-2">
+                  <input type="range" min={0} max={23} step={1}
+                    value={s.autoThemeDarkTo}
+                    onChange={e => update('autoThemeDarkTo', Number(e.target.value))}
+                    className="w-24 accent-[#171717]"
+                  />
+                  <span className="w-10 text-right text-[13px] font-mono font-semibold text-[#171717] dark:text-[#f5f5f5]">
+                    {String(s.autoThemeDarkTo).padStart(2,'0')}:00
+                  </span>
+                </div>
+              </Row>
+            </>
+          )}
         </Section>
 
         {/* ── Ôn tập ── */}
@@ -246,6 +375,11 @@ export default function SettingsPage() {
               )}
             </>
           )}
+        </Section>
+
+        {/* ── Thông báo ── */}
+        <Section title="Thông báo">
+          <NotificationSection s={s} update={update} />
         </Section>
 
         {/* ── Reset ── */}

@@ -11,6 +11,8 @@ import { cn } from '@/lib/utils'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { getStreak, studiedToday } from '@/lib/streak'
 import { XPBar } from '@/components/xp/XPBar'
+import { GlobalSearch } from '@/components/search/GlobalSearch'
+import { ReviewSessionConfig } from '@/components/review/ReviewSessionConfig'
 
 /* ── Streak badge (orange stays — semantic learning indicator) ── */
 function StreakBadge({ mini }: { mini?: boolean }) {
@@ -56,8 +58,25 @@ export function Sidebar() {
 
   const isActive = (href: string) => href === '/' ? pathname === '/' : pathname.startsWith(href)
 
+  // ── Ctrl+K global shortcut ──────────────────────────────────────
+  const [searchOpen,      setSearchOpen]      = useState(false)
+  const [reviewConfigOpen, setReviewConfigOpen] = useState(false)
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault()
+        setSearchOpen(o => !o)
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
+
   return (
     <>
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <ReviewSessionConfig open={reviewConfigOpen} onClose={() => setReviewConfigOpen(false)} />
       {/* ─── Desktop Sidebar ─── */}
       <aside
         onMouseEnter={() => setExpanded(true)}
@@ -89,39 +108,50 @@ export function Sidebar() {
         <nav className="flex-1 px-1.5 py-3 space-y-0.5 overflow-hidden">
           {NAV_ITEMS.map(({ href, icon: Icon, label, title, streak }) => {
             const active = isActive(href)
+            const isReview = href === '/review'
             return (
-              <Link
-                key={href}
-                href={href}
-                title={expanded ? undefined : title}
-                className={cn(
-                  // Vercel nav: 14px weight-500 default, weight-600 active, no colored bg
-                  'flex items-center gap-2.5 rounded-[6px] px-2.5 py-2.5 whitespace-nowrap',
-                  'text-[14px] transition-colors',
-                  active
-                    ? 'font-semibold text-[#171717] bg-[#f5f5f5] dark:bg-white/8 dark:text-[#f5f5f5]'
-                    : 'font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5',
+              <div key={href} className="relative group/nav">
+                <Link
+                  href={href}
+                  title={expanded ? undefined : title}
+                  className={cn(
+                    'flex items-center gap-2.5 rounded-[6px] px-2.5 py-2.5 whitespace-nowrap',
+                    'text-[14px] transition-colors',
+                    active
+                      ? 'font-semibold text-[#171717] bg-[#f5f5f5] dark:bg-white/8 dark:text-[#f5f5f5]'
+                      : 'font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5',
+                  )}
+                >
+                  <Icon className={cn(
+                    'h-4 w-4 shrink-0',
+                    active ? 'text-[#171717] dark:text-[#f5f5f5]' : 'text-[#999999] dark:text-[#666666]'
+                  )} />
+                  <span className={cn(
+                    'flex-1 transition-opacity',
+                    expanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                  )}>
+                    {label}
+                  </span>
+                  {streak && expanded && <StreakBadge />}
+                  {streak && !expanded && <StreakBadge mini />}
+                </Link>
+                {/* Review config button — only on /review item, only when sidebar expanded */}
+                {isReview && expanded && (
+                  <button
+                    onClick={e => { e.preventDefault(); setReviewConfigOpen(true) }}
+                    title="Cấu hình phiên ôn"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-[4px] text-[#bbb] hover:text-[#555] hover:bg-[#ebebeb] dark:hover:bg-[#2a2a2a] dark:hover:text-[#aaa] transition-colors opacity-0 group-hover/nav:opacity-100"
+                  >
+                    <Settings className="h-3 w-3" />
+                  </button>
                 )}
-              >
-                <Icon className={cn(
-                  'h-4 w-4 shrink-0',
-                  active ? 'text-[#171717] dark:text-[#f5f5f5]' : 'text-[#999999] dark:text-[#666666]'
-                )} />
-                <span className={cn(
-                  'flex-1 transition-opacity',
-                  expanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                )}>
-                  {label}
-                </span>
-                {streak && expanded && <StreakBadge />}
-                {streak && !expanded && <StreakBadge mini />}
-              </Link>
+              </div>
             )
           })}
 
           {/* Search shortcut */}
           <button
-            onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}
+            onClick={() => setSearchOpen(true)}
             title={expanded ? undefined : 'Tìm kiếm (Ctrl+K)'}
             className="w-full flex items-center gap-2.5 rounded-[6px] px-2.5 py-2.5 text-[14px] font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5 transition-colors whitespace-nowrap"
           >

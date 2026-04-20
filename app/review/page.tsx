@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   RotateCcw, Volume2, Flame, Trophy,
@@ -284,9 +284,12 @@ function SessionComplete({ done, streak }: { done: number; streak: number }) {
   )
 }
 
-/* ─── Main Page ──────────────────────────────────────────────── */
-export default function ReviewPage() {
-  const router = useRouter()
+/* ─── Inner page (uses useSearchParams) ───────────────────── */
+function ReviewPageInner() {
+  const router       = useRouter()
+  const searchParams = useSearchParams()
+  const limitParam   = Math.min(parseInt(searchParams.get('limit')   ?? '30', 10), 200)
+  const topicParam   = searchParams.get('topic_id')
 
   const [phrases, setPhrases]   = useState<DuePhrase[]>([])
   const [index, setIndex]       = useState(0)
@@ -310,7 +313,9 @@ export default function ReviewPage() {
   }, [])
 
   useEffect(() => {
-    apiFetch<{ phrases: DuePhrase[]; count: number }>('/api/review/due?limit=30')
+    const params = new URLSearchParams({ limit: String(limitParam) })
+    if (topicParam) params.set('topic_id', topicParam)
+    apiFetch<{ phrases: DuePhrase[]; count: number }>(`/api/review/due?${params}`)
       .then(data => {
         setPhrases(data.phrases)
         if (data.count === 0) setFinished(true)
@@ -318,7 +323,7 @@ export default function ReviewPage() {
       .catch(() => toast.error('Không thể tải câu ôn tập'))
       .finally(() => setLoading(false))
     setStreak(getStreak().count)
-  }, [])
+  }, [])  // eslint-disable-line react-hooks/exhaustive-deps
 
   const current = phrases[index]
 
@@ -694,5 +699,18 @@ export default function ReviewPage() {
         )}
       </main>
     </div>
+  )
+}
+
+/* ─── Root export ─────────────────────────────────────── */
+export default function ReviewPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-[#0a0a0a]">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#e0e0e0] border-t-[#171717]" />
+      </div>
+    }>
+      <ReviewPageInner />
+    </Suspense>
   )
 }

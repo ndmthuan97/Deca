@@ -4,26 +4,36 @@
 
 export interface UserSettings {
   // Review session
-  reviewLimit: number        // cards per session (default 20)
+  reviewLimit: number
   // TTS
-  ttsEnabled: boolean        // global TTS toggle (default true)
-  ttsRate: number            // speech rate 0.5–2.0 (default 0.9)
-  ttsVoiceURI: string        // URI of selected voice (default '')
+  ttsEnabled: boolean
+  ttsRate: number
+  ttsVoiceURI: string
   // Theme
-  theme: 'light' | 'dark' | 'system'
+  theme: 'light' | 'dark' | 'system' | 'auto'
+  // Auto dark mode (only when theme === 'auto')
+  autoThemeDarkFrom: number   // hour 0-23, default 19
+  autoThemeDarkTo:   number   // hour 0-23, default 7
   // Learn mode
-  learnBatchSize: number     // phrases per learn session (default 10)
+  learnBatchSize: number
+  // Notifications
+  notificationsEnabled: boolean
+  notificationHour: number    // 0-23, default 20
 }
 
 const KEY = 'dace:settings'
 
 export const DEFAULT_SETTINGS: UserSettings = {
-  reviewLimit:    20,
-  ttsEnabled:     true,
-  ttsRate:        0.9,
-  ttsVoiceURI:    '',
-  theme:          'system',
-  learnBatchSize: 10,
+  reviewLimit:          20,
+  ttsEnabled:           true,
+  ttsRate:              0.9,
+  ttsVoiceURI:          '',
+  theme:                'system',
+  autoThemeDarkFrom:    19,
+  autoThemeDarkTo:      7,
+  learnBatchSize:       10,
+  notificationsEnabled: false,
+  notificationHour:     20,
 }
 
 export function getSettings(): UserSettings {
