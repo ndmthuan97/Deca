@@ -22,7 +22,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { QuickCaptureModal } from '@/components/phrases/QuickCaptureModal'
 import { SRSBadge } from '@/components/phrases/SRSBadge'
-import { DDImportModal } from '@/components/phrases/DDImportModal'
+
 
 import type { Topic, Phrase } from '@/db/schema'
 import { apiFetch } from '@/lib/api-client'
@@ -233,7 +233,7 @@ export default function TopicPage() {
   const MOBILE_INITIAL = 10
   const [activeCardMenu, setActiveCardMenu] = useState<number | null>(null)
   const [showQuickCapture, setShowQuickCapture] = useState(false)
-  const [showDDImport, setShowDDImport] = useState(false)
+
   const filterRef = useRef<HTMLDivElement>(null)
   const mobileFilterRef = useRef<HTMLDivElement>(null)
 
@@ -370,53 +370,171 @@ export default function TopicPage() {
 
       <main className="flex flex-col flex-1 overflow-hidden">
         {/* ── Header ── */}
-        <div className="shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 pl-[60px] pr-4 py-3 md:pl-6 md:pr-8 md:py-4">
-          <div className="flex items-center justify-between">
+        <div
+          className="shrink-0 bg-white dark:bg-[#111111] pl-14 pr-4 py-2.5 md:pl-6 md:pr-6 md:py-3.5"
+          style={{ boxShadow: 'rgba(0,0,0,0.06) 0px 1px 0px 0px' }}
+        >
+          {/* Mobile: simple flex | Desktop: 3-col grid */}
+          <div className="flex items-center gap-2 md:grid md:grid-cols-3 md:gap-3">
+
+            {/* COL 1 — LEFT: icon + title + desc */}
             {topicLoading ? (
-              <Skeleton className="h-6 w-40 bg-gray-100" />
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="h-8 w-8 animate-pulse rounded-[6px] bg-[#f0f0f0] dark:bg-[#222] shrink-0" />
+                <div className="space-y-1.5">
+                  <div className="h-3.5 w-32 animate-pulse rounded bg-[#f0f0f0] dark:bg-[#222]" />
+                  <div className="h-2.5 w-20 animate-pulse rounded bg-[#f0f0f0] dark:bg-[#222]" />
+                </div>
+              </div>
             ) : (
-              <div className="flex items-center gap-2.5">
-                <span className="text-2xl">{topic?.icon}</span>
-                <div>
-                  <h1 className="text-base md:text-lg font-bold text-gray-900">{topic?.name}</h1>
-                  {topic?.description && <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">{topic.description}</p>}
-                  {/* Completion progress */}
-                  {phrases && phrases.length > 0 && (() => {
-                    const learned = phrases.filter(p => (p.repetitions ?? 0) >= 3).length
-                    const total   = phrases.length
-                    const pct     = Math.round((learned / total) * 100)
-                    const done    = learned >= total
-                    return (
-                      <div className="flex items-center gap-2 mt-1 hidden sm:flex">
-                        <div className="h-1 w-20 rounded-full bg-gray-100 overflow-hidden">
-                          <div
-                            className={cn('h-full rounded-full transition-all duration-700', done ? 'bg-emerald-500' : 'bg-amber-400')}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                        <span className={cn('text-[10px] font-medium tabular-nums', done ? 'text-emerald-500' : 'text-gray-400')}>
-                          {done ? '🏅 Mastered' : `${learned}/${total} thuộc`}
-                        </span>
-                      </div>
-                    )
-                  })()}
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="text-lg shrink-0">{topic?.icon}</span>
+                <div className="min-w-0">
+                  <h1 className="text-[14px] md:text-[16px] font-semibold text-[#171717] dark:text-[#f5f5f5] truncate leading-snug">
+                    {topic?.name}
+                  </h1>
+                  {topic?.description && (
+                    <p className="text-[11px] text-[#999] mt-0.5 truncate">{topic.description}</p>
+                  )}
                 </div>
               </div>
             )}
-            <button
-              onClick={() => router.push('/')}
-              className="flex items-center gap-1.5 h-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 transition-colors shadow-sm px-2.5 text-xs font-medium shrink-0"
-              title="Quay lại danh sách chủ đề"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Quay lại</span>
-            </button>
+
+            {/* COL 2 — CENTER: progress bar — desktop only */}
+            <div className="hidden md:flex items-center justify-center">
+              {!topicLoading && phrases && phrases.length > 0 && (() => {
+                const learned = phrases.filter(p => (p.repetitions ?? 0) >= 3).length
+                const total   = phrases.length
+                const pct     = Math.round((learned / total) * 100)
+                const done    = learned >= total
+                return (
+                  <div className="flex items-center gap-2.5 w-full max-w-[260px]">
+                    <span className={cn(
+                      'text-[11px] font-medium tabular-nums shrink-0',
+                      done ? 'text-emerald-500' : 'text-[#aaa] dark:text-[#666]'
+                    )}>
+                      {done ? '🏅' : `${learned}/${total}`}
+                    </span>
+                    <div className="flex-1 h-1.5 rounded-full bg-[#f0f0f0] dark:bg-[#2a2a2a] overflow-hidden">
+                      <div
+                        className={cn('h-full rounded-full transition-all duration-700', done ? 'bg-emerald-500' : 'bg-[#171717] dark:bg-white/70')}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className={cn(
+                      'text-[11px] font-medium tabular-nums shrink-0',
+                      done ? 'text-emerald-500' : 'text-[#bbb] dark:text-[#555]'
+                    )}>
+                      {done ? 'Mastered' : `${pct}%`}
+                    </span>
+                  </div>
+                )
+              })()}
+            </div>
+
+            {/* COL 3 — RIGHT: back button */}
+            <div className="flex justify-end ml-auto md:ml-0">
+              <button
+                onClick={() => router.push('/')}
+                className="flex items-center gap-1 h-7 rounded-[6px] px-2 text-[12px] font-medium text-[#666] dark:text-[#888] hover:text-[#171717] dark:hover:text-[#f5f5f5] hover:bg-[#f5f5f5] dark:hover:bg-white/8 transition-colors shrink-0"
+                style={{ boxShadow: 'var(--shadow-border)' }}
+                title="Quay lại danh sách chủ đề"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline text-[12px]">Quay lại</span>
+              </button>
+            </div>
+
           </div>
+
+          {/* Mobile: thin progress bar at bottom of header */}
+          {!topicLoading && phrases && phrases.length > 0 && (() => {
+            const learned = phrases.filter(p => (p.repetitions ?? 0) >= 3).length
+            const total   = phrases.length
+            const pct     = Math.round((learned / total) * 100)
+            const done    = learned >= total
+            return (
+              <div className="md:hidden mt-2 flex items-center gap-2">
+                <span className={cn(
+                  'text-[10px] font-medium tabular-nums shrink-0',
+                  done ? 'text-emerald-500' : 'text-[#bbb] dark:text-[#555]'
+                )}>
+                  {done ? '🏅' : `${learned}/${total} thuộc`}
+                </span>
+                <div className="flex-1 h-1 rounded-full bg-[#f0f0f0] dark:bg-[#2a2a2a] overflow-hidden">
+                  <div
+                    className={cn('h-full rounded-full transition-all duration-700', done ? 'bg-emerald-500' : 'bg-[#171717] dark:bg-white/60')}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <span className={cn(
+                  'text-[10px] tabular-nums shrink-0',
+                  done ? 'text-emerald-500' : 'text-[#ccc] dark:text-[#444]'
+                )}>
+                  {pct}%
+                </span>
+              </div>
+            )
+          })()}
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
 
-          {/* Mobile: search + filter + add in gray area */}
+          {/* Action strip */}
+          {topic && (
+            <>
+              {/* MOBILE: iOS tab-bar style — fills full width with icon + micro-label */}
+              <div className="md:hidden -mx-4 px-3 mb-3">
+                <div className="flex rounded-2xl bg-[#f2f2f2] dark:bg-[#1e1e1e] p-1 gap-0.5">
+                  {([
+                    { icon: <GraduationCap className="h-4 w-4" />, label: 'Ôn tập',  action: () => router.push(`/review?topic_id=${topic.id}`) },
+                    { icon: <BookOpen      className="h-4 w-4" />, label: 'Learn',    action: () => router.push(`/learn?topic_id=${topic.id}`) },
+                    { icon: <Brain         className="h-4 w-4" />, label: 'Quiz',     action: () => router.push(`/quiz?topic_id=${topic.id}&topic_name=${encodeURIComponent(topic.name)}`) },
+                    { icon: <Mic           className="h-4 w-4" />, label: 'Chính tả', action: () => router.push(`/quiz?topic_id=${topic.id}&topic_name=${encodeURIComponent(topic.name)}&mode=dictation`) },
+                    { icon: <MessageSquare className="h-4 w-4" />, label: 'Chat',     action: () => router.push(`/conversation?topic_id=${topic.id}`) },
+                    { icon: <Zap           className="h-4 w-4" />, label: 'Capture',  action: () => setShowQuickCapture(true) },
+                  ] as const).map(({ icon, label, action }) => (
+                    <button
+                      key={label}
+                      onClick={action}
+                      className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 rounded-xl transition-all active:scale-95 text-[#555] dark:text-[#888] hover:bg-white/60 dark:hover:bg-white/5"
+                    >
+                      {icon}
+                      <span className="text-[9px] font-medium leading-none">{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* DESKTOP: horizontal pill chips, flush right */}
+              <div className="hidden md:flex gap-1.5 mb-4 justify-end">
+                <button onClick={() => router.push(`/review?topic_id=${topic.id}`)} className="inline-flex shrink-0 items-center gap-1.5 h-8 rounded-full bg-[#171717] dark:bg-white px-3.5 text-[11px] font-semibold text-white dark:text-[#111] active:opacity-70 transition-opacity">
+                  <GraduationCap className="h-3.5 w-3.5" /> Ôn tập
+                </button>
+                <button onClick={() => router.push(`/learn?topic_id=${topic.id}`)} className="inline-flex shrink-0 items-center gap-1.5 h-8 rounded-full border border-[#e0e0e0] dark:border-[#333] bg-white dark:bg-[#1a1a1a] px-3.5 text-[11px] font-medium text-[#444] dark:text-[#ccc] hover:bg-gray-50 dark:hover:bg-[#222] transition-colors">
+                  <BookOpen className="h-3.5 w-3.5" /> Learn
+                </button>
+                <button onClick={() => router.push(`/quiz?topic_id=${topic.id}&topic_name=${encodeURIComponent(topic.name)}`)} className="inline-flex shrink-0 items-center gap-1.5 h-8 rounded-full border border-[#e0e0e0] dark:border-[#333] bg-white dark:bg-[#1a1a1a] px-3.5 text-[11px] font-medium text-[#444] dark:text-[#ccc] hover:bg-gray-50 dark:hover:bg-[#222] transition-colors">
+                  <Brain className="h-3.5 w-3.5" /> Quiz
+                </button>
+                <button onClick={() => router.push(`/quiz?topic_id=${topic.id}&topic_name=${encodeURIComponent(topic.name)}&mode=dictation`)} className="inline-flex shrink-0 items-center gap-1.5 h-8 rounded-full border border-[#e0e0e0] dark:border-[#333] bg-white dark:bg-[#1a1a1a] px-3.5 text-[11px] font-medium text-[#444] dark:text-[#ccc] hover:bg-gray-50 dark:hover:bg-[#222] transition-colors">
+                  <Mic className="h-3.5 w-3.5" /> Chính tả
+                </button>
+                <button onClick={() => router.push(`/conversation?topic_id=${topic.id}`)} className="inline-flex shrink-0 items-center gap-1.5 h-8 rounded-full border border-[#e0e0e0] dark:border-[#333] bg-white dark:bg-[#1a1a1a] px-3.5 text-[11px] font-medium text-[#444] dark:text-[#ccc] hover:bg-gray-50 dark:hover:bg-[#222] transition-colors">
+                  <MessageSquare className="h-3.5 w-3.5" /> AI Chat
+                </button>
+                <button onClick={() => setShowQuickCapture(true)} className="inline-flex shrink-0 items-center gap-1.5 h-8 rounded-full border border-[#e0e0e0] dark:border-[#333] bg-white dark:bg-[#1a1a1a] px-3.5 text-[11px] font-medium text-[#444] dark:text-[#ccc] hover:bg-gray-50 dark:hover:bg-[#222] transition-colors">
+                  <Zap className="h-3.5 w-3.5" /> Capture
+                </button>
+              </div>
+            </>
+          )}
+
+
+
+
+
+          {/* Mobile: search + filter + add */}
           <div className="flex md:hidden items-center gap-2 mb-3">
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
@@ -491,49 +609,8 @@ export default function TopicPage() {
             </button>
           </div>
 
-          {/* Mobile: Learn / Quiz / Dictation action buttons */}
-          {topic && (
-            <div className="flex md:hidden gap-2 mb-3">
-              <button
-                onClick={() => router.push(`/learn?topic_id=${topic.id}`)}
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 hover:bg-amber-100 active:scale-95 transition-all"
-              >
-                <GraduationCap className="h-3.5 w-3.5" /> Learn
-              </button>
-              <button
-                onClick={() => router.push(`/quiz?topic_id=${topic.id}&topic_name=${encodeURIComponent(topic.name)}`)}
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700 hover:bg-violet-100 active:scale-95 transition-all"
-              >
-                <Brain className="h-3.5 w-3.5" /> Quiz
-              </button>
-              <button
-                onClick={() => router.push(`/quiz?topic_id=${topic.id}&topic_name=${encodeURIComponent(topic.name)}&mode=dictation`)}
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100 active:scale-95 transition-all"
-              >
-                <Mic className="h-3.5 w-3.5" /> Chính tả
-              </button>
-              <button
-                onClick={() => router.push(`/conversation?topic_id=${topic.id}`)}
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 active:scale-95 transition-all"
-              >
-                <MessageSquare className="h-3.5 w-3.5" /> AI Chat
-              </button>
-              <button
-                onClick={() => setShowQuickCapture(true)}
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 hover:bg-amber-100 active:scale-95 transition-all"
-                title="Quick Capture — dán text, AI trích câu"
-              >
-                <Zap className="h-3.5 w-3.5" /> Capture
-              </button>
-              <button
-                onClick={() => setShowDDImport(true)}
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-700 hover:bg-sky-100 active:scale-95 transition-all"
-                title="Import từ Daily Dictation"
-              >
-                🎧 DD
-              </button>
-            </div>
-          )}
+
+
 
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm hidden md:block">
 
@@ -611,90 +688,54 @@ export default function TopicPage() {
                   </div>
                 )}
 
-                {/* Nhiều câu */}
-                <Button
-                  variant="outline"
-                  onClick={() => setBulkAddOpen(true)}
-                  className="h-8 text-gray-700 bg-white border-gray-200 hover:bg-gray-50 hover:text-gray-900 text-xs"
-                >
-                  <Sparkles className="mr-1.5 h-3.5 w-3.5 text-[#666]" />
-                  Nhiều câu
-                </Button>
-                {/* Daily Dictation import */}
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDDImport(true)}
-                  className="h-8 text-sky-700 bg-sky-50 border-sky-200 hover:bg-sky-100 text-xs"
-                  title="Import từ Daily Dictation"
-                >
-                  🎧 DD Import
-                </Button>
+
+
                 {/* Layout toggle - desktop */}
-                <div className="flex items-center rounded-lg border border-gray-200 bg-gray-50 p-0.5 gap-0.5">
+                <div className="flex items-center rounded-[6px] border border-gray-200 bg-gray-100 p-0.5 gap-0.5">
                   <button
                     onClick={() => setLayoutMode('list')}
                     className={cn(
-                      'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
-                      layoutMode === 'list' ? 'bg-white text-gray-700 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                      'flex items-center justify-center h-7 w-7 rounded-[4px] transition-colors',
+                      layoutMode === 'list' ? 'bg-white text-[#171717] shadow-sm' : 'text-gray-400 hover:text-gray-600'
                     )}
                     title="Danh sách"
                   >
-                    <List className="h-3.5 w-3.5" /> Danh sách
+                    <List className="h-3.5 w-3.5" />
                   </button>
                   <button
                     onClick={() => setLayoutMode('flashcard')}
                     className={cn(
-                      'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+                      'flex items-center justify-center h-7 w-7 rounded-[4px] transition-colors',
                       layoutMode === 'flashcard' ? 'bg-white text-[#171717] shadow-sm' : 'text-gray-400 hover:text-gray-600'
                     )}
                     title="Flashcard"
                   >
-                    <GalleryHorizontal className="h-3.5 w-3.5" /> Flashcard
+                    <GalleryHorizontal className="h-3.5 w-3.5" />
                   </button>
                 </div>
-              </div>
-              {/* Learn + Quiz + Dictation buttons */}
-              {topic && (
-                <div className="hidden sm:flex items-center gap-1.5">
-                  <button
-                    onClick={() => router.push(`/learn?topic_id=${topic.id}`)}
-                    className="flex items-center gap-1.5 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
-                    title="Learn Mode — học từng bước"
-                  >
-                    <GraduationCap className="h-3.5 w-3.5" /> Learn
-                  </button>
-                  <button
-                    onClick={() => router.push(`/quiz?topic_id=${topic.id}&topic_name=${encodeURIComponent(topic.name)}`)}
-                    className="flex items-center gap-1.5 rounded-xl border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/20 px-3 py-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors"
-                    title="Quiz Mode"
-                  >
-                    <Brain className="h-3.5 w-3.5" /> Quiz
-                  </button>
-                  <button
-                    onClick={() => router.push(`/quiz?topic_id=${topic.id}&topic_name=${encodeURIComponent(topic.name)}&mode=dictation`)}
-                    className="flex items-center gap-1.5 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/20 px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors"
-                    title="Chính tả — Nghe & gõ lại"
-                  >
-                    <Mic className="h-3.5 w-3.5" /> Chính tả
-                  </button>
-                  <button
-                    onClick={() => router.push(`/conversation?topic_id=${topic.id}`)}
-                    className="flex items-center gap-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
-                    title="AI Conversation — luyện nói"
-                  >
-                    <MessageSquare className="h-3.5 w-3.5" /> AI Chat
-                  </button>
-                  <button
-                    onClick={handleExport}
-                    className="flex items-center gap-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/20 px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900/40 transition-colors"
-                    title="Xuất JSON"
-                  >
-                    <Download className="h-3.5 w-3.5" /> Xuất
-                  </button>
-                </div>
-              )}
-            </div>
 
+                {/* Separator */}
+                <div className="h-4 w-px bg-[#e8e8e8]" />
+
+                {/* Export + BulkAdd */}
+                <button
+                  onClick={handleExport}
+                  className="flex h-8 w-8 items-center justify-center rounded-[6px] text-[#666] hover:text-[#171717] hover:bg-[#f5f5f5] transition-colors"
+                  style={{ boxShadow: 'var(--shadow-border)' }}
+                  title="Xuất JSON"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={() => setBulkAddOpen(true)}
+                  className="flex h-8 w-8 items-center justify-center rounded-[6px] text-[#666] hover:text-[#171717] hover:bg-[#f5f5f5] transition-colors"
+                  style={{ boxShadow: 'var(--shadow-border)' }}
+                  title="Thêm nhiều câu (AI)"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
 
             {/* ── Bulk action bar ── */}
             {selected.size > 0 && (
@@ -1035,7 +1076,7 @@ export default function TopicPage() {
       {/* ── Quick Capture Modal ── */}
       {showQuickCapture && topic && (
         <QuickCaptureModal
-          topics={[{ ...topic, phrase_count: phrases?.length ?? 0 }]}
+          topics={[{ ...topic, phrase_count: phrases?.length ?? 0, learned_count: 0 }]}
           defaultTopicId={topic.id}
           onClose={() => setShowQuickCapture(false)}
           onAdded={() => {
@@ -1046,18 +1087,7 @@ export default function TopicPage() {
         />
       )}
 
-      {/* ── Daily Dictation Import Modal ── */}
-      {showDDImport && topic && (
-        <DDImportModal
-          open={showDDImport}
-          onClose={() => setShowDDImport(false)}
-          topicId={topic.id}
-          onImported={() => {
-            queryClient.invalidateQueries({ queryKey: ['phrases', parseInt(params.id)] })
-            queryClient.invalidateQueries({ queryKey: ['topics'] })
-          }}
-        />
-      )}
+
     </div>
   )
 }

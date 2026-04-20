@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  BookOpen, LayoutList, Menu, X, Flame, GraduationCap,
-  Search, BarChart2, Brain, ChevronRight, Settings,
+  BookOpen, LayoutList, Menu, X, Flame,
+  Search, BarChart2, ChevronRight, Settings, MessageSquare, Wrench,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -14,7 +14,7 @@ import { XPBar } from '@/components/xp/XPBar'
 import { GlobalSearch } from '@/components/search/GlobalSearch'
 import { ReviewSessionConfig } from '@/components/review/ReviewSessionConfig'
 
-/* ── Streak badge (orange stays — semantic learning indicator) ── */
+/* ── Streak badge ── */
 function StreakBadge({ mini }: { mini?: boolean }) {
   const [streak, setStreak] = useState(0)
   const [studied, setStudied] = useState(false)
@@ -41,26 +41,23 @@ function StreakBadge({ mini }: { mini?: boolean }) {
   )
 }
 
-/* ── Nav items config ── */
-const NAV_ITEMS: { href: string; icon: React.ComponentType<{ className?: string }>; label: string; title: string; streak?: true }[] = [
-  { href: '/',          icon: LayoutList,    label: 'Chủ đề',    title: 'Quản lý chủ đề' },
-  { href: '/review',    icon: GraduationCap, label: 'Ôn tập',    title: 'Ôn tập hôm nay', streak: true },
-  { href: '/dashboard', icon: BarChart2,     label: 'Dashboard', title: 'Thống kê học tập' },
-]
+/* ── Nav items — logical study flow ── */
+const NAV_ITEMS = [
+  { href: '/',             icon: LayoutList,    label: 'Chủ đề',    title: 'Danh sách chủ đề' },
+  { href: '/dashboard',    icon: BarChart2,     label: 'Dashboard', title: 'Thống kê học tập' },
+  { href: '/conversation', icon: MessageSquare, label: 'Chat',      title: 'Luyện hội thoại' },
+] as const
 
-/* ── Desktop Sidebar ── */
 export function Sidebar() {
   const pathname = usePathname()
   const [expanded, setExpanded] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [reviewConfigOpen, setReviewConfigOpen] = useState(false)
 
   useEffect(() => { setMobileOpen(false) }, [pathname])
 
   const isActive = (href: string) => href === '/' ? pathname === '/' : pathname.startsWith(href)
-
-  // ── Ctrl+K global shortcut ──────────────────────────────────────
-  const [searchOpen,      setSearchOpen]      = useState(false)
-  const [reviewConfigOpen, setReviewConfigOpen] = useState(false)
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -73,16 +70,29 @@ export function Sidebar() {
     return () => document.removeEventListener('keydown', onKey)
   }, [])
 
+  // Shared class helpers
+  const navLinkCls = (active: boolean) => cn(
+    'flex items-center gap-2.5 rounded-[6px] px-2.5 py-2.5 whitespace-nowrap text-[14px] transition-colors',
+    active
+      ? 'font-semibold text-[#171717] bg-[#f5f5f5] dark:bg-white/8 dark:text-[#f5f5f5]'
+      : 'font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5'
+  )
+  const iconCls = (active: boolean) => cn(
+    'h-4 w-4 shrink-0',
+    active ? 'text-[#171717] dark:text-[#f5f5f5]' : 'text-[#999999] dark:text-[#666666]'
+  )
+  const labelCls = cn('flex-1 transition-opacity', expanded ? 'opacity-100' : 'opacity-0 pointer-events-none')
+
   return (
     <>
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
       <ReviewSessionConfig open={reviewConfigOpen} onClose={() => setReviewConfigOpen(false)} />
+
       {/* ─── Desktop Sidebar ─── */}
       <aside
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
         className={cn(
-          // Vercel nav: white bg, shadow-as-border replaces hard border-r
           'hidden md:flex flex-col h-full bg-white dark:bg-[#111111]',
           'transition-[width] shrink-0 overflow-hidden',
           'shadow-[rgba(0,0,0,0.08)_1px_0px_0px_0px] dark:shadow-[rgba(255,255,255,0.06)_1px_0px_0px_0px]',
@@ -90,7 +100,7 @@ export function Sidebar() {
         )}
         style={{ zIndex: 10 }}
       >
-        {/* Logo — bottom shadow-border */}
+        {/* Logo */}
         <div
           className="flex items-center gap-3 px-3 py-4 h-[60px] overflow-hidden"
           style={{ boxShadow: 'rgba(0,0,0,0.06) 0px 1px 0px 0px' }}
@@ -104,71 +114,76 @@ export function Sidebar() {
           </div>
         </div>
 
-        {/* Nav */}
+        {/* ── Main nav ── */}
         <nav className="flex-1 px-1.5 py-3 space-y-0.5 overflow-hidden">
-          {NAV_ITEMS.map(({ href, icon: Icon, label, title, streak }) => {
+          {NAV_ITEMS.map(({ href, icon: Icon, label, title }) => {
             const active = isActive(href)
-            const isReview = href === '/review'
             return (
-              <div key={href} className="relative group/nav">
-                <Link
-                  href={href}
-                  title={expanded ? undefined : title}
-                  className={cn(
-                    'flex items-center gap-2.5 rounded-[6px] px-2.5 py-2.5 whitespace-nowrap',
-                    'text-[14px] transition-colors',
-                    active
-                      ? 'font-semibold text-[#171717] bg-[#f5f5f5] dark:bg-white/8 dark:text-[#f5f5f5]'
-                      : 'font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5',
-                  )}
-                >
-                  <Icon className={cn(
-                    'h-4 w-4 shrink-0',
-                    active ? 'text-[#171717] dark:text-[#f5f5f5]' : 'text-[#999999] dark:text-[#666666]'
-                  )} />
-                  <span className={cn(
-                    'flex-1 transition-opacity',
-                    expanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                  )}>
-                    {label}
-                  </span>
-                  {streak && expanded && <StreakBadge />}
-                  {streak && !expanded && <StreakBadge mini />}
-                </Link>
-                {/* Review config button — only on /review item, only when sidebar expanded */}
-                {isReview && expanded && (
-                  <button
-                    onClick={e => { e.preventDefault(); setReviewConfigOpen(true) }}
-                    title="Cấu hình phiên ôn"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-[4px] text-[#bbb] hover:text-[#555] hover:bg-[#ebebeb] dark:hover:bg-[#2a2a2a] dark:hover:text-[#aaa] transition-colors opacity-0 group-hover/nav:opacity-100"
-                  >
-                    <Settings className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
+              <Link
+                key={href}
+                href={href}
+                title={expanded ? undefined : title}
+                className={navLinkCls(active)}
+              >
+                <Icon className={iconCls(active)} />
+                <span className={labelCls}>{label}</span>
+              </Link>
             )
           })}
 
-          {/* Search shortcut */}
+          {/* Search */}
           <button
             onClick={() => setSearchOpen(true)}
             title={expanded ? undefined : 'Tìm kiếm (Ctrl+K)'}
-            className="w-full flex items-center gap-2.5 rounded-[6px] px-2.5 py-2.5 text-[14px] font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5 transition-colors whitespace-nowrap"
+            className={cn(navLinkCls(false), 'w-full')}
           >
             <Search className="h-4 w-4 shrink-0 text-[#999999] dark:text-[#666666]" />
             <span className={cn('flex-1 text-left transition-opacity', expanded ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
               Tìm kiếm
             </span>
             {expanded && (
-              <kbd className="inline-flex items-center rounded-[4px] px-1.5 py-0.5 text-[10px] font-mono text-[#999999] dark:text-[#666666]"
-                style={{ boxShadow: 'rgb(235, 235, 235) 0px 0px 0px 1px' }}>
+              <kbd
+                className="inline-flex items-center rounded-[4px] px-1.5 py-0.5 text-[10px] font-mono text-[#999999] dark:text-[#666666]"
+                style={{ boxShadow: 'rgb(235, 235, 235) 0px 0px 0px 1px' }}
+              >
                 ⌘K
               </kbd>
             )}
           </button>
+
+          {/* Daily Dictation */}
+          <a
+            href="https://dailydictation.com/exercises"
+            target="_blank"
+            rel="noopener noreferrer"
+            title={expanded ? undefined : 'Daily Dictation'}
+            className={navLinkCls(false)}
+          >
+            <span className="h-4 w-4 shrink-0 flex items-center justify-center text-[14px] leading-none select-none">🎧</span>
+            <span className={cn('flex-1 text-left transition-opacity', expanded ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
+              Daily Dictation
+            </span>
+            {expanded && (
+              <svg className="h-3 w-3 shrink-0 text-[#ccc]" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3.5 8.5L8.5 3.5M8.5 3.5H5M8.5 3.5V7"/>
+              </svg>
+            )}
+          </a>
+
+          {/* NotebookLM */}
+          <Link
+            href="/notebooklm"
+            title={expanded ? undefined : 'NotebookLM'}
+            className={navLinkCls(isActive('/notebooklm'))}
+          >
+            <span className="h-4 w-4 shrink-0 flex items-center justify-center text-[14px] leading-none select-none">📓</span>
+            <span className={cn('flex-1 text-left transition-opacity', expanded ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
+              NotebookLM
+            </span>
+          </Link>
         </nav>
 
-        {/* Theme toggle + Admin */}
+        {/* ── Bottom: Settings + Admin + Theme + XP ── */}
         <div
           className="px-1.5 py-2 space-y-0.5"
           style={{ boxShadow: 'rgba(0,0,0,0.06) 0px -1px 0px 0px' }}
@@ -176,25 +191,24 @@ export function Sidebar() {
           <Link
             href="/settings"
             title={expanded ? undefined : 'Cài đặt'}
-            className="flex items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-[14px] font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5 transition-colors whitespace-nowrap"
+            className={navLinkCls(isActive('/settings'))}
           >
-            <Settings className="h-4 w-4 shrink-0 text-[#999999] dark:text-[#666666]" />
+            <Settings className={iconCls(isActive('/settings'))} />
             <span className={cn('flex-1 text-left transition-opacity text-[13px]', expanded ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
               Cài đặt
             </span>
           </Link>
           <Link
             href="/admin"
-            title={expanded ? undefined : 'Admin Panel'}
-            className="flex items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-[14px] font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5 transition-colors whitespace-nowrap"
+            title={expanded ? undefined : 'Admin'}
+            className={navLinkCls(isActive('/admin'))}
           >
-            <Settings className="h-4 w-4 shrink-0 text-[#999999] dark:text-[#666666]" />
+            <Wrench className={iconCls(isActive('/admin'))} />
             <span className={cn('flex-1 text-left transition-opacity text-[13px]', expanded ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
               Admin
             </span>
           </Link>
           {expanded ? <ThemeToggle /> : <ThemeToggle collapsed />}
-          {/* XP compact badge */}
           <div className={cn('px-2 py-1.5 overflow-hidden transition-all', expanded ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
             <XPBar compact />
           </div>
@@ -220,11 +234,12 @@ export function Sidebar() {
       />
 
       {/* ─── Mobile: drawer ─── */}
-      <aside className={cn(
-        'md:hidden fixed top-0 left-0 z-50 flex h-full w-72 flex-col bg-white dark:bg-[#111111]',
-        'transition-transform',
-        mobileOpen ? 'translate-x-0' : '-translate-x-full',
-      )}
+      <aside
+        className={cn(
+          'md:hidden fixed top-0 left-0 z-50 flex h-full w-72 flex-col bg-white dark:bg-[#111111]',
+          'transition-transform',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full',
+        )}
         style={{ boxShadow: 'rgba(0,0,0,0.15) 4px 0px 16px 0px' }}
       >
         {/* Header */}
@@ -251,7 +266,8 @@ export function Sidebar() {
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {NAV_ITEMS.map(({ href, icon: Icon, label, streak }) => {
+          {/* Main items */}
+          {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
             const active = isActive(href)
             return (
               <Link
@@ -265,12 +281,8 @@ export function Sidebar() {
                     : 'font-medium text-[#666666] hover:text-[#171717] hover:bg-[#fafafa] dark:text-[#888888] dark:hover:text-[#f5f5f5] dark:hover:bg-white/5',
                 )}
               >
-                <Icon className={cn(
-                  'h-5 w-5 shrink-0',
-                  active ? 'text-[#171717] dark:text-[#f5f5f5]' : 'text-[#999999]'
-                )} />
+                <Icon className={cn('h-5 w-5 shrink-0', active ? 'text-[#171717] dark:text-[#f5f5f5]' : 'text-[#999999]')} />
                 <span className="flex-1">{label}</span>
-                {streak && <StreakBadge />}
                 {active && <ChevronRight className="h-3.5 w-3.5 text-[#999999]" />}
               </Link>
             )
@@ -286,32 +298,59 @@ export function Sidebar() {
           >
             <Search className="h-5 w-5 shrink-0 text-[#999999]" />
             <span className="flex-1 text-left">Tìm kiếm</span>
-            <kbd className="inline-flex items-center rounded-[4px] px-1.5 py-0.5 text-[10px] font-mono text-[#999999]"
-              style={{ boxShadow: 'rgb(235, 235, 235) 0px 0px 0px 1px' }}>
+            <kbd
+              className="inline-flex items-center rounded-[4px] px-1.5 py-0.5 text-[10px] font-mono text-[#999999]"
+              style={{ boxShadow: 'rgb(235, 235, 235) 0px 0px 0px 1px' }}
+            >
               Ctrl K
             </kbd>
           </button>
+
+          {/* Daily Dictation */}
+          <a
+            href="https://dailydictation.com/exercises"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-3 rounded-[6px] px-3.5 py-3 text-[14px] font-medium text-[#666666] dark:text-[#888888] hover:bg-[#fafafa] dark:hover:bg-white/5 hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
+          >
+            <span className="h-5 w-5 shrink-0 flex items-center justify-center text-[16px] leading-none">🎧</span>
+            <span className="flex-1">Daily Dictation</span>
+            <svg className="h-3.5 w-3.5 shrink-0 text-[#ccc]" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3.5 8.5L8.5 3.5M8.5 3.5H5M8.5 3.5V7"/>
+            </svg>
+          </a>
+
+          {/* NotebookLM */}
+          <Link
+            href="/notebooklm"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-3 rounded-[6px] px-3.5 py-3 text-[14px] font-medium text-[#666666] dark:text-[#888888] hover:bg-[#fafafa] dark:hover:bg-white/5 hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
+          >
+            <span className="h-5 w-5 shrink-0 flex items-center justify-center text-[16px] leading-none">📓</span>
+            <span className="flex-1">NotebookLM</span>
+          </Link>
         </nav>
 
-        {/* Theme + footer */}
+        {/* Footer: Theme + Settings + Admin */}
         <div style={{ boxShadow: 'rgba(0,0,0,0.06) 0px -1px 0px 0px' }}>
           <ThemeToggle />
-          <div className="px-3 pb-4 space-y-1">
+          <div className="px-3 pb-4 space-y-0.5">
             <Link
               href="/settings"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-2.5 w-full rounded-[6px] px-3 py-2 text-xs text-[#666666] dark:text-[#888888] hover:bg-[#fafafa] dark:hover:bg-white/5 hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
+              className="flex items-center gap-2.5 w-full rounded-[6px] px-3 py-2 text-[13px] font-medium text-[#666666] dark:text-[#888888] hover:bg-[#fafafa] dark:hover:bg-white/5 hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
             >
-              <Settings className="h-3.5 w-3.5 flex-shrink-0" />
+              <Settings className="h-4 w-4 flex-shrink-0" />
               <span>Cài đặt</span>
             </Link>
             <Link
               href="/admin"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-2.5 w-full rounded-[6px] px-3 py-2 text-xs text-[#666666] dark:text-[#888888] hover:bg-[#fafafa] dark:hover:bg-white/5 hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
+              className="flex items-center gap-2.5 w-full rounded-[6px] px-3 py-2 text-[13px] font-medium text-[#666666] dark:text-[#888888] hover:bg-[#fafafa] dark:hover:bg-white/5 hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
             >
-              <Settings className="h-3.5 w-3.5 flex-shrink-0" />
-              <span>Admin Panel</span>
+              <Wrench className="h-4 w-4 flex-shrink-0" />
+              <span>Admin</span>
             </Link>
             <p className="px-3 text-[11px] text-[#999999] dark:text-[#666666]">
               DACE v0.1 · Học tiếng Anh mỗi ngày

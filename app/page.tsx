@@ -338,17 +338,6 @@ export default function HomePage() {
       )}
 
       <main className="flex flex-col flex-1 overflow-hidden">
-        {/* ── Header — Vercel nav bottom shadow-border ── */}
-        <div
-          className="shrink-0 bg-white dark:bg-[#111111] pl-[60px] pr-4 py-3 md:pl-6 md:pr-8 md:py-5"
-          style={{ boxShadow: 'rgba(0,0,0,0.06) 0px 1px 0px 0px' }}
-        >
-          <h1 className="text-page-title text-base md:text-[20px]">Quản lý chủ đề</h1>
-          <p className="mt-0.5 text-[13px] text-[#666666] dark:text-[#888888] hidden sm:block">
-            Tạo và quản lý các chủ đề học tiếng Anh
-          </p>
-        </div>
-
         {/* ── Content ── */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
 
@@ -681,12 +670,9 @@ export default function HomePage() {
             {/* ── Pagination ── */}
             {!isLoading && totalPages > 1 && (
               <div
-                className="flex items-center justify-between px-6 py-3"
+                className="flex items-center justify-center px-6 py-3"
                 style={{ boxShadow: 'rgba(0,0,0,0.06) 0px -1px 0px 0px' }}
               >
-                <p className="text-[12px] text-[#666666] dark:text-[#888888]">
-                  Hiển thị {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} / {filtered.length} chủ đề
-                </p>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -717,6 +703,7 @@ export default function HomePage() {
                   </button>
                 </div>
               </div>
+
             )}
           </div>
         </div>

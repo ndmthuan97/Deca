@@ -19,6 +19,31 @@ export interface SpeakOptions {
   lang?: string
 }
 
+/**
+ * Resolve the best available voice.
+ * Priority: explicit URI > saved setting > Google US English > any en-US > browser default
+ */
+function resolveVoice(targetURI: string | undefined): SpeechSynthesisVoice | null {
+  const voices = window.speechSynthesis.getVoices()
+  if (!voices.length) return null
+
+  // 1. Explicit / saved URI
+  if (targetURI) {
+    const found = voices.find(v => v.voiceURI === targetURI)
+    if (found) return found
+  }
+
+  // 2. Google US English (preferred default)
+  const google = voices.find(v => v.name === 'Google US English')
+  if (google) return google
+
+  // 3. Any en-US voice
+  const enUS = voices.find(v => v.lang === 'en-US')
+  if (enUS) return enUS
+
+  return null
+}
+
 /** Speak text using user TTS settings. No-op if ttsEnabled=false. */
 export function speak(text: string, opts: SpeakOptions = {}): void {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
@@ -32,13 +57,8 @@ export function speak(text: string, opts: SpeakOptions = {}): void {
   u.lang = opts.lang ?? 'en-US'
   u.rate = opts.rate ?? s.ttsRate
 
-  // Resolve voice: opts override > user setting > browser default
-  const targetURI = opts.voiceURI ?? s.ttsVoiceURI
-  if (targetURI) {
-    const voices = window.speechSynthesis.getVoices()
-    const found  = voices.find(v => v.voiceURI === targetURI)
-    if (found) u.voice = found
-  }
+  const voice = resolveVoice((opts.voiceURI ?? s.ttsVoiceURI) || undefined)
+  if (voice) u.voice = voice
 
   window.speechSynthesis.speak(u)
 }
@@ -54,12 +74,9 @@ export function speakForced(text: string, opts: SpeakOptions = {}): void {
   u.lang = opts.lang ?? 'en-US'
   u.rate = opts.rate ?? s.ttsRate
 
-  const targetURI = opts.voiceURI ?? s.ttsVoiceURI
-  if (targetURI) {
-    const voices = window.speechSynthesis.getVoices()
-    const found  = voices.find(v => v.voiceURI === targetURI)
-    if (found) u.voice = found
-  }
+  const voice = resolveVoice((opts.voiceURI ?? s.ttsVoiceURI) || undefined)
+  if (voice) u.voice = voice
 
   window.speechSynthesis.speak(u)
 }
+

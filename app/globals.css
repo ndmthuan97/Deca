@@ -201,7 +201,74 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* ── Global input / textarea / select border ── */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  textarea,
+  select {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #e2e2e2;
+    border-radius: 6px;
+  }
+  .dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  .dark textarea,
+  .dark select {
+    border-color: #2d2d2d;
+  }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):focus,
+  textarea:focus,
+  select:focus {
+    border-color: #999;
+    outline: none;
+  }
+  .dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):focus,
+  .dark textarea:focus,
+  .dark select:focus {
+    border-color: #555;
+  }
 }
+
+/* ═══════════════════════════════════════════════
+   MOBILE / RESPONSIVE UTILITIES
+   ═══════════════════════════════════════════════ */
+
+/* iOS safe area for bottom navigation (home indicator) */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pb-safe-4 {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Mobile viewport height (avoids 100vh issues on mobile browsers) */
+.h-screen-mobile {
+  height: 100dvh;
+}
+
+/* Page content wrapper — clears the mobile hamburger (h-9 + top-3 = ~48px) */
+/* Usage: add `page-content` class to the top-level div of each page */
+.page-content {
+  padding-top: 48px; /* mobile hamburger clearance */
+}
+@media (min-width: 768px) {
+  .page-content {
+    padding-top: 0;   /* desktop: sidebar handles nav */
+  }
+}
+
+/* Horizontal scroll for tab groups on mobile */
+.tabs-scroll {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 2px; /* prevent clipping of shadow-border */
+}
+.tabs-scroll::-webkit-scrollbar { display: none; }
+.tabs-scroll > * { scroll-snap-align: start; flex-shrink: 0; }
 
 /* ═══════════════════════════════════════════════
    VERCEL TYPOGRAPHY UTILITIES

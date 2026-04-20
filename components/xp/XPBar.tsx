@@ -41,6 +41,7 @@ export function XPBar({ className, compact = false }: XPBarProps) {
             <div
               className="h-full rounded-full bg-amber-400 transition-all duration-700"
               style={{ width: `${xpData.progress}%` }}
+              suppressHydrationWarning
             />
           </div>
         </div>

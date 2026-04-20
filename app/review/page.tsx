@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   RotateCcw, Volume2, Flame, Trophy,
-  CheckCircle2, Brain, Zap, Loader2, BookOpen, ArrowLeft, Mic, MicOff, X, Lightbulb, Star, ChevronRight
+  CheckCircle2, Brain, Zap, Loader2, BookOpen, ArrowLeft, Mic, MicOff, X, Lightbulb, Star, ChevronRight, ChevronLeft
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api-client'
@@ -302,6 +302,8 @@ function ReviewPageInner() {
   const [showPron, setShowPron]       = useState(false)
   const [showExplain, setShowExplain] = useState(false)
   const [starredSet, setStarredSet]   = useState<Set<number>>(new Set())
+  // History: indices of previously visited cards (for ← Trước)
+  const [history, setHistory] = useState<number[]>([])
 
   // Swipe tracking
   const touchStartX = useRef<number | null>(null)
@@ -352,7 +354,10 @@ function ReviewPageInner() {
         setFinished(true)
         toast.success(`Hoàn thành! Đã ôn ${newDone} câu 🎉`, { duration: 3000 })
       }
-      else { setIndex(i => i + 1); setFlipped(false); setShowPron(false); setShowExplain(false) }
+      else {
+        setHistory(h => [...h, index])  // push current to history
+        setIndex(i => i + 1); setFlipped(false); setShowPron(false); setShowExplain(false)
+      }
     } catch {
       toast.error('Lưu kết quả thất bại')
     } finally {
@@ -364,10 +369,20 @@ function ReviewPageInner() {
     function handler(e: KeyboardEvent) {
       if (!current) return
       // Space / Enter: flip card, then submit 'good'
-      if (e.key === ' ' || e.key === 'Enter') {
+      if (e.key === ' ' || e.key === 'ArrowRight') {
         e.preventDefault()
         if (!flipped) { setFlipped(true); return }
         submitResult('good')
+        return
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        if (history.length > 0) {
+          const prev = history[history.length - 1]
+          setHistory(h => h.slice(0, -1))
+          setIndex(prev)
+          setFlipped(false); setShowPron(false); setShowExplain(false)
+        }
         return
       }
       if (!flipped) return
@@ -378,7 +393,7 @@ function ReviewPageInner() {
     }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
-  }, [flipped, current, submitResult])
+  }, [flipped, current, submitResult, history])
 
   if (loading) {
     return (
@@ -676,20 +691,40 @@ function ReviewPageInner() {
                   ))}
                 </div>
 
-                {/* Skip row */}
+                {/* Skip / Prev row */}
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] text-[#bbb]">
-                    Phím tắt: <kbd className="font-mono">Space</kbd> Qua · <kbd className="font-mono">1</kbd> Quên · <kbd className="font-mono">2</kbd> Khó · <kbd className="font-mono">3</kbd> Ổn · <kbd className="font-mono">4</kbd> Dễ
+                  <p className="text-[10px] text-[#bbb] hidden sm:block">
+                    Phím tắt: <kbd className="font-mono">Space</kbd> Qua · <kbd className="font-mono">←</kbd> Trước · <kbd className="font-mono">1</kbd> Quên · <kbd className="font-mono">2</kbd> Khó · <kbd className="font-mono">3</kbd> Ổn · <kbd className="font-mono">4</kbd> Dễ
                   </p>
-                  <button
-                    disabled={submitting}
-                    onClick={() => submitResult('good')}
-                    className="flex items-center gap-1 rounded-[6px] px-3 py-1.5 text-[12px] font-medium text-[#999] hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors disabled:opacity-40"
-                    style={{ boxShadow: 'var(--shadow-border)' }}
-                    title="Bỏ qua — tính là Ổn (phím Space)"
-                  >
-                    Qua <ChevronRight className="h-3 w-3" />
-                  </button>
+                  <div className="flex items-center gap-2 ml-auto">
+                    {history.length > 0 && (
+                      <button
+                        onClick={() => {
+                          const prev = history[history.length - 1]
+                          setHistory(h => h.slice(0, -1))
+                          setIndex(prev)
+                          setFlipped(false); setShowPron(false); setShowExplain(false)
+                        }}
+                        className="flex items-center gap-1 rounded-[6px] px-3 py-1.5 text-[12px] font-medium text-[#999] hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
+                        style={{ boxShadow: 'var(--shadow-border)' }}
+                        title="Xem lại câu trước (phím ←)"
+                      >
+                        <ChevronLeft className="h-3 w-3" /> Trước
+                      </button>
+                    )}
+                    <button
+                      disabled={submitting}
+                      onClick={() => {
+                        setHistory(h => [...h, index])
+                        submitResult('good')
+                      }}
+                      className="flex items-center gap-1 rounded-[6px] px-3 py-1.5 text-[12px] font-medium text-[#999] hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors disabled:opacity-40"
+                      style={{ boxShadow: 'var(--shadow-border)' }}
+                      title="Bỏ qua — tính là Ổn (phím Space / →)"
+                    >
+                      Qua <ChevronRight className="h-3 w-3" />
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
