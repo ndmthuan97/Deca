@@ -10,6 +10,7 @@ import {
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { getStreak, studiedToday } from '@/lib/streak'
+import { XPBar } from '@/components/xp/XPBar'
 
 /* ── Streak badge (orange stays — semantic learning indicator) ── */
 function StreakBadge({ mini }: { mini?: boolean }) {
@@ -163,6 +164,10 @@ export function Sidebar() {
             </span>
           </Link>
           {expanded ? <ThemeToggle /> : <ThemeToggle collapsed />}
+          {/* XP compact badge */}
+          <div className={cn('px-2 py-1.5 overflow-hidden transition-all', expanded ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
+            <XPBar compact />
+          </div>
         </div>
       </aside>
 

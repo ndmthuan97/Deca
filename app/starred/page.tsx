@@ -12,14 +12,7 @@ import { getStarredArray, toggleStar } from '@/lib/starred'
 import { toast } from 'sonner'
 import type { Phrase } from '@/db/schema'
 
-function speak(text: string) {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel()
-    const u = new SpeechSynthesisUtterance(text)
-    u.lang = 'en-US'
-    window.speechSynthesis.speak(u)
-  }
-}
+import { speak } from '@/lib/tts'
 
 export default function StarredPage() {
   const router = useRouter()

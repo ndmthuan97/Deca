@@ -20,13 +20,7 @@ async function deletePhrase(id: number) {
   await apiFetch(`/api/phrases/${id}`, { method: 'DELETE' })
 }
 
-function speak(text: string) {
-  if ('speechSynthesis' in window) {
-    const utterance = new SpeechSynthesisUtterance(text)
-    utterance.lang = 'en-US'
-    window.speechSynthesis.speak(utterance)
-  }
-}
+import { speak } from '@/lib/tts'
 
 export function PhraseCard({ phrase, topicName, onEdit }: PhraseCardProps) {
   const queryClient = useQueryClient()

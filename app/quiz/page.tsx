@@ -9,6 +9,7 @@ import {
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api-client'
 import { toast } from 'sonner'
+import { speak, speakForced } from '@/lib/tts'
 import type { QuizMode, QuizQuestion } from '@/app/api/quiz/route'
 
 /* ─── Mode meta ─────────────────────────────────────────────── */
@@ -20,14 +21,6 @@ const MODE_META: Record<QuizMode | 'dictation', { label: string; icon: React.Rea
   dictation:       { label: 'Chính tả',        icon: <Mic className="h-4 w-4" />,        color: 'text-rose-500',  hint: 'Nghe và gõ lại toàn bộ câu' },
 }
 
-function speak(text: string) {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel()
-    const u = new SpeechSynthesisUtterance(text)
-    u.lang = 'en-US'
-    window.speechSynthesis.speak(u)
-  }
-}
 
 /* ─── Session Complete ───────────────────────────────────────── */
 function SessionComplete({
@@ -101,7 +94,8 @@ function QuizCard({
     if (q.mode === 'fill_blank' || q.mode === 'translation' || q.mode === 'dictation') {
       setTimeout(() => inputRef.current?.focus(), 100)
     }
-    if (q.mode === 'listening' || q.mode === 'dictation') speak(q.sentence)
+    if (q.mode === 'listening') speak(q.sentence)
+    if (q.mode === 'dictation') speakForced(q.sentence)
   }, [q])
 
   // Keyboard: 1–4 for multiple choice, Enter to submit text

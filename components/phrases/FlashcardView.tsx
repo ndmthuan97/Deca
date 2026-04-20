@@ -6,14 +6,7 @@ import { cn } from '@/lib/utils'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { Phrase } from '@/db/schema'
 
-function speak(text: string) {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel()
-    const utterance = new SpeechSynthesisUtterance(text)
-    utterance.lang = 'en-US'
-    window.speechSynthesis.speak(utterance)
-  }
-}
+import { speak } from '@/lib/tts'
 
 function FlashcardTypeBadges({ type, functionText }: { type: string; functionText?: string | null }) {
   const [tipOpen, setTipOpen] = useState(false)

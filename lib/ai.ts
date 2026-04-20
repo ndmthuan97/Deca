@@ -26,51 +26,61 @@ export function isVocabularyInput(text: string): boolean {
   return wordCount <= 3
 }
 
-// ─── Prompt cho CÂU giao tiếp (sentence) ─────────────────────────────────────
+// ─── Prompt v2 cho CÂU giao tiếp (sentence) ─────────────────────────────────
 const SENTENCE_PROMPT = (sampleSentence: string, topicName: string) =>
-  `You are an American English language teaching assistant. Topic: "${topicName}".
-Use AMERICAN ENGLISH pronunciation (General American accent) for all IPA transcriptions.
-Analyze this sentence: "${sampleSentence}"
+  `You are an expert American English language teaching assistant for Vietnamese learners. Topic: "${topicName}".
 
-Return ONLY a valid JSON object with these fields — follow each field's purpose EXACTLY:
+IMPORTANT RULES:
+1. Use AMERICAN ENGLISH (General American accent) for ALL IPA transcriptions.
+2. IPA must be accurate — use correct phonemes: ə (schwa), ɪ (kit), ʊ (foot), æ (trap), ɑː (lot), eɪ (face), oʊ (goat), aɪ (price), aʊ (mouth), ɔɪ (choice). Wrap in /slashes/.
+3. Examples must be NATURAL, CONVERSATIONAL, and DIFFERENT in context from "${sampleSentence}".
+4. function field: explain WHEN a real native speaker says this — include social/emotional context.
+5. Return ONLY a valid JSON object. No markdown, no extra text.
+
+Analyze: "${sampleSentence}"
 
 {
-  "type": "The communicative speech act type(s), comma-separated if multiple. Choose from: Asking, Responding, Greeting, Expressing, Inviting, Instructing, Requesting, Directing, Introducing",
-  "structure": "The grammatical pattern/template: write FIXED words as-is, wrap INTERCHANGEABLE parts in (parentheses with / options). Example: 'What is (your name / your issue)?' or 'I (really / totally) enjoy (activity).'",
-  "function": "A SHORT Vietnamese sentence (≤15 words) explaining WHEN and WHY a speaker uses this sentence in conversation. Do NOT translate — explain the communicative purpose.",
-  "translation": "The Vietnamese TRANSLATION of the sentence '${sampleSentence}' — translate the meaning, not explain it.",
-  "pronunciation": "Full IPA transcription of '${sampleSentence}' in American English, wrapped in slashes. Example: /haʊ ɑːr juː/",
-  "example1": "A NEW natural American English sentence using the same pattern — MUST be completely different from '${sampleSentence}'",
+  "type": "Communicative speech act(s), comma-separated. Choose from: Asking, Responding, Greeting, Expressing, Inviting, Instructing, Requesting, Directing, Introducing, Apologizing, Complimenting, Refusing",
+  "structure": "Grammatical template. Fixed words as-is, interchangeable parts in (parentheses with / options). E.g.: 'Could you (help me / show me) (the way / the report)?'",
+  "function": "Vietnamese sentence ≤15 words: WHEN and WHY a native speaker says this. Mention social context (formal/casual/urgent). Do NOT translate.",
+  "translation": "Precise Vietnamese translation of '${sampleSentence}'",
+  "pronunciation": "Full American English IPA of '${sampleSentence}'. Include stress marks (ˈ primary, ˌ secondary). E.g.: /haʊ ɑːr juː ˈduːɪŋ/",
+  "example1": "Natural American English sentence using the SAME grammatical pattern. Different topic/scenario from '${sampleSentence}'. Sounds like something from a TV show or real conversation.",
   "example1_translation": "Vietnamese translation of example1",
-  "example1_pronunciation": "IPA transcription of example1 in American English",
-  "example2": "Another NEW American English sentence with the same pattern — MUST differ from both '${sampleSentence}' and example1",
+  "example1_pronunciation": "Full American English IPA of example1 with stress marks",
+  "example2": "Another natural American English sentence, DIFFERENT scenario and vocabulary from both '${sampleSentence}' and example1.",
   "example2_translation": "Vietnamese translation of example2",
-  "example2_pronunciation": "IPA transcription of example2 in American English"
+  "example2_pronunciation": "Full American English IPA of example2 with stress marks"
 }`
 
-// ─── Prompt tối ưu cho TỪ VỰNG / CỤM TỪ NGẮN (vocabulary) ───────────────────
+// ─── Prompt v2 cho TỪ VỰNG / CỤM TỪ NGẮN (vocabulary) ─────────────────────
 const VOCAB_PROMPT = (word: string, topicName: string) =>
-  `You are an American English vocabulary teaching assistant for Vietnamese learners. Topic: "${topicName}".
-Use AMERICAN ENGLISH pronunciation (General American accent) for all IPA transcriptions.
-The input is a SINGLE WORD or SHORT PHRASE: "${word}"
+  `You are an expert American English vocabulary teaching assistant for Vietnamese learners. Topic: "${topicName}".
 
-Return ONLY a valid JSON object with these fields — follow each field's purpose EXACTLY:
+IMPORTANT RULES:
+1. Use AMERICAN ENGLISH (General American accent) for ALL IPA transcriptions.
+2. IPA must be phonemically accurate with stress marks (ˈ primary, ˌ secondary). Wrap in /slashes/.
+3. Examples must feel like REAL sentences from books, podcasts, or conversations — not textbook-simple.
+4. function field: explain meaning AND nuance (formal/informal, positive/negative connotation, when to use).
+5. Return ONLY a valid JSON object. No markdown, no extra text.
+
+Word/phrase: "${word}"
 
 {
-  "type": "Part of speech: choose ONE or more from Noun, Verb, Adjective, Adverb, Phrasal Verb, Idiom, Preposition, Conjunction, Interjection. If '${word}' can be multiple, list comma-separated. Example: 'Verb, Adjective'",
-  "structure": "Show word forms and key collocations. Format: BASE FORM variations first (e.g. 'run → ran → run (V3)'), then 2-3 natural collocations with SLOT in (parentheses). Example for 'beautiful': 'beautiful + (woman / view / day) | an incredibly beautiful (place / person)'",
-  "function": "A SHORT Vietnamese sentence (≤15 words) explaining the MEANING and NUANCE of '${word}'. Include when it is appropriate to use (formal/informal/emotional context). Do NOT just translate — explain usage.",
-  "translation": "The Vietnamese meaning(s) of '${word}'. If multiple meanings exist, list the 2 most common separated by '; '. Example: 'chạy; hoạt động'",
-  "pronunciation": "IPA transcription of '${word}' in American English, wrapped in slashes. Example: /bjuːtɪfəl/",
-  "example1": "A natural American English SENTENCE that uses '${word}' in a clear, realistic context. Not too simple. The sentence MUST contain the word '${word}' (or a natural inflected form).",
+  "type": "Part(s) of speech: Noun, Verb, Adjective, Adverb, Phrasal Verb, Idiom, Preposition, Conjunction, Interjection. List all that apply, comma-separated.",
+  "structure": "Word forms + collocations. Format: inflections first (e.g. 'go → went → gone'), then 2-3 natural collocations with SLOT in (parentheses). E.g.: 'go + (home/abroad/viral) | go (for a walk / out of business)'",
+  "function": "Vietnamese ≤15 words: meaning, nuance, and WHEN to use '${word}'. Include register (formal/informal/slang) and connotation (positive/neutral/negative).",
+  "translation": "Vietnamese meaning(s). List up to 2 most common separated by '; '. E.g.: 'chạy; hoạt động'",
+  "pronunciation": "American English IPA of '${word}' with stress marks. E.g.: /ˈbjuːt̬ɪfəl/",
+  "example1": "Natural, engaging American English sentence using '${word}' (or inflected form) in clear realistic context. 8-15 words. Sounds like real speech.",
   "example1_translation": "Vietnamese translation of example1",
-  "example1_pronunciation": "IPA transcription of the full example1 sentence in American English",
-  "example2": "Another natural American English sentence using '${word}' in a DIFFERENT context or meaning from example1. MUST contain the word or a natural inflected form.",
+  "example1_pronunciation": "Full American English IPA of example1 with stress marks",
+  "example2": "Another natural sentence using '${word}' in a DIFFERENT meaning or context from example1. Avoid repeating vocabulary from example1.",
   "example2_translation": "Vietnamese translation of example2",
-  "example2_pronunciation": "IPA transcription of the full example2 sentence in American English"
+  "example2_pronunciation": "Full American English IPA of example2 with stress marks"
 }`
 
-const MODEL = 'llama-3.1-8b-instant'
+const MODEL = 'llama-3.3-70b-versatile'  // v2: upgraded from 8b for better IPA accuracy
 
 // Robust JSON extraction (handle markdown code blocks)
 function extractJson(text: string): string {

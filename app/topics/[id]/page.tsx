@@ -16,10 +16,12 @@ import { FlashcardView } from '@/components/phrases/FlashcardView'
 import {
   BookOpen, Search, Pencil, Trash2, Volume2, Sparkles, Eye, Filter, MoreVertical,
   ChevronLeft, ChevronRight, ChevronDown,
-  List, GalleryHorizontal, Loader2, Brain, GraduationCap, Mic,
+  List, GalleryHorizontal, Loader2, Brain, GraduationCap, Mic, MessageSquare, Download, Zap,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { QuickCaptureModal } from '@/components/phrases/QuickCaptureModal'
+import { SRSBadge } from '@/components/phrases/SRSBadge'
 
 import type { Topic, Phrase } from '@/db/schema'
 import { apiFetch } from '@/lib/api-client'
@@ -35,11 +37,7 @@ async function fetchPhrases(topicId: string): Promise<Phrase[]> {
   return apiFetch<Phrase[]>(`/api/phrases?topic_id=${topicId}`)
 }
 
-function speak(text: string) {
-  const utter = new SpeechSynthesisUtterance(text)
-  utter.lang = 'en-US'
-  speechSynthesis.speak(utter)
-}
+import { speak } from '@/lib/tts'
 
 /** Parse "Greeting,Inviting" → ["Greeting", "Inviting"] */
 function parseTypes(type: string | null): string[] {
@@ -233,6 +231,7 @@ export default function TopicPage() {
   const [layoutMode, setLayoutMode] = useState<'list' | 'flashcard'>('list')
   const MOBILE_INITIAL = 10
   const [activeCardMenu, setActiveCardMenu] = useState<number | null>(null)
+  const [showQuickCapture, setShowQuickCapture] = useState(false)
   const filterRef = useRef<HTMLDivElement>(null)
   const mobileFilterRef = useRef<HTMLDivElement>(null)
 
@@ -350,6 +349,18 @@ export default function TopicPage() {
     bulkDeleteMutation.mutate(ids)
   }
 
+  const handleExport = () => {
+    if (!topic) return
+    const url = `/api/topics/${topic.id}/export`
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `dace-${topic.slug}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    toast.success(`Đã xuất chủ đề "${topic.name}"`)
+  }
+
   /* ════════════════════════════════ */
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
@@ -367,6 +378,26 @@ export default function TopicPage() {
                 <div>
                   <h1 className="text-base md:text-lg font-bold text-gray-900">{topic?.name}</h1>
                   {topic?.description && <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">{topic.description}</p>}
+                  {/* Completion progress */}
+                  {phrases && phrases.length > 0 && (() => {
+                    const learned = phrases.filter(p => (p.repetitions ?? 0) >= 3).length
+                    const total   = phrases.length
+                    const pct     = Math.round((learned / total) * 100)
+                    const done    = learned >= total
+                    return (
+                      <div className="flex items-center gap-2 mt-1 hidden sm:flex">
+                        <div className="h-1 w-20 rounded-full bg-gray-100 overflow-hidden">
+                          <div
+                            className={cn('h-full rounded-full transition-all duration-700', done ? 'bg-emerald-500' : 'bg-amber-400')}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className={cn('text-[10px] font-medium tabular-nums', done ? 'text-emerald-500' : 'text-gray-400')}>
+                          {done ? '🏅 Mastered' : `${learned}/${total} thuộc`}
+                        </span>
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>
             )}
@@ -478,6 +509,19 @@ export default function TopicPage() {
                 className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100 active:scale-95 transition-all"
               >
                 <Mic className="h-3.5 w-3.5" /> Chính tả
+              </button>
+              <button
+                onClick={() => router.push(`/conversation?topic_id=${topic.id}`)}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 active:scale-95 transition-all"
+              >
+                <MessageSquare className="h-3.5 w-3.5" /> AI Chat
+              </button>
+              <button
+                onClick={() => setShowQuickCapture(true)}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 hover:bg-amber-100 active:scale-95 transition-all"
+                title="Quick Capture — dán text, AI trích câu"
+              >
+                <Zap className="h-3.5 w-3.5" /> Capture
               </button>
             </div>
           )}
@@ -615,6 +659,20 @@ export default function TopicPage() {
                   >
                     <Mic className="h-3.5 w-3.5" /> Chính tả
                   </button>
+                  <button
+                    onClick={() => router.push(`/conversation?topic_id=${topic.id}`)}
+                    className="flex items-center gap-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+                    title="AI Conversation — luyện nói"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" /> AI Chat
+                  </button>
+                  <button
+                    onClick={handleExport}
+                    className="flex items-center gap-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/20 px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900/40 transition-colors"
+                    title="Xuất JSON"
+                  >
+                    <Download className="h-3.5 w-3.5" /> Xuất
+                  </button>
                 </div>
               )}
             </div>
@@ -729,7 +787,7 @@ export default function TopicPage() {
                         </div>
                       </div>
 
-                      {/* Bottom row: Ví dụ (left) + TypeBadges (right) */}
+                      {/* Bottom row: Ví dụ (left) + SRS + TypeBadges (right) */}
                       <div className="flex items-center justify-between mt-2">
                         {hasExamples ? (
                           <button
@@ -740,7 +798,10 @@ export default function TopicPage() {
                             Ví dụ
                           </button>
                         ) : <div />}
-                        <TypeBadges type={phrase.type} functionText={phrase.function} />
+                        <div className="flex items-center gap-1.5">
+                          <SRSBadge phrase={phrase} />
+                          <TypeBadges type={phrase.type} functionText={phrase.function} />
+                        </div>
                       </div>
 
                       {/* Examples expanded */}
@@ -949,6 +1010,20 @@ export default function TopicPage() {
           onSuccess={() => {
             queryClient.invalidateQueries({ queryKey: ['phrases', parseInt(params.id)] })
             queryClient.invalidateQueries({ queryKey: ['topics'] })
+          }}
+        />
+      )}
+
+      {/* ── Quick Capture Modal ── */}
+      {showQuickCapture && topic && (
+        <QuickCaptureModal
+          topics={[{ ...topic, phrase_count: phrases?.length ?? 0 }]}
+          defaultTopicId={topic.id}
+          onClose={() => setShowQuickCapture(false)}
+          onAdded={() => {
+            queryClient.invalidateQueries({ queryKey: ['phrases', parseInt(params.id)] })
+            queryClient.invalidateQueries({ queryKey: ['topics'] })
+            setShowQuickCapture(false)
           }}
         />
       )}

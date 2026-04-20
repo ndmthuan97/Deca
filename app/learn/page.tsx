@@ -9,6 +9,7 @@ import {
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api-client'
 import { toast } from 'sonner'
+import { speak } from '@/lib/tts'
 import type { QuizQuestion } from '@/app/api/quiz/route'
 
 /* ─── Stage config ─────────────────────────────────────────────────────── */
@@ -27,14 +28,6 @@ interface LearnPhrase extends QuizQuestion {
   passed: boolean
 }
 
-function speak(text: string) {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel()
-    const u = new SpeechSynthesisUtterance(text)
-    u.lang = 'en-US'
-    window.speechSynthesis.speak(u)
-  }
-}
 
 function makeFillBlank(sentence: string): { blanked: string; word: string } | null {
   const words = sentence.split(' ')
@@ -354,8 +347,10 @@ function LearnContent() {
         // Append retry items and continue
         setItems(prev => [...prev, ...retryQueue])
         setRetryQueue([])
+        toast(`Ôn lại ${retryQueue.length} câu chưa thuộc 🔁`, { duration: 2500 })
       } else {
         setFinished(true)
+        toast.success(`Xuất sắc! Học xong ${totalPhrases} câu 🎓`, { duration: 3000 })
       }
     }
     setIndex(i => i + 1)

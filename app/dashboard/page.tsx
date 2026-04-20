@@ -6,11 +6,13 @@ import { useRouter } from 'next/navigation'
 import {
   Flame, BookOpen, Brain, GraduationCap, ArrowLeft,
   TrendingUp, BarChart2, Target, Loader2, AlertTriangle,
-  CheckCircle2, Puzzle, Star, Sparkles
+  CheckCircle2, Puzzle, Star, Sparkles, MessageSquare
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api-client'
 import { getStreak } from '@/lib/streak'
+import { XPBar } from '@/components/xp/XPBar'
+import { ReviewCalendar } from '@/components/review/ReviewCalendar'
 
 /* --- Types ---------------------------------------------------- */
 interface DashboardStats {
@@ -94,6 +96,76 @@ function DailyTargetCard({ reviewed }: { reviewed: number }) {
               className="flex h-6 w-6 items-center justify-center rounded-[4px] text-[12px] font-bold text-[#666] hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
               style={{ boxShadow: 'var(--shadow-border)' }}>+</button>
             <span className="text-[10px] text-[#bbb] ml-1">±5</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* --- Weekly Challenge Card ------------------------------------ */
+const WEEKLY_TARGET_KEY = 'dace:weekly_target'
+
+function WeeklyChallengeCard({ reviewed }: { reviewed: number }) {
+  const [target, setTarget] = useState<number>(100)
+
+  useEffect(() => {
+    const saved = parseInt(localStorage.getItem(WEEKLY_TARGET_KEY) ?? '100', 10)
+    setTarget(isNaN(saved) ? 100 : saved)
+  }, [])
+
+  function adjust(delta: number) {
+    const next = Math.max(20, Math.min(500, target + delta))
+    setTarget(next)
+    localStorage.setItem(WEEKLY_TARGET_KEY, String(next))
+  }
+
+  const pct    = Math.min(100, Math.round((reviewed / target) * 100))
+  const done   = pct >= 100
+  const r      = 38
+  const circ   = 2 * Math.PI * r
+  const offset = circ * (1 - pct / 100)
+
+  return (
+    <div className="rounded-[8px] bg-white dark:bg-[#111] p-5"
+      style={{ boxShadow: 'var(--shadow-card)' }}>
+      <p className="text-[11px] font-medium uppercase tracking-widest text-[#666] dark:text-[#888] mb-4">
+        Thử thách tuần
+      </p>
+      <div className="flex items-center gap-6">
+        <div className="relative w-20 h-20 shrink-0">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 88 88">
+            <circle cx="44" cy="44" r={r} fill="none" stroke="currentColor" strokeWidth="7"
+              className="text-[#f0f0f0] dark:text-[#2a2a2a]" />
+            <circle cx="44" cy="44" r={r} fill="none" stroke="currentColor" strokeWidth="7"
+              strokeDasharray={circ}
+              strokeDashoffset={offset}
+              strokeLinecap="round"
+              className={done ? 'text-emerald-500' : 'text-amber-400'}
+              style={{ transition: 'stroke-dashoffset 0.8s ease' }} />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className={`text-[18px] font-bold tabular-nums leading-none ${done ? 'text-emerald-500' : 'text-[#171717] dark:text-[#f5f5f5]'}`}>
+              {reviewed}
+            </span>
+            <span className="text-[10px] text-[#999]">{pct}%</span>
+          </div>
+        </div>
+        <div className="flex-1">
+          <p className="text-[13px] font-medium text-[#171717] dark:text-[#f5f5f5] mb-0.5">
+            {done ? '🎉 Tuần xuất sắc!' : `Còn ${Math.max(0, target - reviewed)} câu`}
+          </p>
+          <p className="text-[12px] text-[#999] mb-3">
+            Mục tiêu: <strong className="text-[#171717] dark:text-[#f5f5f5]">{target}</strong> câu/tuần
+          </p>
+          <div className="flex items-center gap-1.5">
+            <button onClick={() => adjust(-20)}
+              className="flex h-6 w-6 items-center justify-center rounded-[4px] text-[12px] font-bold text-[#666] hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
+              style={{ boxShadow: 'var(--shadow-border)' }}>−</button>
+            <button onClick={() => adjust(20)}
+              className="flex h-6 w-6 items-center justify-center rounded-[4px] text-[12px] font-bold text-[#666] hover:text-[#171717] dark:hover:text-[#f5f5f5] transition-colors"
+              style={{ boxShadow: 'var(--shadow-border)' }}>+</button>
+            <span className="text-[10px] text-[#bbb] ml-1">±20</span>
           </div>
         </div>
       </div>
@@ -423,7 +495,13 @@ export default function DashboardPage() {
               </p>
             </div>
 
-            {/* Activity Heatmap */}
+            {/* XP + Review Calendar */}
+            <div className="grid sm:grid-cols-2 gap-3">
+              <XPBar />
+              <ReviewCalendar />
+            </div>
+
+            {/* Activity Heatmap — past activity */}
             <ActivityHeatmap activity={stats.activity} />
 
             {/* Result + Type Dist */}
@@ -432,14 +510,17 @@ export default function DashboardPage() {
               <TypeDist data={stats.typeDist} />
             </div>
 
-            {/* Daily Target + Weak Topics */}
+            {/* Daily Target + Weekly Challenge */}
             <div className="grid sm:grid-cols-2 gap-3">
               <DailyTargetCard reviewed={stats.summary.reviewedToday} />
-              <WeakTopics data={stats.weakTopics} />
+              <WeeklyChallengeCard reviewed={stats.summary.reviewedWeek} />
             </div>
 
-            {/* Hardest phrases */}
-            <HardestPhrases data={stats.hardestPhrases} />
+            {/* Weak Topics + Hardest phrases */}
+            <div className="grid sm:grid-cols-2 gap-3">
+              <WeakTopics data={stats.weakTopics} />
+              <HardestPhrases data={stats.hardestPhrases} />
+            </div>
 
             {/* CTA */}
             <div className="grid sm:grid-cols-2 gap-3">
@@ -461,11 +542,12 @@ export default function DashboardPage() {
                 <Puzzle className="h-4 w-4" />
                 Match Game
               </Link>
-              <Link href="/"
-                className="flex items-center justify-center gap-2 rounded-[6px] px-6 py-3.5 text-[14px] font-medium text-[#171717] dark:text-[#f5f5f5] transition-colors"
-                style={{ boxShadow: 'var(--shadow-border)' }}>
-                <BookOpen className="h-4 w-4" />
-                Xem chủ đề
+              <Link href="/conversation"
+                className="flex items-center justify-center gap-2 rounded-[6px] px-6 py-3.5 text-[14px] font-medium text-[#171717] dark:text-[#f5f5f5] transition-colors hover:opacity-80"
+                style={{ boxShadow: 'var(--shadow-border)' }}
+                title="AI Conversation — luyện nói tiếng Anh">
+                <MessageSquare className="h-4 w-4" />
+                AI Chat
               </Link>
             </div>
           </>

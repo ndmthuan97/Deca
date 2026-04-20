@@ -12,6 +12,8 @@ import { apiFetch } from '@/lib/api-client'
 import { recordStudyToday, getStreak } from '@/lib/streak'
 import { toggleStar, getStarred } from '@/lib/starred'
 import { toast } from 'sonner'
+import { speak } from '@/lib/tts'
+import { addXP, xpToastMessage } from '@/lib/xp'
 import type { Phrase } from '@/db/schema'
 import type { ReviewResult } from '@/lib/srs'
 
@@ -31,14 +33,6 @@ const RATINGS: { result: ReviewResult; label: string; desc: string; color: strin
   { result: 'easy',  label: 'Dễ lắm',   desc: '> 1 tuần',  color: 'border-sky-200 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:border-sky-800 dark:bg-sky-900/20 dark:hover:bg-sky-900/40 dark:text-sky-400',       icon: <Zap className="h-4 w-4" /> },
 ]
 
-function speak(text: string) {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel()
-    const u = new SpeechSynthesisUtterance(text)
-    u.lang = 'en-US'
-    window.speechSynthesis.speak(u)
-  }
-}
 
 /* ─── Pronunciation Panel (Web Speech API) ─────────────── */
 type WordStatus = 'correct' | 'close' | 'wrong' | 'missing'
@@ -337,13 +331,22 @@ export default function ReviewPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phraseId: current.id, result }),
       })
+      // Award XP
+      const xp = addXP(result)
+      toast(xpToastMessage(xp.gained, xp.leveledUp, xp.newLevel), {
+        duration: xp.leveledUp ? 4000 : 1200,
+        icon: xp.leveledUp ? '🎉' : '⚡',
+      })
       const newDone = done + 1
       setDone(newDone)
       if (newDone === 1) {
         const s = recordStudyToday()
         setStreak(s.count)
       }
-      if (index + 1 >= phrases.length) setFinished(true)
+      if (index + 1 >= phrases.length) {
+        setFinished(true)
+        toast.success(`Hoàn thành! Đã ôn ${newDone} câu 🎉`, { duration: 3000 })
+      }
       else { setIndex(i => i + 1); setFlipped(false); setShowPron(false); setShowExplain(false) }
     } catch {
       toast.error('Lưu kết quả thất bại')

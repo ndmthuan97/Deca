@@ -49,5 +49,5 @@ export type NewPhrase   = typeof phrases.$inferInsert
 export type StudyLog    = typeof studyLogs.$inferSelect
 export type NewStudyLog = typeof studyLogs.$inferInsert
 
-// Extended type returned by GET /api/topics (includes computed phrase_count)
-export type TopicWithCount = Topic & { phrase_count: number }
+// Extended type returned by GET /api/topics (includes computed phrase_count + learned_count)
+export type TopicWithCount = Topic & { phrase_count: number; learned_count: number }

@@ -16,7 +16,8 @@ export async function GET() {
         icon: topics.icon,
         order_index: topics.order_index,
         created_at: topics.created_at,
-        phrase_count: sql<number>`count(case when ${phrases.deleted_at} is null then 1 end)::int`,
+        phrase_count:   sql<number>`count(case when ${phrases.deleted_at} is null then 1 end)::int`,
+        learned_count:  sql<number>`count(case when ${phrases.deleted_at} is null and ${phrases.repetitions} >= 3 then 1 end)::int`,
       })
       .from(topics)
       .leftJoin(phrases, eq(topics.id, phrases.topic_id))

@@ -176,6 +176,7 @@ function MatchGame() {
           if (newM === cards.length) {
             setTimeout(() => setDone(true), 600)
             setRunning(false)
+            toast.success(`Ghép xong ${newM} cặp trong ${fmtTime(elapsed)} 🏆`, { duration: 3000 })
           }
           return newM
         })
