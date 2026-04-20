@@ -89,14 +89,5 @@ export function XPBar({ className, compact = false }: XPBarProps) {
   )
 }
 
-/**
- * XP Toast — shown after submitting a review result.
- * Call manually after addXP().
- */
-export function xpToastMessage(gained: number, leveledUp: boolean, newLevel: number): string {
-  if (leveledUp) {
-    const badge = getBadge(newLevel)
-    return `🎉 Level Up! ${badge.emoji} Level ${newLevel} — ${badge.title} (+${gained} XP)`
-  }
-  return `+${gained} XP`
-}
+// Re-export from lib/xp for backward compat (the real impl lives there)
+export { xpToastMessage } from '@/lib/xp'

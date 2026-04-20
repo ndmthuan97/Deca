@@ -93,3 +93,15 @@ export function getBadge(level: number): { emoji: string; title: string } {
   }
   return LEVEL_BADGES[1]
 }
+
+/**
+ * Build a toast message string after awarding XP.
+ * Pure utility — no React dependency.
+ */
+export function xpToastMessage(gained: number, leveledUp: boolean, newLevel: number): string {
+  if (leveledUp) {
+    const badge = getBadge(newLevel)
+    return `🎉 Level Up! ${badge.emoji} Level ${newLevel} — ${badge.title} (+${gained} XP)`
+  }
+  return `+${gained} XP`
+}
