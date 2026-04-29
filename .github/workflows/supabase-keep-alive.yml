@@ -91,8 +91,9 @@ jobs:
             echo "  HTTP   : $HTTP_STATUS"
             echo "  Body   : $RESPONSE"
 
-            # 200 = query thành công, DB đang sống
-            if [ "$HTTP_STATUS" -eq 200 ]; then
+            # 2xx = query thành công, DB đang sống
+            # 200 = normal, 206 = Partial Content (PostgREST trả về khi dùng Prefer: count=exact + limit)
+            if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
               echo "SUCCESS: Supabase DB ALIVE — topics query OK (HTTP $HTTP_STATUS, attempt $ATTEMPT)"
               echo "http_status=$HTTP_STATUS" >> "$GITHUB_OUTPUT"
               echo "attempts=$ATTEMPT"        >> "$GITHUB_OUTPUT"
